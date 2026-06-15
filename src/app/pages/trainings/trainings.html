@@ -1,0 +1,10 @@
+<section>
+  <h1 class="mb-6 text-3xl font-bold">Trainings</h1>
+
+  @for (training of trainings(); track training.id) {
+    <app-training-card
+      [training]="training"
+      (bookClicked)="onBookTraining($event)"
+    />
+  }
+</section>

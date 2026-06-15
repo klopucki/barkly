@@ -1,0 +1,45 @@
+<form
+  class="mt-8 max-w-xl space-y-4 rounded-xl border border-gray-200 p-4"
+  [formGroup]="bookingForm"
+  (ngSubmit)="submitBooking()"
+>
+  <h2 class="text-xl font-semibold">Book this training</h2>
+
+  <input class="w-full rounded border p-2" placeholder="Owner name" formControlName="ownerName" />
+  @if (hasError('ownerName', 'required')) {
+    <p class="text-sm text-red-600">Owner name is required.</p>
+  }
+
+  @if (hasError('ownerName', 'minlength')) {
+    <p class="text-sm text-red-600">Owner name must have at least 2 characters.</p>
+  }
+
+  <input class="w-full rounded border p-2" placeholder="Email" formControlName="email" />
+  @if (hasError('email', 'required')) {
+    <p class="text-sm text-red-600">Email is required.</p>
+  }
+
+  @if (hasError('email', 'email')) {
+    <p class="text-sm text-red-600">Email format is invalid.</p>
+  }
+
+  <input class="w-full rounded border p-2" placeholder="Dog name" formControlName="dogName" />
+  @if (hasError('email', 'required')) {
+    <p class="text-sm text-red-600">Dog name is required.</p>
+  }
+
+  <input class="w-full rounded border p-2" type="number" placeholder="Dog age" formControlName="dogAge" />
+  @if (hasError('dogAge', 'required')) {
+    <p class="text-sm text-red-600">Dog age is required.</p>
+  }
+
+  @if (hasError('dogAge', 'min')) {
+    <p class="text-sm text-red-600">Dog age cannot be negative.</p>
+  }
+
+  <textarea class="w-full rounded border p-2" placeholder="Notes" formControlName="notes"></textarea>
+
+  <button class="rounded-lg bg-black px-4 py-2 text-white" type="submit">
+    Confirm booking
+  </button>
+</form>

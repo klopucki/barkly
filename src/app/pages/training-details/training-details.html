@@ -1,0 +1,38 @@
+@if (training()) {
+  <section>
+    <h1 class="mb-4 text-3xl font-bold">{{ training()!.title }}</h1>
+
+    <p>Trainer: {{ training()!.trainerName }}</p>
+    <p>Level: {{ training()!.level }}</p>
+    <p>Date: {{ training()!.startAt }}</p>
+    <p>Booked: {{ training()!.bookedCount }}</p>
+  </section>
+
+  <app-booking-form
+    (bookingSubmitted)="submitBooking($event)"
+  />
+
+  <section class="mt-8">
+    <h2 class="mb-4 text-xl font-semibold">Bookings</h2>
+
+    @if (bookings().length === 0) {
+      <p class="text-gray-500">No bookings yet.</p>
+    } @else {
+      <ul class="space-y-3">
+        @for (booking of bookings(); track booking.id) {
+          <li class="rounded-lg border border-gray-200 p-3">
+            <p class="font-medium">{{ booking.ownerName }} & {{ booking.dogName }}</p>
+            <p class="text-sm text-gray-600">{{ booking.email }}</p>
+            <p class="text-sm text-gray-600">Dog age: {{ booking.dogAge }}</p>
+
+            @if (booking.notes) {
+              <p class="mt-2 text-sm">{{ booking.notes }}</p>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+} @else {
+  <p>Training not found.</p>
+}
