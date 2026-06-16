@@ -1,10 +1,19 @@
+
 <section>
   <h1 class="mb-6 text-3xl font-bold">Trainings</h1>
 
-  @for (training of trainings(); track training.id) {
-    <app-training-card
-      [training]="training"
-      (bookClicked)="onBookTraining($event)"
-    />
+  <input
+    class="mb-6 w-full rounded border p-2"
+    placeholder="Search by title, trainer or level..."
+    #searchInput
+    (input)="searchText.set(searchInput.value)"
+  />
+
+  @if (trainings().length === 0) {
+    <p class="text-gray-500">No trainings found.</p>
+  } @else {
+    @for (training of trainings(); track training.id) {
+      <app-training-card [training]="training"  />
+    }
   }
 </section>
