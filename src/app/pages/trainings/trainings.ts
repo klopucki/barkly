@@ -6,6 +6,8 @@ import {
   TrainingFormValue,
 } from '../../features/trainings/components/training-form/training-form';
 import { Modal } from '../../shared/components/modal/modal';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-trainings',
@@ -17,21 +19,27 @@ export class Trainings {
 
   searchText = signal('');
 
+  trainingsFromApi = toSignal(
+    this.trainingService.getTrainings$().pipe(tap(() => this.isLoading.set(false))),
+    { initialValue: [] },
+  );
+  isLoading = signal(true);
+
   trainings = computed(() => {
     const search = this.searchText().trim().toLowerCase();
 
+    const trainings = this.trainingsFromApi();
+
     if (!search) {
-      return this.trainingService.trainings();
+      return trainings;
     }
 
-    return this.trainingService
-      .trainings()
-      .filter(
-        (training) =>
-          training.title.toLowerCase().includes(search) ||
-          training.trainerName.toLowerCase().includes(search) ||
-          training.level.toLowerCase().includes(search),
-      );
+    return trainings.filter(
+      (training) =>
+        training.title.toLowerCase().includes(search) ||
+        training.trainerName.toLowerCase().includes(search) ||
+        training.level.toLowerCase().includes(search),
+    );
   });
 
   isAddTrainingOpen = signal(false);

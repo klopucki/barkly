@@ -28,6 +28,10 @@
     (input)="searchText.set(searchInput.value)"
   />
 
+  @if (isLoading()) {
+    <p class="mb-4 text-gray-500">Loading trainings...</p>
+  }
+
   @if (trainings().length === 0) {
     <p class="text-gray-500">No trainings found.</p>
   } @else {

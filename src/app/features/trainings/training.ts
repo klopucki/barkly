@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Training } from './training.model';
 import { Booking } from '../bookings/components/booking-form/booking.model';
+import { delay, Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +29,10 @@ export class TrainingService {
       bookedCount: 11,
     },
   ]);
+
+  getTrainings$(): Observable<Training[]> {
+    return of(this.trainings()).pipe(delay(1000));
+  }
 
   getTrainingById(id: number): Training | undefined {
     return this.trainings().find((t) => t.id === id);
