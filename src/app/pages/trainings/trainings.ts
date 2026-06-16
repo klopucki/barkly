@@ -1,10 +1,14 @@
 import { Component, computed, inject, signal, effect } from '@angular/core';
 import { TrainingService } from '../../features/trainings/training';
 import { TrainingCard } from '../../features/trainings/components/training-card/training-card';
+import {
+  TrainingForm,
+  TrainingFormValue,
+} from '../../features/trainings/components/training-form/training-form';
 
 @Component({
   selector: 'app-trainings',
-  imports: [TrainingCard],
+  imports: [TrainingCard, TrainingForm],
   templateUrl: './trainings.html',
 })
 export class Trainings {
@@ -29,9 +33,24 @@ export class Trainings {
       );
   });
 
+  isAddTrainingOpen = signal(false);
+
   constructor() {
     effect(() => {
       localStorage.setItem('training-search', this.searchText());
     });
+  }
+
+  openAddTraining(): void {
+    this.isAddTrainingOpen.set(true);
+  }
+
+  closeAddTraining(): void {
+    this.isAddTrainingOpen.set(false);
+  }
+
+  addTraining(training: TrainingFormValue): void {
+    this.trainingService.addTraining(training);
+    this.isAddTrainingOpen.set(false);
   }
 }

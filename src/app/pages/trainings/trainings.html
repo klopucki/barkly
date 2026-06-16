@@ -1,6 +1,20 @@
 
 <section>
   <h1 class="mb-6 text-3xl font-bold">Trainings</h1>
+  <button
+    type="button"
+    class="mb-6 rounded-lg bg-black px-4 py-2 text-white"
+    (click)="openAddTraining()"
+  >
+    Add training
+  </button>
+
+  @if (isAddTrainingOpen()) {
+    <app-training-form
+      (trainingSubmitted)="addTraining($event)"
+      (cancelled)="closeAddTraining()"
+    />
+  }
 
   <input
     class="mb-6 w-full rounded border p-2"

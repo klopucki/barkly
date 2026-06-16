@@ -46,6 +46,17 @@ export class TrainingService {
     );
   }
 
+  addTraining(training: Omit<Training, 'id' | 'bookedCount'>): void {
+    const newTraining: Training = {
+      id: Date.now(),
+      bookedCount: 0,
+      ...training,
+    };
+
+    this.trainings.update((trainings) => [...trainings, newTraining]);
+  }
+
+  // TODO training service
   bookings = signal<Booking[]>([]);
 
   createBooking(
