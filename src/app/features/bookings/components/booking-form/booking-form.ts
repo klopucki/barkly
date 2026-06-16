@@ -16,6 +16,7 @@ export interface BookingFormValue {
 })
 export class BookingForm {
   bookingSubmitted = output<BookingFormValue>();
+  cancelled = output<void>();
 
   private readonly fb = new FormBuilder();
 
@@ -47,5 +48,9 @@ export class BookingForm {
   hasError(controlName: string, errorCode: string): boolean {
     const control = this.bookingForm.get(controlName);
     return !!control && control.touched && control.hasError(errorCode);
+  }
+
+  cancel(): void {
+    this.cancelled.emit();
   }
 }

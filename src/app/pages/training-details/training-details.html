@@ -8,9 +8,25 @@
     <p>Booked: {{ training()!.bookedCount }}</p>
   </section>
 
-  <app-booking-form
-    (bookingSubmitted)="submitBooking($event)"
-  />
+  <button
+    type="button"
+    class="mt-6 rounded-lg bg-black px-4 py-2 text-white"
+    (click)="openBookingModal()"
+  >
+    Book training
+  </button>
+
+  @if (isBookingModalOpen()) {
+    <app-modal
+      title="Book training"
+      (closed)="closeBookingModal()"
+    >
+      <app-booking-form
+        (bookingSubmitted)="submitBooking($event)"
+        (cancelled)="closeBookingModal()"
+      />
+    </app-modal>
+  }
 
   <section class="mt-8">
     <h2 class="mb-4 text-xl font-semibold">Bookings</h2>

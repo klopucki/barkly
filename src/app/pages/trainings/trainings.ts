@@ -5,10 +5,11 @@ import {
   TrainingForm,
   TrainingFormValue,
 } from '../../features/trainings/components/training-form/training-form';
+import { Modal } from '../../shared/components/modal/modal';
 
 @Component({
   selector: 'app-trainings',
-  imports: [TrainingCard, TrainingForm],
+  imports: [TrainingCard, TrainingForm, Modal],
   templateUrl: './trainings.html',
 })
 export class Trainings {

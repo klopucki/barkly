@@ -10,10 +10,15 @@
   </button>
 
   @if (isAddTrainingOpen()) {
-    <app-training-form
-      (trainingSubmitted)="addTraining($event)"
-      (cancelled)="closeAddTraining()"
-    />
+    <app-modal
+      title="Add training"
+      (closed)="closeAddTraining()"
+    >
+      <app-training-form
+        (trainingSubmitted)="addTraining($event)"
+        (cancelled)="closeAddTraining()"
+      />
+    </app-modal>
   }
 
   <input
