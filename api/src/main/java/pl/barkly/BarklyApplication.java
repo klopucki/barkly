@@ -1,8 +1,12 @@
 package pl.barkly;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
 public class BarklyApplication {
 
-    static void main(String[] args) {
-        System.out.println("Barkly API starts!");
+    public static void main(String[] args) {
+        SpringApplication.run(BarklyApplication.class, args);
     }
 }

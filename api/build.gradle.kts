@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.1.0"
+    id("org.springframework.boot") version "4.0.0"
 }
 
 group = "pl.barkly"
@@ -16,5 +16,14 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation(platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
 
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
