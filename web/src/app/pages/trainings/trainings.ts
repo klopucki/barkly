@@ -59,7 +59,8 @@ export class Trainings {
   }
 
   addTraining(training: TrainingFormValue): void {
-    this.trainingService.addTraining(training);
-    this.isAddTrainingOpen.set(false);
+    this.trainingService.addTraining$(training).subscribe(() => {
+      this.closeAddTraining();
+    });
   }
 }

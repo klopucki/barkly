@@ -1,13 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TrainingService } from '../../features/trainings/training';
-import { FormBuilder, Validators } from '@angular/forms';
 import { Modal } from '../../shared/components/modal/modal';
 
 import {
   BookingForm,
   BookingFormValue,
 } from '../../features/bookings/components/booking-form/booking-form';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-training-details',
@@ -20,9 +20,13 @@ export class TrainingDetails {
 
   trainingId = signal(Number(this.route.snapshot.paramMap.get('id')));
 
-  training = computed(() => this.trainingService.getTrainingById(this.trainingId()));
+  training = toSignal(this.trainingService.getTrainingById$(this.trainingId()), {
+    initialValue: null,
+  });
 
-  bookings = computed(() => this.trainingService.getBookingsForTraining(this.trainingId()));
+  bookings = toSignal(this.trainingService.getBookingsForTraining$(this.trainingId()), {
+    initialValue: [],
+  });
 
   isBookingModalOpen = signal(false);
 
@@ -35,7 +39,7 @@ export class TrainingDetails {
   }
 
   submitBooking(booking: BookingFormValue): void {
-    this.trainingService.createBooking(this.trainingId(), booking);
+    this.trainingService.createBooking$(this.trainingId(), booking);
     this.closeBookingModal();
   }
 }

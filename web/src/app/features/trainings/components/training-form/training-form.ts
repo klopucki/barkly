@@ -15,13 +15,13 @@ export class TrainingForm {
 
   private readonly fb = new FormBuilder();
 
-  levels: TrainingLevel[] = ['puppy', 'basic', 'advanced', 'sport'];
+  levels: TrainingLevel[] = ['PUPPY', 'BASIC', 'ADVANCED', 'SPORT'];
 
   form = this.fb.nonNullable.group({
     schoolId: [1, [Validators.required]],
     title: ['', [Validators.required, Validators.minLength(3)]],
     trainerName: ['', [Validators.required]],
-    level: ['basic' as TrainingLevel, [Validators.required]],
+    level: ['BASIC' as TrainingLevel, [Validators.required]],
     startAt: ['', [Validators.required]],
     capacity: [null as number | null],
   });

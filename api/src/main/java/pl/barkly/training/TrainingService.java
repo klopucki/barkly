@@ -1,5 +1,6 @@
 package pl.barkly.training;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -8,24 +9,29 @@ import java.util.List;
 @Service
 class TrainingService {
 
-    List<Training> findAll() {
-        return List.of(
-                new Training(
-                        1L,
-                        "Podstawy posłuszeństwa",
-                        "Trening dla początkujących psów i przewodników.",
-                        TrainingLevel.BEGINNER,
-                        LocalDate.now().plusDays(7),
-                        10
-                ),
-                new Training(
-                        2L,
-                        "Socjalizacja w grupie",
-                        "Zajęcia dla psów uczących się pracy w rozproszeniach.",
-                        TrainingLevel.INTERMEDIATE,
-                        LocalDate.now().plusDays(14),
-                        8
-                )
-        );
+    private final TrainingRepository trainingRepository;
+
+    TrainingService(TrainingRepository trainingRepository) {
+        this.trainingRepository = trainingRepository;
+    }
+
+    List<TrainingResponse> findAll() {
+        return trainingRepository.findAll()
+                .stream()
+                .map(TrainingEntity::toDomain)
+                .map(TrainingResponse::from)
+                .toList();
+    }
+
+    TrainingResponse findById(Long id) {
+        return trainingRepository.findById(id)
+                .map(TrainingEntity::toDomain)
+                .map(TrainingResponse::from)
+                .orElseThrow();
+    }
+
+    TrainingResponse create(TrainingCreateRequest request) {
+        TrainingEntity saved = trainingRepository.save(TrainingEntity.from(request));
+        return TrainingResponse.from(saved.toDomain());
     }
 }

@@ -29,8 +29,10 @@ export class BookingForm {
   });
 
   submitBooking(): void {
+    console.log("xd");
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
+      console.log("asda");
       return;
     }
 

@@ -7,16 +7,16 @@ import { TrainingLevel } from '../../features/trainings/training.model';
 export class TrainingLevelPipe implements PipeTransform {
   transform(value: TrainingLevel): string {
     switch (value) {
-      case 'puppy':
+      case 'PUPPY':
         return 'Puppy Training';
 
-      case 'basic':
+      case 'BASIC':
         return 'Basic Obedience';
 
-      case 'advanced':
+      case 'ADVANCED':
         return 'Advanced Training';
 
-      case 'sport':
+      case 'SPORT':
         return 'Sport Training';
 
       default:

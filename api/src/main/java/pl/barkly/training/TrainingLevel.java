@@ -1,7 +1,19 @@
 package pl.barkly.training;
 
 enum TrainingLevel {
-    BEGINNER,
-    INTERMEDIATE,
-    ADVANCED
+
+    PUPPY("puppy"),
+    BASIC("basic"),
+    ADVANCED("advanced"),
+    SPORT("sport");
+
+    private final String code;
+
+    TrainingLevel(String code) {
+        this.code = code;
+    }
+
+    String code() {
+        return code;
+    }
 }

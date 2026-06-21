@@ -1,4 +1,4 @@
-export type TrainingLevel = 'puppy' | 'basic' | 'advanced' | 'sport';
+export type TrainingLevel = 'PUPPY' | 'BASIC' | 'ADVANCED' | 'SPORT';
 
 export interface Training {
   id: number;

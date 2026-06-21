@@ -1,85 +1,36 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Training } from './training.model';
 import { Booking } from '../bookings/components/booking-form/booking.model';
-import { delay, Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TrainingService {
-  trainings = signal<Training[]>([
-    {
-      id: 1,
-      schoolId: 1,
-      title: 'Basic obedience',
-      trainerName: 'Anna Kowalska',
-      level: 'basic',
-      startAt: '2026-07-10T17:00:00',
-      capacity: 8,
-      bookedCount: 3,
-    },
-    {
-      id: 2,
-      schoolId: 1,
-      title: 'Puppy socialization',
-      trainerName: 'Marek Nowak',
-      level: 'puppy',
-      startAt: '2026-07-12T10:00:00',
-      capacity: null,
-      bookedCount: 11,
-    },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = '/api/trainings';
 
   getTrainings$(): Observable<Training[]> {
-    return of(this.trainings()).pipe(delay(1000));
+    return this.http.get<Training[]>(this.apiUrl);
   }
 
-  getTrainingById(id: number): Training | undefined {
-    return this.trainings().find((t) => t.id === id);
+  getTrainingById$(id: number): Observable<Training> {
+    return this.http.get<Training>(`${this.apiUrl}/${id}`);
   }
 
-  bookTraining(trainingId: number): void {
-    this.trainings.update((trainings) =>
-      trainings.map((training) =>
-        training.id === trainingId
-          ? {
-              ...training,
-              bookedCount: training.bookedCount + 1,
-            }
-          : training,
-      ),
-    );
+  addTraining$(training: Omit<Training, 'id' | 'bookedCount'>): Observable<Training> {
+    return this.http.post<Training>(this.apiUrl, training);
   }
 
-  addTraining(training: Omit<Training, 'id' | 'bookedCount'>): void {
-    const newTraining: Training = {
-      id: Date.now(),
-      bookedCount: 0,
-      ...training,
-    };
-
-    this.trainings.update((trainings) => [...trainings, newTraining]);
-  }
-
-  // TODO training service
-  bookings = signal<Booking[]>([]);
-
-  createBooking(
+  createBooking$(
     trainingId: number,
     booking: Omit<Booking, 'id' | 'trainingId' | 'createdAt'>,
-  ): void {
-    const newBooking: Booking = {
-      id: Date.now(),
-      trainingId,
-      ...booking,
-      createdAt: new Date().toISOString(),
-    };
-
-    this.bookings.update((bookings) => [...bookings, newBooking]);
-    this.bookTraining(trainingId);
+  ): Observable<Booking> {
+    return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings`, booking);
   }
 
-  getBookingsForTraining(trainingId: number): Booking[] {
-    return this.bookings().filter((booking) => booking.trainingId === trainingId);
+  getBookingsForTraining$(trainingId: number): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/${trainingId}/bookings`);
   }
 }
