@@ -1,9 +1,7 @@
 package pl.barkly.training;
 
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -18,20 +16,21 @@ class TrainingService {
     List<TrainingResponse> findAll() {
         return trainingRepository.findAll()
                 .stream()
-                .map(TrainingEntity::toDomain)
-                .map(TrainingResponse::from)
+                .map(TrainingEntity::toResponse)
                 .toList();
     }
 
     TrainingResponse findById(Long id) {
         return trainingRepository.findById(id)
-                .map(TrainingEntity::toDomain)
-                .map(TrainingResponse::from)
+                .map(TrainingEntity::toResponse)
                 .orElseThrow();
     }
 
     TrainingResponse create(TrainingCreateRequest request) {
-        TrainingEntity saved = trainingRepository.save(TrainingEntity.from(request));
-        return TrainingResponse.from(saved.toDomain());
+        TrainingEntity training = TrainingEntity.create(request);
+
+        TrainingEntity saved = trainingRepository.save(training);
+
+        return saved.toResponse();
     }
 }

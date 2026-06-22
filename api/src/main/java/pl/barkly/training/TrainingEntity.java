@@ -1,6 +1,13 @@
 package pl.barkly.training;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
 
@@ -26,23 +33,25 @@ class TrainingEntity {
 
     private String trainerName;
 
-    protected TrainingEntity() {
-    }
-
-    TrainingEntity(String title, String description, TrainingLevel level, LocalDate date, int capacity, String trainerName) {
+    TrainingEntity(String title,
+                   String description,
+                   TrainingLevel level,
+                   LocalDate localDate,
+                   int capacity,
+                   String trainerName) {
         this.title = title;
         this.description = description;
         this.level = level;
-        this.date = date;
+        this.date = localDate;
         this.capacity = capacity;
         this.trainerName = trainerName;
     }
 
-    Training toDomain() {
-        return new Training(id, title, description, level, date, capacity);
+    public TrainingEntity() {
+
     }
 
-    static TrainingEntity from(TrainingCreateRequest request) {
+    static TrainingEntity create(TrainingCreateRequest request) {
         return new TrainingEntity(
                 request.title(),
                 request.description(),
@@ -50,7 +59,23 @@ class TrainingEntity {
                 request.startAt(),
                 request.capacity(),
                 request.trainerName()
+        );
+    }
 
+    TrainingResponse toResponse() {
+        return toResponse(0);
+    }
+
+    TrainingResponse toResponse(int bookedCount) {
+        return new TrainingResponse(
+                id,
+                title,
+                trainerName,
+                description,
+                level,
+                date,
+                capacity,
+                bookedCount
         );
     }
 }

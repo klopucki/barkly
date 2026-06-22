@@ -9,16 +9,12 @@ export class TrainingLevelPipe implements PipeTransform {
     switch (value) {
       case 'PUPPY':
         return 'Puppy Training';
-
       case 'BASIC':
         return 'Basic Obedience';
-
       case 'ADVANCED':
         return 'Advanced Training';
-
       case 'SPORT':
         return 'Sport Training';
-
       default:
         return value;
     }

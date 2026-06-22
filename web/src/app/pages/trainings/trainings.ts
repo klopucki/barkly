@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal, effect } from '@angular/core';
-import { TrainingService } from '../../features/trainings/training';
+import { TrainingService } from '../../features/trainings/training.service';
 import { TrainingCard } from '../../features/trainings/components/training-card/training-card';
+import { Training } from '../../features/trainings/training.model';
 import {
   TrainingForm,
   TrainingFormValue,
@@ -23,12 +24,14 @@ export class Trainings {
     this.trainingService.getTrainings$().pipe(tap(() => this.isLoading.set(false))),
     { initialValue: [] },
   );
+
+  localTrainings = signal<Training[]>([]);
   isLoading = signal(true);
 
   trainings = computed(() => {
     const search = this.searchText().trim().toLowerCase();
 
-    const trainings = this.trainingsFromApi();
+    const trainings = [...this.trainingsFromApi(), ...this.localTrainings()];
 
     if (!search) {
       return trainings;
@@ -59,7 +62,8 @@ export class Trainings {
   }
 
   addTraining(training: TrainingFormValue): void {
-    this.trainingService.addTraining$(training).subscribe(() => {
+    this.trainingService.addTraining$(training).subscribe((savedTraining) => {
+      this.localTrainings.update((trainings) => [...trainings, savedTraining]);
       this.closeAddTraining();
     });
   }

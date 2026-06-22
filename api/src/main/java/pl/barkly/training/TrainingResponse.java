@@ -5,19 +5,11 @@ import java.time.LocalDate;
 record TrainingResponse(
         Long id,
         String title,
+        String trainerName,
         String description,
-        String level,
-        LocalDate date,
-        int capacity
+        TrainingLevel level,
+        LocalDate startAt,
+        int capacity,
+        int bookingCount
 ) {
-    static TrainingResponse from(Training training) {
-        return new TrainingResponse(
-                training.id(),
-                training.title(),
-                training.description(),
-                training.level().name(),
-                training.date(),
-                training.capacity()
-        );
-    }
 }

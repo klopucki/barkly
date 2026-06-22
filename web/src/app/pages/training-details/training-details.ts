@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TrainingService } from '../../features/trainings/training';
+import { TrainingService } from '../../features/trainings/training.service';
 import { Modal } from '../../shared/components/modal/modal';
 
 import {
