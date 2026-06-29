@@ -23,14 +23,17 @@ export class TrainingService {
     return this.http.post<Training>(this.apiUrl, training);
   }
 
-  createBooking$(
-    trainingId: number,
-    booking: Omit<Booking, 'id' | 'trainingId' | 'createdAt'>,
-  ): Observable<Booking> {
-    return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings`, booking);
-  }
-
   getBookingsForTraining$(trainingId: number): Observable<Booking[]> {
     return this.http.get<Booking[]>(`${this.apiUrl}/${trainingId}/bookings`);
+  }
+
+  createBooking$(
+    trainingId: number,
+    booking: Omit<Booking, 'id' | 'trainingId' | 'createdAt'>
+  ): Observable<Booking> {
+    return this.http.post<Booking>(
+      `${this.apiUrl}/${trainingId}/bookings`,
+      booking
+    );
   }
 }

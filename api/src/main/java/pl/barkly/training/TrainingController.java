@@ -5,30 +5,32 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import pl.barkly.training.api.TrainingCreateRequest;
+import pl.barkly.training.api.TrainingResponse;
 
 import java.util.List;
 
 @RestController
 class TrainingController {
 
-    private final TrainingService trainingService;
+    private final TrainingFacade trainingFacade;
 
-    TrainingController(TrainingService trainingService) {
-        this.trainingService = trainingService;
+    TrainingController(TrainingFacade trainingFacade) {
+        this.trainingFacade = trainingFacade;
     }
 
     @GetMapping("/api/trainings")
-    List<TrainingResponse> findTrainings() {
-        return trainingService.findAll();
+    List<TrainingResponse> findAll() {
+        return trainingFacade.findTrainings();
     }
 
     @GetMapping("/api/trainings/{id}")
-    TrainingResponse findTraining(@PathVariable Long id) {
-        return trainingService.findById(id);
+    TrainingResponse findById(@PathVariable Long id) {
+        return trainingFacade.findTraining(id);
     }
 
     @PostMapping("/api/trainings")
-    TrainingResponse createTraining(@RequestBody TrainingCreateRequest request) {
-        return trainingService.create(request);
+    TrainingResponse create(@RequestBody TrainingCreateRequest request) {
+        return trainingFacade.createTraining(request);
     }
 }

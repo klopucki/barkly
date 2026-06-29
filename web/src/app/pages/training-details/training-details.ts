@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TrainingService } from '../../features/trainings/training.service';
 import { Modal } from '../../shared/components/modal/modal';
@@ -8,13 +8,14 @@ import {
   BookingFormValue,
 } from '../../features/bookings/components/booking-form/booking-form';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Booking } from '../../features/bookings/components/booking-form/booking.model';
 
 @Component({
   selector: 'app-training-details',
   imports: [BookingForm, Modal],
   templateUrl: './training-details.html',
 })
-export class TrainingDetails {
+export class TrainingDetails implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly trainingService = inject(TrainingService);
 
@@ -24,9 +25,17 @@ export class TrainingDetails {
     initialValue: null,
   });
 
-  bookings = toSignal(this.trainingService.getBookingsForTraining$(this.trainingId()), {
-    initialValue: [],
-  });
+  bookings = signal<Booking[]>([]);
+
+  ngOnInit(): void {
+    this.loadBookings();
+  }
+
+  loadBookings(): void {
+    this.trainingService
+      .getBookingsForTraining$(this.trainingId())
+      .subscribe((bookings) => this.bookings.set(bookings));
+  }
 
   isBookingModalOpen = signal(false);
 
@@ -39,7 +48,9 @@ export class TrainingDetails {
   }
 
   submitBooking(booking: BookingFormValue): void {
-    this.trainingService.createBooking$(this.trainingId(), booking);
-    this.closeBookingModal();
+    this.trainingService.createBooking$(this.trainingId(), booking).subscribe((savedBooking) => {
+      this.bookings.update((bookings) => [...bookings, savedBooking]);
+      this.closeBookingModal();
+    });
   }
 }

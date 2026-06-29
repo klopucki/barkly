@@ -1,6 +1,6 @@
 package pl.barkly.training;
 
-enum TrainingLevel {
+public enum TrainingLevel {
 
     PUPPY("puppy"),
     BASIC("basic"),
