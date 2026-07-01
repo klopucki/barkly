@@ -53,4 +53,16 @@ class TrainingFacadeImpl implements TrainingFacade {
     public List<BookingResponse> findBookings(Long trainingId) {
         return bookingQueryService.findByTrainingId(trainingId);
     }
+
+    @Override
+    public void deleteTraining(Long id) {
+        trainingCommandService.deleteTraining(id);
+    }
+
+    @Override
+    public void deleteBooking(Long id) {
+        bookingCommandService.deleteBooking(id);
+    }
+
+
 }

@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 export class TrainingService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/trainings';
+  private readonly bookingApiUrl = '/api/booking';
 
   getTrainings$(): Observable<Training[]> {
     return this.http.get<Training[]>(this.apiUrl);
@@ -29,11 +30,16 @@ export class TrainingService {
 
   createBooking$(
     trainingId: number,
-    booking: Omit<Booking, 'id' | 'trainingId' | 'createdAt'>
+    booking: Omit<Booking, 'id' | 'trainingId' | 'createdAt'>,
   ): Observable<Booking> {
-    return this.http.post<Booking>(
-      `${this.apiUrl}/${trainingId}/bookings`,
-      booking
-    );
+    return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings`, booking);
+  }
+
+  deleteTraining(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  deleteBooking$(id: number) {
+    return this.http.delete<void>(`${this.bookingApiUrl}/${id}`);
   }
 }
