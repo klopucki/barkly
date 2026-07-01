@@ -17,7 +17,7 @@ class BookingQueryService {
     }
 
     List<BookingResponse> findByTrainingId(Long trainingId) {
-        return bookingRepository.findByTrainingId(trainingId)
+        return bookingRepository.findAllByTrainingIdAndDeletedAtIsNull(trainingId)
                 .stream()
                 .map(BookingEntity::toResponse)
                 .toList();

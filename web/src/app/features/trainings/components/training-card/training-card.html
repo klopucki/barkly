@@ -22,5 +22,12 @@
       Details
     </a>
 
+    <button
+      class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+      (click)="deleteClicked.emit(training().id)"
+    >
+      Delete
+    </button>
+
   </div>
 </article>

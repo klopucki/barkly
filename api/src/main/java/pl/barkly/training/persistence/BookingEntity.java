@@ -33,6 +33,8 @@ public class BookingEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    private LocalDateTime deletedAt;
+
     protected BookingEntity() {
     }
 
@@ -44,6 +46,14 @@ public class BookingEntity {
         this.dogAge = request.dogAge();
         this.notes = request.notes();
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     public BookingResponse toResponse() {

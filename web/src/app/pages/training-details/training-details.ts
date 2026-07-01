@@ -2,13 +2,12 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TrainingService } from '../../features/trainings/training.service';
 import { Modal } from '../../shared/components/modal/modal';
-
 import {
   BookingForm,
   BookingFormValue,
 } from '../../features/bookings/components/booking-form/booking-form';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Booking } from '../../features/bookings/components/booking-form/booking.model';
+import { Training } from '../../features/trainings/training.model';
 
 @Component({
   selector: 'app-training-details',
@@ -21,14 +20,19 @@ export class TrainingDetails implements OnInit {
 
   trainingId = signal(Number(this.route.snapshot.paramMap.get('id')));
 
-  training = toSignal(this.trainingService.getTrainingById$(this.trainingId()), {
-    initialValue: null,
-  });
-
+  training = signal<Training | null>(null);
   bookings = signal<Booking[]>([]);
+  isBookingModalOpen = signal(false);
 
   ngOnInit(): void {
+    this.loadTraining();
     this.loadBookings();
+  }
+
+  loadTraining(): void {
+    this.trainingService
+      .getTrainingById$(this.trainingId())
+      .subscribe((training) => this.training.set(training));
   }
 
   loadBookings(): void {
@@ -36,8 +40,6 @@ export class TrainingDetails implements OnInit {
       .getBookingsForTraining$(this.trainingId())
       .subscribe((bookings) => this.bookings.set(bookings));
   }
-
-  isBookingModalOpen = signal(false);
 
   openBookingModal(): void {
     this.isBookingModalOpen.set(true);
@@ -50,7 +52,36 @@ export class TrainingDetails implements OnInit {
   submitBooking(booking: BookingFormValue): void {
     this.trainingService.createBooking$(this.trainingId(), booking).subscribe((savedBooking) => {
       this.bookings.update((bookings) => [...bookings, savedBooking]);
+
+      this.training.update((training) => {
+        if (!training) {
+          return training;
+        }
+
+        return {
+          ...training,
+          bookedCount: training.bookedCount + 1,
+        };
+      });
+
       this.closeBookingModal();
+    });
+  }
+
+  deleteBooking(id: number): void {
+    this.trainingService.deleteBooking$(id).subscribe(() => {
+      this.bookings.update((bookings) => bookings.filter((booking) => booking.id !== id));
+
+      this.training.update((training) => {
+        if (!training) {
+          return training;
+        }
+
+        return {
+          ...training,
+          bookedCount: Math.max(0, training.bookedCount - 1),
+        };
+      });
     });
   }
 }

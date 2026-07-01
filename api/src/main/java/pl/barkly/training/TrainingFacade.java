@@ -17,4 +17,8 @@ public interface TrainingFacade {
     BookingResponse bookTraining(Long trainingId, BookingCreateRequest request);
 
     List<BookingResponse> findBookings(Long trainingId);
+
+    void deleteTraining(Long id);
+
+    void deleteBooking(Long id);
 }
