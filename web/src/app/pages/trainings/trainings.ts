@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, effect } from '@angular/core';
+import { Component, computed, inject, signal, effect, OnInit } from '@angular/core';
 import { TrainingService } from '../../features/trainings/training.service';
 import { TrainingCard } from '../../features/trainings/components/training-card/training-card';
 import { Training } from '../../features/trainings/training.model';
@@ -7,31 +7,23 @@ import {
   TrainingFormValue,
 } from '../../features/trainings/components/training-form/training-form';
 import { Modal } from '../../shared/components/modal/modal';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-trainings',
   imports: [TrainingCard, TrainingForm, Modal],
   templateUrl: './trainings.html',
 })
-export class Trainings {
+export class Trainings implements OnInit {
   private readonly trainingService = inject(TrainingService);
 
   searchText = signal('');
-
-  trainingsFromApi = toSignal(
-    this.trainingService.getTrainings$().pipe(tap(() => this.isLoading.set(false))),
-    { initialValue: [] },
-  );
-
-  localTrainings = signal<Training[]>([]);
+  trainingsFromApi = signal<Training[]>([]);
   isLoading = signal(true);
+  isAddTrainingOpen = signal(false);
 
   trainings = computed(() => {
     const search = this.searchText().trim().toLowerCase();
-
-    const trainings = [...this.trainingsFromApi(), ...this.localTrainings()];
+    const trainings = this.trainingsFromApi();
 
     if (!search) {
       return trainings;
@@ -45,11 +37,27 @@ export class Trainings {
     );
   });
 
-  isAddTrainingOpen = signal(false);
-
   constructor() {
     effect(() => {
       localStorage.setItem('training-search', this.searchText());
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadTrainings();
+  }
+
+  loadTrainings(): void {
+    this.isLoading.set(true);
+
+    this.trainingService.getTrainings$().subscribe({
+      next: (trainings) => {
+        this.trainingsFromApi.set(trainings);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      },
     });
   }
 
@@ -63,8 +71,16 @@ export class Trainings {
 
   addTraining(training: TrainingFormValue): void {
     this.trainingService.addTraining$(training).subscribe((savedTraining) => {
-      this.localTrainings.update((trainings) => [...trainings, savedTraining]);
+      this.trainingsFromApi.update((trainings) => [...trainings, savedTraining]);
       this.closeAddTraining();
+    });
+  }
+
+  deleteTraining(id: number): void {
+    this.trainingService.deleteTraining(id).subscribe(() => {
+      this.trainingsFromApi.update((trainings) =>
+        trainings.filter((training) => training.id !== id),
+      );
     });
   }
 }

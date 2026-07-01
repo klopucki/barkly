@@ -23,7 +23,7 @@ class TrainingQueryService {
     }
 
     List<TrainingResponse> findAll() {
-        return trainingRepository.findAll()
+        return trainingRepository.findAllByDeletedAtIsNull()
                 .stream()
                 .map(this::toResponse)
                 .toList();

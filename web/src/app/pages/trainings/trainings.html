@@ -36,7 +36,7 @@
     <p class="text-gray-500">No trainings found.</p>
   } @else {
     @for (training of trainings(); track training.id) {
-      <app-training-card [training]="training"  />
+      <app-training-card [training]="training" (deleteClicked)="deleteTraining($event)" />
     }
   }
 </section>

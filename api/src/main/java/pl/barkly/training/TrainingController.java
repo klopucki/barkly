@@ -1,9 +1,12 @@
 package pl.barkly.training;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
@@ -32,5 +35,11 @@ class TrainingController {
     @PostMapping("/api/trainings")
     TrainingResponse create(@RequestBody TrainingCreateRequest request) {
         return trainingFacade.createTraining(request);
+    }
+
+    @DeleteMapping("/api/trainings/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTraining(@PathVariable Long id) {
+        trainingFacade.deleteTraining(id);
     }
 }
