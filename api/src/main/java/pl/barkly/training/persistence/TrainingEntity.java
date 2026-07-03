@@ -1,6 +1,5 @@
 package pl.barkly.training.persistence;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,9 +10,8 @@ import jakarta.persistence.Table;
 import pl.barkly.training.TrainingLevel;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
-import pl.barkly.training.exceptions.NoFreePlacesException;
+import pl.barkly.training.exceptions.TrainingCapacityExceededException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -69,7 +67,7 @@ public class TrainingEntity {
 
     public void validateBooking(int bookedCount) {
         if (capacity != null && bookedCount >= capacity) {
-            throw new NoFreePlacesException(id, capacity);
+            throw new TrainingCapacityExceededException(id);
         }
     }
 
