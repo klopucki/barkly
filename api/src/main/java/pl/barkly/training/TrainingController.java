@@ -1,5 +1,6 @@
 package pl.barkly.training;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +31,7 @@ class TrainingController {
     }
 
     @PostMapping("/api/trainings")
-    TrainingResponse create(@RequestBody TrainingCreateRequest request) {
+    TrainingResponse create(@Valid @RequestBody TrainingCreateRequest request) {
         return trainingFacade.createTraining(request);
     }
 }
