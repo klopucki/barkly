@@ -37,6 +37,8 @@ public class TrainingEntity {
 
     private String description;
 
+    private LocalDateTime deletedAt;
+
     public TrainingEntity(){}
 
     public TrainingEntity(TrainingCreateRequest request) {
@@ -46,6 +48,18 @@ public class TrainingEntity {
         this.startAt = request.startAt();
         this.capacity = request.capacity();
         this.trainerName = request.trainerName();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     public TrainingResponse toResponse() {
@@ -69,9 +83,5 @@ public class TrainingEntity {
         if (capacity != null && bookedCount >= capacity) {
             throw new TrainingCapacityExceededException(id);
         }
-    }
-
-    public Long getId() {
-        return id;
     }
 }
