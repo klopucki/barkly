@@ -21,6 +21,10 @@
     </app-modal>
   }
 
+  @if (addTrainingError()) {
+    <p class="mb-4 text-sm text-red-600">{{ addTrainingError() }}</p>
+  }
+
   <input
     class="mb-6 w-full rounded border p-2"
     placeholder="Search by title, trainer or level..."

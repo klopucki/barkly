@@ -15,3 +15,14 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: ${barkly.images.max-file-size}
+      max-request-size: ${barkly.images.max-request-size}
+
+barkly:
+  images:
+    storage-directory: ${BARKLY_IMAGE_STORAGE_DIRECTORY:./uploads/training-images}
+    max-file-size: ${BARKLY_IMAGE_MAX_FILE_SIZE:2MB}
+    max-request-size: ${BARKLY_IMAGE_MAX_REQUEST_SIZE:3MB}

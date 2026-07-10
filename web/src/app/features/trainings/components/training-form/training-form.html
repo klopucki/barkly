@@ -46,6 +46,20 @@
     <p class="text-sm text-red-600">Capacity must be greater than zero.</p>
   }
 
+  <label class="block">
+    <span class="mb-1 block text-sm font-medium">Training image (optional)</span>
+    <input
+      class="w-full rounded border p-2"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      (change)="selectImage($event)"
+    />
+  </label>
+  @if (imageError) {
+    <p class="text-sm text-red-600">{{ imageError }}</p>
+  }
+  <p class="text-sm text-gray-500">JPEG, PNG or WebP. The maximum size is configured by the server.</p>
+
   <div class="flex gap-2">
     <button class="rounded-lg bg-black px-4 py-2 text-white" type="submit">
       Save

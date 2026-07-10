@@ -7,7 +7,7 @@ import {
   BookingFormValue,
 } from '../../features/bookings/components/booking-form/booking-form';
 import { Booking } from '../../features/bookings/components/booking-form/booking.model';
-import { Training } from '../../features/trainings/training.model';
+import { Training, trainingImageUrl } from '../../features/trainings/training.model';
 
 @Component({
   selector: 'app-training-details',
@@ -15,6 +15,8 @@ import { Training } from '../../features/trainings/training.model';
   templateUrl: './training-details.html',
 })
 export class TrainingDetails implements OnInit {
+  protected readonly trainingImageUrl = trainingImageUrl;
+
   private readonly route = inject(ActivatedRoute);
   private readonly trainingService = inject(TrainingService);
 
@@ -23,6 +25,7 @@ export class TrainingDetails implements OnInit {
   training = signal<Training | null>(null);
   bookings = signal<Booking[]>([]);
   isBookingModalOpen = signal(false);
+  imageUploadError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadTraining();
@@ -82,6 +85,28 @@ export class TrainingDetails implements OnInit {
           bookedCount: Math.max(0, training.bookedCount - 1),
         };
       });
+    });
+  }
+
+  uploadImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const image = input.files?.[0];
+    if (!image) {
+      return;
+    }
+
+    this.imageUploadError.set(null);
+    this.trainingService.uploadTrainingImage$(this.trainingId(), image).subscribe({
+      next: (training) => {
+        this.training.set(training);
+        input.value = '';
+      },
+      error: (error) => {
+        this.imageUploadError.set(
+          error.error?.image ?? error.error?.message ?? 'Could not upload the image.',
+        );
+        input.value = '';
+      },
     });
   }
 }

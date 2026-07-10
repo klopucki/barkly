@@ -4,7 +4,7 @@ import { TrainingCard } from '../../features/trainings/components/training-card/
 import { Training } from '../../features/trainings/training.model';
 import {
   TrainingForm,
-  TrainingFormValue,
+  TrainingFormSubmission,
 } from '../../features/trainings/components/training-form/training-form';
 import { Modal } from '../../shared/components/modal/modal';
 
@@ -20,6 +20,7 @@ export class Trainings implements OnInit {
   trainingsFromApi = signal<Training[]>([]);
   isLoading = signal(true);
   isAddTrainingOpen = signal(false);
+  addTrainingError = signal<string | null>(null);
 
   trainings = computed(() => {
     const search = this.searchText().trim().toLowerCase();
@@ -62,6 +63,7 @@ export class Trainings implements OnInit {
   }
 
   openAddTraining(): void {
+    this.addTrainingError.set(null);
     this.isAddTrainingOpen.set(true);
   }
 
@@ -69,11 +71,38 @@ export class Trainings implements OnInit {
     this.isAddTrainingOpen.set(false);
   }
 
-  addTraining(training: TrainingFormValue): void {
-    this.trainingService.addTraining$(training).subscribe((savedTraining) => {
-      this.trainingsFromApi.update((trainings) => [...trainings, savedTraining]);
-      this.closeAddTraining();
+  addTraining(submission: TrainingFormSubmission): void {
+    this.addTrainingError.set(null);
+    this.trainingService.addTraining$(submission.training).subscribe({
+      next: (savedTraining) => {
+        if (!submission.image) {
+          this.finishAddingTraining(savedTraining);
+          return;
+        }
+
+        this.trainingService.uploadTrainingImage$(savedTraining.id, submission.image).subscribe({
+          next: (trainingWithImage) => this.finishAddingTraining(trainingWithImage),
+          error: (error) => {
+            const message = error.error?.image ?? error.error?.message;
+            this.finishAddingTraining(savedTraining);
+            this.addTrainingError.set(
+              message
+                ? `Training was saved without an image: ${message}`
+                : 'Training was saved, but the image could not be uploaded.',
+            );
+          },
+        });
+      },
+      error: (error) => {
+        const message = error.error?.message;
+        this.addTrainingError.set(message ?? 'Could not save the training.');
+      },
     });
+  }
+
+  private finishAddingTraining(savedTraining: Training): void {
+    this.trainingsFromApi.update((trainings) => [...trainings, savedTraining]);
+    this.closeAddTraining();
   }
 
   deleteTraining(id: number): void {
