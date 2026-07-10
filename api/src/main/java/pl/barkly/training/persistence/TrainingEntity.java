@@ -42,8 +42,9 @@ public class TrainingEntity {
     public TrainingEntity(){}
 
     public TrainingEntity(TrainingCreateRequest request) {
+        this.schoolId = request.schoolId();
         this.title = request.title();
-        this.description = request.description();
+        this.description = request.description() == null ? "" : request.description();
         this.level = request.level();
         this.startAt = request.startAt();
         this.capacity = request.capacity();
