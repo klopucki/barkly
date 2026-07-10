@@ -37,6 +37,8 @@ public class TrainingEntity {
 
     private String description;
 
+    private String imageKey;
+
     private LocalDateTime deletedAt;
 
     public TrainingEntity(){}
@@ -76,8 +78,17 @@ public class TrainingEntity {
                 level,
                 startAt,
                 capacity,
-                bookedCount
+                bookedCount,
+                imageKey
         );
+    }
+
+    public String getImageKey() {
+        return imageKey;
+    }
+
+    public void setImageKey(String imageKey) {
+        this.imageKey = imageKey;
     }
 
     public void validateBooking(int bookedCount) {

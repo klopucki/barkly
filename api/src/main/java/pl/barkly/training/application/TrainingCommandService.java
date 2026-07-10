@@ -9,6 +9,7 @@ import pl.barkly.training.api.TrainingResponse;
 import pl.barkly.training.persistence.BookingRepository;
 import pl.barkly.training.persistence.TrainingEntity;
 import pl.barkly.training.persistence.TrainingRepository;
+import pl.barkly.training.image.TrainingImageStorage;
 
 import java.time.LocalDateTime;
 
@@ -17,13 +18,16 @@ class TrainingCommandService {
 
     private final TrainingRepository trainingRepository;
     private final BookingRepository bookingRepository;
+    private final TrainingImageStorage imageStorage;
 
     TrainingCommandService(
             TrainingRepository trainingRepository,
-            BookingRepository bookingRepository
+            BookingRepository bookingRepository,
+            TrainingImageStorage imageStorage
     ) {
         this.trainingRepository = trainingRepository;
         this.bookingRepository = bookingRepository;
+        this.imageStorage = imageStorage;
     }
 
     TrainingResponse create(TrainingCreateRequest request) {
@@ -40,5 +44,6 @@ class TrainingCommandService {
 
         training.softDelete();
         bookingRepository.softDeleteByTrainingId(id, deletedAt);
+        imageStorage.delete(training.getImageKey());
     }
 }

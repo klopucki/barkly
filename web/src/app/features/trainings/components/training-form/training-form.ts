@@ -8,7 +8,12 @@ import {
 } from '@angular/forms';
 import { Training, TrainingLevel } from '../../training.model';
 
-export type TrainingFormValue = Omit<Training, 'id' | 'bookedCount'>;
+export type TrainingFormValue = Omit<Training, 'id' | 'bookedCount' | 'imageKey'>;
+
+export interface TrainingFormSubmission {
+  training: TrainingFormValue;
+  image: File | null;
+}
 
 @Component({
   selector: 'app-training-form',
@@ -16,12 +21,14 @@ export type TrainingFormValue = Omit<Training, 'id' | 'bookedCount'>;
   templateUrl: './training-form.html',
 })
 export class TrainingForm {
-  trainingSubmitted = output<TrainingFormValue>();
+  trainingSubmitted = output<TrainingFormSubmission>();
   cancelled = output<void>();
 
   private readonly fb = new FormBuilder();
 
   levels: TrainingLevel[] = ['PUPPY', 'BASIC', 'ADVANCED', 'SPORT'];
+  selectedImage: File | null = null;
+  imageError: string | null = null;
 
   form = this.fb.nonNullable.group({
     schoolId: [1, [Validators.required, Validators.min(1)]],
@@ -44,7 +51,10 @@ export class TrainingForm {
       return;
     }
 
-    this.trainingSubmitted.emit(this.form.getRawValue());
+    this.trainingSubmitted.emit({
+      training: this.form.getRawValue(),
+      image: this.selectedImage,
+    });
   }
 
   cancel(): void {
@@ -54,6 +64,22 @@ export class TrainingForm {
   hasError(controlName: string, errorCode: string): boolean {
     const control = this.form.get(controlName);
     return !!control && control.touched && control.hasError(errorCode);
+  }
+
+  selectImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (file && !allowedTypes.includes(file.type)) {
+      this.selectedImage = null;
+      this.imageError = 'Only JPEG, PNG and WebP images are supported.';
+      input.value = '';
+      return;
+    }
+
+    this.selectedImage = file;
+    this.imageError = null;
   }
 }
 

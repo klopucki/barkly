@@ -20,8 +20,14 @@ export class TrainingService {
     return this.http.get<Training>(`${this.apiUrl}/${id}`);
   }
 
-  addTraining$(training: Omit<Training, 'id' | 'bookedCount'>): Observable<Training> {
+  addTraining$(training: Omit<Training, 'id' | 'bookedCount' | 'imageKey'>): Observable<Training> {
     return this.http.post<Training>(this.apiUrl, training);
+  }
+
+  uploadTrainingImage$(trainingId: number, image: File): Observable<Training> {
+    const formData = new FormData();
+    formData.append('image', image);
+    return this.http.put<Training>(`${this.apiUrl}/${trainingId}/image`, formData);
   }
 
   getBookingsForTraining$(trainingId: number): Observable<Booking[]> {

@@ -12,6 +12,7 @@ public record TrainingResponse(
         TrainingLevel level,
         LocalDateTime startAt,
         Integer capacity,
-        int bookedCount
+        int bookedCount,
+        String imageKey
 ) {
 }
