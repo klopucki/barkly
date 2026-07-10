@@ -1,5 +1,6 @@
 package pl.barkly.training;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ class BookingController {
     @PostMapping("/api/trainings/{trainingId}/bookings")
     BookingResponse book(
             @PathVariable Long trainingId,
-            @RequestBody BookingCreateRequest request
+            @Valid @RequestBody BookingCreateRequest request
     ) {
         return trainingFacade.bookTraining(trainingId, request);
     }

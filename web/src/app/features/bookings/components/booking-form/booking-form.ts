@@ -21,18 +21,22 @@ export class BookingForm {
   private readonly fb = new FormBuilder();
 
   bookingForm = this.fb.nonNullable.group({
-    ownerName: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-    dogName: ['', [Validators.required]],
-    dogAge: [1, [Validators.required, Validators.min(0)]],
-    notes: [''],
+    ownerName: [
+      '',
+      [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
+    ],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(320)]],
+    dogName: [
+      '',
+      [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
+    ],
+    dogAge: [1, [Validators.required, Validators.min(0), Validators.max(30)]],
+    notes: ['', [Validators.maxLength(1000)]],
   });
 
   submitBooking(): void {
-    console.log("xd");
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
-      console.log("asda");
       return;
     }
 

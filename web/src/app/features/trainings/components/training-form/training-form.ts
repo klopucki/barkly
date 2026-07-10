@@ -1,5 +1,11 @@
 import { Component, output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Training, TrainingLevel } from '../../training.model';
 
 export type TrainingFormValue = Omit<Training, 'id' | 'bookedCount'>;
@@ -18,12 +24,18 @@ export class TrainingForm {
   levels: TrainingLevel[] = ['PUPPY', 'BASIC', 'ADVANCED', 'SPORT'];
 
   form = this.fb.nonNullable.group({
-    schoolId: [1, [Validators.required]],
-    title: ['', [Validators.required, Validators.minLength(3)]],
-    trainerName: ['', [Validators.required]],
+    schoolId: [1, [Validators.required, Validators.min(1)]],
+    title: [
+      '',
+      [Validators.required, Validators.pattern(/\S/), Validators.minLength(3), Validators.maxLength(200)],
+    ],
+    trainerName: [
+      '',
+      [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
+    ],
     level: ['BASIC' as TrainingLevel, [Validators.required]],
-    startAt: ['', [Validators.required]],
-    capacity: [null as number | null],
+    startAt: ['', [Validators.required, futureDateValidator]],
+    capacity: [null as number | null, [Validators.min(1)]],
   });
 
   submit(): void {
@@ -38,4 +50,18 @@ export class TrainingForm {
   cancel(): void {
     this.cancelled.emit();
   }
+
+  hasError(controlName: string, errorCode: string): boolean {
+    const control = this.form.get(controlName);
+    return !!control && control.touched && control.hasError(errorCode);
+  }
+}
+
+function futureDateValidator(control: AbstractControl<string>): ValidationErrors | null {
+  if (!control.value) {
+    return null;
+  }
+
+  const date = new Date(control.value);
+  return Number.isNaN(date.getTime()) || date.getTime() <= Date.now() ? { futureDate: true } : null;
 }
