@@ -1,31 +1,38 @@
 @if (training()) {
   <section>
-    @if (training()!.imageKey) {
-      <img
-        class="mb-6 max-h-96 w-full rounded-xl object-cover"
-        [src]="trainingImageUrl(training()!.imageKey!)"
-        [alt]="'Training: ' + training()!.title"
-      />
-    }
-    <h1 class="mb-4 text-3xl font-bold">{{ training()!.title }}</h1>
+    <div class="flex flex-col md:flex-row md:items-start md:gap-8">
+      <div class="min-w-0 flex-1">
+        <h1 class="mb-4 text-3xl font-bold">{{ training()!.title }}</h1>
 
-    <p>Trainer: {{ training()!.trainerName }}</p>
-    <p>Level: {{ training()!.level }}</p>
-    <p>Date: {{ training()!.startAt }}</p>
-    <p>Booked: {{ training()!.bookedCount }}</p>
+        <p>Trainer: {{ training()!.trainerName }}</p>
+        <p>Level: {{ training()!.level }}</p>
+        <p>Date: {{ training()!.startAt }}</p>
+        <p>Booked: {{ training()!.bookedCount }}</p>
 
-    <label class="mt-4 inline-block rounded-lg border border-gray-300 px-4 py-2 cursor-pointer">
-      {{ training()!.imageKey ? 'Replace image' : 'Add image' }}
-      <input
-        class="sr-only"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        (change)="uploadImage($event)"
-      />
-    </label>
-    @if (imageUploadError()) {
-      <p class="mt-2 text-sm text-red-600">{{ imageUploadError() }}</p>
-    }
+        <label class="mt-4 inline-block cursor-pointer rounded-lg border border-gray-300 px-4 py-2">
+          {{ training()!.imageKey ? 'Replace image' : 'Add image' }}
+          <input
+            class="sr-only"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="uploadImage($event)"
+          />
+        </label>
+        @if (imageUploadError()) {
+          <p class="mt-2 text-sm text-red-600">{{ imageUploadError() }}</p>
+        }
+      </div>
+
+      @if (training()!.imageKey) {
+        <div class="order-first mb-6 flex max-h-80 w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 md:order-last md:mb-0 md:w-96">
+          <img
+            class="max-h-80 max-w-full object-contain"
+            [src]="trainingImageUrl(training()!.imageKey!)"
+            [alt]="'Training: ' + training()!.title"
+          />
+        </div>
+      }
+    </div>
   </section>
 
   <button

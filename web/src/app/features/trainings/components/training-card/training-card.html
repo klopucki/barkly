@@ -1,40 +1,43 @@
-<article class="mb-4 rounded-xl border border-gray-200 p-4 shadow-sm">
-  @if (training().imageKey) {
-    <img
-      class="mb-4 h-48 w-full rounded-lg object-cover"
-      [src]="trainingImageUrl(training().imageKey!)"
-      [alt]="'Training: ' + training().title"
-    />
-  }
-  <h2 class="text-xl font-semibold">{{ training().title }}</h2>
+<article class="mb-4 flex flex-col rounded-xl border border-gray-200 p-4 shadow-sm md:flex-row md:items-start md:gap-6">
+  <div class="min-w-0 flex-1">
+    <h2 class="text-xl font-semibold">{{ training().title }}</h2>
 
-  <p class="text-gray-600">Trainer: {{ training().trainerName }}</p>
-  <p class="text-gray-600">Level: {{ training().level | trainingLevel }}</p>
-  <p class="text-gray-600">Date: {{ training().startAt | date: 'dd/MM/yyyy' }}</p>
+    <p class="text-gray-600">Trainer: {{ training().trainerName }}</p>
+    <p class="text-gray-600">Level: {{ training().level | trainingLevel }}</p>
+    <p class="text-gray-600">Date: {{ training().startAt | date: 'dd/MM/yyyy' }}</p>
 
-  <p class="text-gray-600">
-    Places:
-    @if (training().capacity === null) {
-      unlimited
-    } @else {
-      {{ training().bookedCount }} / {{ training().capacity }}
-    }
-  </p>
-  <div class="mt-4 flex gap-2">
+    <p class="text-gray-600">
+      Places:
+      @if (training().capacity === null) {
+        unlimited
+      } @else {
+        {{ training().bookedCount }} / {{ training().capacity }}
+      }
+    </p>
+    <div class="mt-4 flex gap-2">
+      <a
+        [routerLink]="['/trainings', training().id]"
+        class="rounded-lg border border-gray-300 px-4 py-2"
+      >
+        Details
+      </a>
 
-    <a
-      [routerLink]="['/trainings', training().id]"
-      class="rounded-lg border border-gray-300 px-4 py-2"
-    >
-      Details
-    </a>
-
-    <button
-      class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-      (click)="deleteClicked.emit(training().id)"
-    >
-      Delete
-    </button>
-
+      <button
+        class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+        (click)="deleteClicked.emit(training().id)"
+      >
+        Delete
+      </button>
+    </div>
   </div>
+
+  @if (training().imageKey) {
+    <div class="order-first mb-4 flex max-h-48 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 md:mb-0 md:w-64">
+      <img
+        class="max-h-48 max-w-full object-contain"
+        [src]="trainingImageUrl(training().imageKey!)"
+        [alt]="'Training: ' + training().title"
+      />
+    </div>
+  }
 </article>
