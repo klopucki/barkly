@@ -30,7 +30,7 @@ class TrainingQueryService {
     }
 
     TrainingResponse findById(Long id) {
-        return trainingRepository.findById(id)
+        return trainingRepository.findByIdAndDeletedAtIsNull(id)
                 .map(this::toResponse)
                 .orElseThrow();
     }

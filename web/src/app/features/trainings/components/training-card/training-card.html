@@ -3,7 +3,16 @@
     <h2 class="text-xl font-semibold">{{ training().title }}</h2>
 
     <p class="text-gray-600">Trainer: {{ training().trainerName }}</p>
-    <p class="text-gray-600">Level: {{ training().level | trainingLevel }}</p>
+    <p class="text-gray-600">Type: {{ training().trainingType.name }}</p>
+    @if (training().trainingLevel) {
+      <p class="text-gray-600">Level: {{ training().trainingLevel!.name }}</p>
+    }
+    @if (training().homeVisit) {
+      <p class="text-gray-600">Home consultation</p>
+    }
+    @if (training().targetGroup) {
+      <p class="text-gray-600">For: {{ training().targetGroup!.name }}</p>
+    }
     <p class="text-gray-600">Date: {{ training().startAt | date: 'dd/MM/yyyy' }}</p>
 
     <p class="text-gray-600">
@@ -21,6 +30,14 @@
       >
         Details
       </a>
+
+      <button
+        class="rounded-lg border border-gray-300 px-4 py-2"
+        type="button"
+        (click)="editClicked.emit(training())"
+      >
+        Edit
+      </button>
 
       <button
         class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"

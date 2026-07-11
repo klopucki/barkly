@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TrainingForm } from './training-form';
+import { TrainingService } from '../../training.service';
+import { of } from 'rxjs';
 
 describe('TrainingForm', () => {
   let component: TrainingForm;
@@ -9,6 +11,19 @@ describe('TrainingForm', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TrainingForm],
+      providers: [
+        {
+          provide: TrainingService,
+          useValue: {
+            getTrainingDictionaries$: () =>
+              of({
+                trainingTypes: [{ id: 1, code: 'GROUP_TRAINING', name: 'Group training' }],
+                trainingLevels: [{ id: 1, code: 'BASIC', name: 'Basic', trainingTypeId: null }],
+                targetGroups: [{ id: 1, code: 'PUPPIES', name: 'Puppies' }],
+              }),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TrainingForm);
@@ -38,7 +53,10 @@ describe('TrainingForm', () => {
       schoolId: 1,
       title: 'Basic obedience',
       trainerName: 'Jan Kowalski',
-      level: 'BASIC',
+      trainingTypeId: 1,
+      trainingLevelId: 1,
+      targetGroupId: 1,
+      homeVisit: false,
       startAt: '2099-01-01T10:00',
       capacity: 10,
     });

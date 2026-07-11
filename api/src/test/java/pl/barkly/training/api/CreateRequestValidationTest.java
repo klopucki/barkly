@@ -4,8 +4,6 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import pl.barkly.training.TrainingLevel;
-
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,14 +38,18 @@ class CreateRequestValidationTest {
     @Test
     void rejectsInvalidTraining() {
         var request = new TrainingCreateRequest(
-                0L, "ab", "", null, LocalDateTime.now().minusDays(1), 0, null
+                0L, "ab", "", null, null, -1L, false,
+                LocalDateTime.now().minusDays(1), 0, null
         );
 
         var invalidFields = validator.validate(request).stream()
                 .map(violation -> violation.getPropertyPath().toString())
                 .collect(java.util.stream.Collectors.toSet());
 
-        assertThat(invalidFields).contains("schoolId", "title", "trainerName", "level", "startAt", "capacity");
+        assertThat(invalidFields).contains(
+                "schoolId", "title", "trainerName", "trainingTypeId",
+                "targetGroupId", "startAt", "capacity"
+        );
     }
 
     @Test
@@ -56,7 +58,10 @@ class CreateRequestValidationTest {
                 1L,
                 "Basic obedience",
                 "Jan Kowalski",
-                TrainingLevel.BASIC,
+                1L,
+                null,
+                null,
+                false,
                 LocalDateTime.now().plusDays(1),
                 10,
                 null

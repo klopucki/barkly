@@ -8,10 +8,14 @@ import {
 } from '../../features/bookings/components/booking-form/booking-form';
 import { Booking } from '../../features/bookings/components/booking-form/booking.model';
 import { Training, trainingImageUrl } from '../../features/trainings/training.model';
+import {
+  TrainingForm,
+  TrainingFormSubmission,
+} from '../../features/trainings/components/training-form/training-form';
 
 @Component({
   selector: 'app-training-details',
-  imports: [BookingForm, Modal],
+  imports: [BookingForm, TrainingForm, Modal],
   templateUrl: './training-details.html',
 })
 export class TrainingDetails implements OnInit {
@@ -26,6 +30,7 @@ export class TrainingDetails implements OnInit {
   bookings = signal<Booking[]>([]);
   isBookingModalOpen = signal(false);
   imageUploadError = signal<string | null>(null);
+  isEditModalOpen = signal(false);
 
   ngOnInit(): void {
     this.loadTraining();
@@ -50,6 +55,41 @@ export class TrainingDetails implements OnInit {
 
   closeBookingModal(): void {
     this.isBookingModalOpen.set(false);
+  }
+
+  openEditModal(): void {
+    this.imageUploadError.set(null);
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen.set(false);
+  }
+
+  updateTraining(submission: TrainingFormSubmission): void {
+    this.trainingService.updateTraining$(this.trainingId(), submission.training).subscribe({
+      next: (updated) => {
+        if (!submission.image) {
+          this.training.set(updated);
+          this.closeEditModal();
+          return;
+        }
+        this.trainingService.uploadTrainingImage$(updated.id, submission.image).subscribe({
+          next: (withImage) => {
+            this.training.set(withImage);
+            this.closeEditModal();
+          },
+          error: () => {
+            this.training.set(updated);
+            this.closeEditModal();
+            this.imageUploadError.set('Training was updated, but the image could not be uploaded.');
+          },
+        });
+      },
+      error: (error) => {
+        this.imageUploadError.set(error.error?.message ?? 'Could not update training.');
+      },
+    });
   }
 
   submitBooking(booking: BookingFormValue): void {
@@ -109,4 +149,5 @@ export class TrainingDetails implements OnInit {
       },
     });
   }
+
 }

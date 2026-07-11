@@ -11,11 +11,12 @@
 
   @if (isAddTrainingOpen()) {
     <app-modal
-      title="Add training"
+      [title]="editingTraining() ? 'Edit training' : 'Add training'"
       (closed)="closeAddTraining()"
     >
       <app-training-form
-        (trainingSubmitted)="addTraining($event)"
+        [training]="editingTraining()"
+        (trainingSubmitted)="saveTraining($event)"
         (cancelled)="closeAddTraining()"
       />
     </app-modal>
@@ -40,7 +41,11 @@
     <p class="text-gray-500">No trainings found.</p>
   } @else {
     @for (training of trainings(); track training.id) {
-      <app-training-card [training]="training" (deleteClicked)="deleteTraining($event)" />
+      <app-training-card
+        [training]="training"
+        (editClicked)="openEditTraining($event)"
+        (deleteClicked)="deleteTraining($event)"
+      />
     }
   }
 </section>
