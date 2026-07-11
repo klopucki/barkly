@@ -1,13 +1,14 @@
 package pl.barkly.training.persistence;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import pl.barkly.training.TrainingLevel;
+import pl.barkly.training.api.DictionaryValueResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 import pl.barkly.training.exceptions.TrainingCapacityExceededException;
@@ -28,8 +29,19 @@ public class TrainingEntity {
 
     private String trainerName;
 
-    @Enumerated(EnumType.STRING)
-    private TrainingLevel level;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "training_type_id")
+    private TrainingTypeEntity trainingType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_level_id")
+    private TrainingLevelEntity trainingLevel;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_group_id")
+    private TargetGroupEntity targetGroup;
+
+    private boolean homeVisit;
 
     private LocalDateTime startAt;
 
@@ -43,11 +55,19 @@ public class TrainingEntity {
 
     public TrainingEntity(){}
 
-    public TrainingEntity(TrainingCreateRequest request) {
+    public TrainingEntity(
+            TrainingCreateRequest request,
+            TrainingTypeEntity trainingType,
+            TrainingLevelEntity trainingLevel,
+            TargetGroupEntity targetGroup
+    ) {
         this.schoolId = request.schoolId();
         this.title = request.title();
         this.description = request.description() == null ? "" : request.description();
-        this.level = request.level();
+        this.trainingType = trainingType;
+        this.trainingLevel = trainingLevel;
+        this.targetGroup = targetGroup;
+        this.homeVisit = request.homeVisit();
         this.startAt = request.startAt();
         this.capacity = request.capacity();
         this.trainerName = request.trainerName();
@@ -75,12 +95,27 @@ public class TrainingEntity {
                 schoolId,
                 title,
                 trainerName,
-                level,
+                dictionaryValue(trainingType),
+                trainingLevel == null ? null : dictionaryValue(trainingLevel),
+                targetGroup == null ? null : dictionaryValue(targetGroup),
+                homeVisit,
                 startAt,
                 capacity,
                 bookedCount,
                 imageKey
         );
+    }
+
+    private DictionaryValueResponse dictionaryValue(TrainingTypeEntity value) {
+        return new DictionaryValueResponse(value.getId(), value.getCode(), value.getName());
+    }
+
+    private DictionaryValueResponse dictionaryValue(TrainingLevelEntity value) {
+        return new DictionaryValueResponse(value.getId(), value.getCode(), value.getName());
+    }
+
+    private DictionaryValueResponse dictionaryValue(TargetGroupEntity value) {
+        return new DictionaryValueResponse(value.getId(), value.getCode(), value.getName());
     }
 
     public String getImageKey() {
@@ -89,6 +124,24 @@ public class TrainingEntity {
 
     public void setImageKey(String imageKey) {
         this.imageKey = imageKey;
+    }
+
+    public void update(
+            TrainingCreateRequest request,
+            TrainingTypeEntity trainingType,
+            TrainingLevelEntity trainingLevel,
+            TargetGroupEntity targetGroup
+    ) {
+        this.schoolId = request.schoolId();
+        this.title = request.title();
+        this.trainerName = request.trainerName();
+        this.trainingType = trainingType;
+        this.trainingLevel = trainingLevel;
+        this.targetGroup = targetGroup;
+        this.homeVisit = request.homeVisit();
+        this.startAt = request.startAt();
+        this.capacity = request.capacity();
+        this.description = request.description() == null ? "" : request.description();
     }
 
     public void validateBooking(int bookedCount) {

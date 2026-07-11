@@ -1,7 +1,5 @@
 package pl.barkly.training.api;
 
-import pl.barkly.training.TrainingLevel;
-
 import java.time.LocalDateTime;
 
 public record TrainingResponse(
@@ -9,7 +7,10 @@ public record TrainingResponse(
         Long schoolId,
         String title,
         String trainerName,
-        TrainingLevel level,
+        DictionaryValueResponse trainingType,
+        DictionaryValueResponse trainingLevel,
+        DictionaryValueResponse targetGroup,
+        boolean homeVisit,
         LocalDateTime startAt,
         Integer capacity,
         int bookedCount,

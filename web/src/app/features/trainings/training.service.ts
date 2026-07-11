@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Training } from './training.model';
+import { Training, TrainingCreatePayload, TrainingDictionaries } from './training.model';
 import { Booking } from '../bookings/components/booking-form/booking.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -20,8 +20,16 @@ export class TrainingService {
     return this.http.get<Training>(`${this.apiUrl}/${id}`);
   }
 
-  addTraining$(training: Omit<Training, 'id' | 'bookedCount' | 'imageKey'>): Observable<Training> {
+  addTraining$(training: TrainingCreatePayload): Observable<Training> {
     return this.http.post<Training>(this.apiUrl, training);
+  }
+
+  updateTraining$(id: number, training: TrainingCreatePayload): Observable<Training> {
+    return this.http.put<Training>(`${this.apiUrl}/${id}`, training);
+  }
+
+  getTrainingDictionaries$(): Observable<TrainingDictionaries> {
+    return this.http.get<TrainingDictionaries>('/api/training-dictionaries');
   }
 
   uploadTrainingImage$(trainingId: number, image: File): Observable<Training> {

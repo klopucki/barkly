@@ -5,7 +5,16 @@
         <h1 class="mb-4 text-3xl font-bold">{{ training()!.title }}</h1>
 
         <p>Trainer: {{ training()!.trainerName }}</p>
-        <p>Level: {{ training()!.level }}</p>
+        <p>Type: {{ training()!.trainingType.name }}</p>
+        @if (training()!.trainingLevel) {
+          <p>Level: {{ training()!.trainingLevel!.name }}</p>
+        }
+        @if (training()!.targetGroup) {
+          <p>For: {{ training()!.targetGroup!.name }}</p>
+        }
+        @if (training()!.homeVisit) {
+          <p>Home consultation</p>
+        }
         <p>Date: {{ training()!.startAt }}</p>
         <p>Booked: {{ training()!.bookedCount }}</p>
 
@@ -21,6 +30,13 @@
         @if (imageUploadError()) {
           <p class="mt-2 text-sm text-red-600">{{ imageUploadError() }}</p>
         }
+        <button
+          type="button"
+          class="ml-2 mt-4 rounded-lg border border-gray-300 px-4 py-2"
+          (click)="openEditModal()"
+        >
+          Edit training
+        </button>
       </div>
 
       @if (training()!.imageKey) {
@@ -34,6 +50,16 @@
       }
     </div>
   </section>
+
+  @if (isEditModalOpen()) {
+    <app-modal title="Edit training" (closed)="closeEditModal()">
+      <app-training-form
+        [training]="training()"
+        (trainingSubmitted)="updateTraining($event)"
+        (cancelled)="closeEditModal()"
+      />
+    </app-modal>
+  }
 
   <button
     type="button"

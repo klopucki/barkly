@@ -14,6 +14,8 @@ public interface TrainingFacade {
 
     TrainingResponse createTraining(TrainingCreateRequest request);
 
+    TrainingResponse updateTraining(Long id, TrainingCreateRequest request);
+
     BookingResponse bookTraining(Long trainingId, BookingCreateRequest request);
 
     List<BookingResponse> findBookings(Long trainingId);

@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, inject, input, OnInit, output } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -6,9 +6,16 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Training, TrainingLevel } from '../../training.model';
+import {
+  DictionaryValue,
+  TrainingCreatePayload,
+  TrainingDictionaries,
+  TrainingLevelDictionary,
+  Training,
+} from '../../training.model';
+import { TrainingService } from '../../training.service';
 
-export type TrainingFormValue = Omit<Training, 'id' | 'bookedCount' | 'imageKey'>;
+export type TrainingFormValue = TrainingCreatePayload;
 
 export interface TrainingFormSubmission {
   training: TrainingFormValue;
@@ -20,13 +27,19 @@ export interface TrainingFormSubmission {
   imports: [ReactiveFormsModule],
   templateUrl: './training-form.html',
 })
-export class TrainingForm {
+export class TrainingForm implements OnInit {
   trainingSubmitted = output<TrainingFormSubmission>();
   cancelled = output<void>();
+  training = input<Training | null>(null);
 
   private readonly fb = new FormBuilder();
+  private readonly trainingService = inject(TrainingService);
 
-  levels: TrainingLevel[] = ['PUPPY', 'BASIC', 'ADVANCED', 'SPORT'];
+  dictionaries: TrainingDictionaries = {
+    trainingTypes: [],
+    trainingLevels: [],
+    targetGroups: [],
+  };
   selectedImage: File | null = null;
   imageError: string | null = null;
 
@@ -40,10 +53,68 @@ export class TrainingForm {
       '',
       [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
     ],
-    level: ['BASIC' as TrainingLevel, [Validators.required]],
+    trainingTypeId: [0, [Validators.required, Validators.min(1)]],
+    trainingLevelId: [null as number | null],
+    targetGroupId: [null as number | null],
+    homeVisit: [false],
     startAt: ['', [Validators.required, futureDateValidator]],
     capacity: [null as number | null, [Validators.min(1)]],
   });
+
+  ngOnInit(): void {
+    this.trainingService.getTrainingDictionaries$().subscribe((dictionaries) => {
+      this.dictionaries = dictionaries;
+      if (dictionaries.trainingTypes.length > 0) {
+        const training = this.training();
+        if (training) {
+          this.form.patchValue({
+            schoolId: training.schoolId,
+            title: training.title,
+            trainerName: training.trainerName,
+            trainingTypeId: training.trainingType.id,
+            trainingLevelId: training.trainingLevel?.id ?? null,
+            targetGroupId: training.targetGroup?.id ?? null,
+            homeVisit: training.homeVisit,
+            startAt: training.startAt.slice(0, 16),
+            capacity: training.capacity,
+          });
+        } else {
+          this.form.controls.trainingTypeId.setValue(dictionaries.trainingTypes[0].id);
+        }
+      }
+    });
+  }
+
+  get availableLevels(): TrainingLevelDictionary[] {
+    const typeId = this.form.controls.trainingTypeId.value;
+    return this.dictionaries.trainingLevels.filter(
+      (level) => level.trainingTypeId === null || level.trainingTypeId === typeId,
+    );
+  }
+
+  get consultationSelected(): boolean {
+    return this.selectedType()?.code === 'CONSULTATION';
+  }
+
+  get editing(): boolean {
+    return this.training() !== null;
+  }
+
+  typeChanged(): void {
+    const selectedLevel = this.form.controls.trainingLevelId.value;
+    if (selectedLevel && !this.availableLevels.some((level) => level.id === selectedLevel)) {
+      this.form.controls.trainingLevelId.setValue(null);
+    }
+    if (!this.consultationSelected) {
+      this.form.controls.homeVisit.setValue(false);
+    }
+  }
+
+  private selectedType(): DictionaryValue | undefined {
+    return this.dictionaries.trainingTypes.find(
+      (type) => type.id === this.form.controls.trainingTypeId.value,
+    );
+  }
 
   submit(): void {
     if (this.form.invalid) {

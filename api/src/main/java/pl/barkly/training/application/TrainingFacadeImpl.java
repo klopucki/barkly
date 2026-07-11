@@ -45,6 +45,11 @@ class TrainingFacadeImpl implements TrainingFacade {
     }
 
     @Override
+    public TrainingResponse updateTraining(Long id, TrainingCreateRequest request) {
+        return trainingCommandService.update(id, request);
+    }
+
+    @Override
     public BookingResponse bookTraining(Long trainingId, BookingCreateRequest request) {
         return bookingCommandService.book(trainingId, request);
     }
