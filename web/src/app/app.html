@@ -9,6 +9,12 @@
       <a routerLink="/schools" routerLinkActive="font-bold">Schools</a>
       <a routerLink="/trainings" routerLinkActive="font-bold">Trainings</a>
       <a routerLink="/news" routerLinkActive="font-bold">News</a>
+      @if (auth.currentUser()) {
+        @if (auth.currentUser()?.role !== 'USER') {<a routerLink="/my-school" routerLinkActive="font-bold">Moje szkoły</a>}
+        <button type="button" (click)="auth.logout()">Wyloguj</button>
+      } @else {
+        <a routerLink="/account" routerLinkActive="font-bold">Zaloguj</a>
+      }
     </nav>
   </div>
 </header>

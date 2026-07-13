@@ -1,1 +1,1 @@
-<p>news works!</p>
+<section><h1 class="mb-6 text-3xl font-bold">Artykuły szkół</h1>@for(item of items();track item.id){<article class="mb-4 rounded-xl border p-5"><h2 class="text-xl font-semibold">{{item.title}}</h2><div class="prose mt-3 max-w-none" [innerHTML]="item.content"></div><div class="mt-4 text-sm text-gray-500">{{item.schoolName}} · Autor: {{item.authorDisplayName}} · <time>{{item.publishedAt | date:'dd.MM.yyyy'}}</time></div></article>}@empty{<p class="text-gray-500">Brak artykułów.</p>}</section>

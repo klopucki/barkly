@@ -10,19 +10,23 @@ import pl.barkly.training.persistence.BookingEntity;
 import pl.barkly.training.persistence.BookingRepository;
 import pl.barkly.training.persistence.TrainingEntity;
 import pl.barkly.training.persistence.TrainingRepository;
+import pl.barkly.school.SchoolService;
 
 @Service
 class BookingCommandService {
 
     private final TrainingRepository trainingRepository;
     private final BookingRepository bookingRepository;
+    private final SchoolService schoolService;
 
     BookingCommandService(
             TrainingRepository trainingRepository,
-            BookingRepository bookingRepository
+            BookingRepository bookingRepository,
+            SchoolService schoolService
     ) {
         this.trainingRepository = trainingRepository;
         this.bookingRepository = bookingRepository;
+        this.schoolService = schoolService;
     }
 
     BookingResponse book(Long trainingId, BookingCreateRequest request) {
@@ -43,6 +47,10 @@ class BookingCommandService {
     void deleteBooking(Long id) {
         BookingEntity booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        TrainingEntity training = trainingRepository.findByIdAndDeletedAtIsNull(booking.getTrainingId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        schoolService.requireManagementAccess(schoolService.findEntityWithOwner(training.toResponse().schoolId()));
 
         booking.softDelete();
     }

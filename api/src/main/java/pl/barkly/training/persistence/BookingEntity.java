@@ -56,6 +56,10 @@ public class BookingEntity {
         return deletedAt != null;
     }
 
+    public Long getTrainingId() {
+        return trainingId;
+    }
+
     public BookingResponse toResponse() {
         return new BookingResponse(
                 id,

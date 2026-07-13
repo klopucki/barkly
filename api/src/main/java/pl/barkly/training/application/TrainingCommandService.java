@@ -17,6 +17,7 @@ import pl.barkly.training.persistence.TrainingTypeEntity;
 import pl.barkly.training.persistence.TrainingTypeRepository;
 import pl.barkly.training.exceptions.InvalidTrainingConfigurationException;
 import pl.barkly.training.image.TrainingImageStorage;
+import pl.barkly.school.SchoolService;
 
 import java.time.LocalDateTime;
 
@@ -29,6 +30,7 @@ class TrainingCommandService {
     private final TrainingTypeRepository typeRepository;
     private final TrainingLevelRepository levelRepository;
     private final TargetGroupRepository targetGroupRepository;
+    private final SchoolService schoolService;
 
     TrainingCommandService(
             TrainingRepository trainingRepository,
@@ -36,7 +38,8 @@ class TrainingCommandService {
             TrainingImageStorage imageStorage,
             TrainingTypeRepository typeRepository,
             TrainingLevelRepository levelRepository,
-            TargetGroupRepository targetGroupRepository
+            TargetGroupRepository targetGroupRepository,
+            SchoolService schoolService
     ) {
         this.trainingRepository = trainingRepository;
         this.bookingRepository = bookingRepository;
@@ -44,10 +47,12 @@ class TrainingCommandService {
         this.typeRepository = typeRepository;
         this.levelRepository = levelRepository;
         this.targetGroupRepository = targetGroupRepository;
+        this.schoolService = schoolService;
     }
 
     @Transactional
     TrainingResponse create(TrainingCreateRequest request) {
+        schoolService.requireManagementAccess(schoolService.findEntityWithOwner(request.schoolId()));
         TrainingConfiguration configuration = resolveConfiguration(request);
         TrainingEntity saved = trainingRepository.save(new TrainingEntity(
                 request, configuration.type(), configuration.level(), configuration.targetGroup()
@@ -81,6 +86,10 @@ class TrainingCommandService {
     TrainingResponse update(Long id, TrainingCreateRequest request) {
         TrainingEntity training = trainingRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        schoolService.requireManagementAccess(schoolService.findEntityWithOwner(training.toResponse().schoolId()));
+        if (!training.toResponse().schoolId().equals(request.schoolId())) {
+            schoolService.requireManagementAccess(schoolService.findEntityWithOwner(request.schoolId()));
+        }
         TrainingConfiguration configuration = resolveConfiguration(request);
         training.update(request, configuration.type(), configuration.level(), configuration.targetGroup());
         int bookedCount = bookingRepository.countByTrainingId(id);
@@ -111,6 +120,7 @@ class TrainingCommandService {
     public void deleteTraining(Long id) {
         TrainingEntity training = trainingRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        schoolService.requireManagementAccess(schoolService.findEntityWithOwner(training.toResponse().schoolId()));
 
         LocalDateTime deletedAt = LocalDateTime.now();
 
