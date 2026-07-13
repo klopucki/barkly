@@ -5,6 +5,8 @@
 >
   <h2 class="text-xl font-semibold">{{ editing ? 'Edit training' : 'Add training' }}</h2>
 
+  <label class="block"><span class="mb-1 block text-sm font-medium">School</span><select class="w-full rounded border p-2" formControlName="schoolId"><option [ngValue]="0">Select your school</option>@for (school of schools; track school.id) {<option [ngValue]="school.id">{{school.name}}</option>}</select></label>
+
   <input class="w-full rounded border p-2" placeholder="Title" formControlName="title" maxlength="200" />
   @if (hasError('title', 'required')) {
     <p class="text-sm text-red-600">Title is required.</p>

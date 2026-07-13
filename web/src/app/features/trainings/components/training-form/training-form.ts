@@ -14,6 +14,8 @@ import {
   Training,
 } from '../../training.model';
 import { TrainingService } from '../../training.service';
+import { SchoolService } from '../../../schools/school.service';
+import { School } from '../../../schools/school.model';
 
 export type TrainingFormValue = TrainingCreatePayload;
 
@@ -34,6 +36,7 @@ export class TrainingForm implements OnInit {
 
   private readonly fb = new FormBuilder();
   private readonly trainingService = inject(TrainingService);
+  private readonly schoolService = inject(SchoolService);
 
   dictionaries: TrainingDictionaries = {
     trainingTypes: [],
@@ -42,9 +45,10 @@ export class TrainingForm implements OnInit {
   };
   selectedImage: File | null = null;
   imageError: string | null = null;
+  schools: School[] = [];
 
   form = this.fb.nonNullable.group({
-    schoolId: [1, [Validators.required, Validators.min(1)]],
+    schoolId: [0, [Validators.required, Validators.min(1)]],
     title: [
       '',
       [Validators.required, Validators.pattern(/\S/), Validators.minLength(3), Validators.maxLength(200)],
@@ -62,6 +66,10 @@ export class TrainingForm implements OnInit {
   });
 
   ngOnInit(): void {
+    this.schoolService.mine$().subscribe({ next: (schools) => {
+      this.schools = schools;
+      if (!this.training() && schools.length === 1) this.form.controls.schoolId.setValue(schools[0].id);
+    }});
     this.trainingService.getTrainingDictionaries$().subscribe((dictionaries) => {
       this.dictionaries = dictionaries;
       if (dictionaries.trainingTypes.length > 0) {

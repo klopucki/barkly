@@ -1,0 +1,5 @@
+CREATE TABLE school_image (
+    id BIGSERIAL PRIMARY KEY,
+    school_id BIGINT NOT NULL REFERENCES school(id) ON DELETE CASCADE,
+    image_key VARCHAR(255) NOT NULL
+);

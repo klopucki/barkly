@@ -7,6 +7,7 @@ import {
   TrainingFormSubmission,
 } from '../../features/trainings/components/training-form/training-form';
 import { Modal } from '../../shared/components/modal/modal';
+import { AuthService } from '../../features/auth/auth.service';
 
 @Component({
   selector: 'app-trainings',
@@ -15,6 +16,7 @@ import { Modal } from '../../shared/components/modal/modal';
 })
 export class Trainings implements OnInit {
   private readonly trainingService = inject(TrainingService);
+  protected readonly auth = inject(AuthService);
 
   searchText = signal('');
   trainingsFromApi = signal<Training[]>([]);
