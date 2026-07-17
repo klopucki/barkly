@@ -18,9 +18,29 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
+          cache: gradle
 
-      - name: Verify Java
-        run: java -version
-
-      - name: Build project
+      - name: Build application
         run: ./gradlew build
+
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: barkly-api
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 7
+
+  inspect-artifact:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download application artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: barkly-api
+          path: application
+
+      - name: Display downloaded files
+        run: ls -la application
