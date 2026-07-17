@@ -1,4 +1,4 @@
-name: Barkly API
+name: Barkly CI
 
 on:
   push:
@@ -6,8 +6,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  backend-ci:
+    name: Backend CI
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: api
 
     steps:
       - name: Checkout repository
@@ -19,28 +24,53 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: gradle
+          cache-dependency-path: |
+            api/**/*.gradle*
+            api/**/gradle-wrapper.properties
 
-      - name: Build application
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build and test backend
         run: ./gradlew build
 
-      - name: Upload application artifact
+      - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: barkly-api
-          path: build/libs/*.jar
+          path: api/build/libs/*.jar
           if-no-files-found: error
           retention-days: 7
 
-  inspect-artifact:
-    needs: build
+  frontend-ci:
+    name: Frontend CI
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Download application artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: barkly-api
-          path: application
+    defaults:
+      run:
+        working-directory: web
 
-      - name: Display downloaded files
-        run: ls -la application
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: barkly-web
+          path: web/dist/
+          if-no-files-found: error
+          retention-days: 7
