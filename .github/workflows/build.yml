@@ -2,56 +2,42 @@ name: Barkly CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  backend-ci:
-    name: Backend CI
+  backend:
+    name: Backend
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 25
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '25'
+          java-version: "25"
           cache: gradle
-          cache-dependency-path: |
-            **/*.gradle.kts
-            **/gradle-wrapper.properties
 
-      - name: Make Gradle wrapper executable
+      - name: Make Gradle executable
         run: chmod +x gradlew
 
       - name: Run backend tests
         run: ./gradlew :api:test
 
-      - name: Upload backend test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-report
-          path: api/build/reports/tests/test/
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Build backend package
+      - name: Build backend JAR
         run: ./gradlew :api:bootJar -x test
 
-      - name: Upload backend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: barkly-api
-          path: api/build/libs/*.jar
-          if-no-files-found: error
-          retention-days: 7
-
-  frontend-ci:
-    name: Frontend CI
+  frontend:
+    name: Frontend
     runs-on: ubuntu-latest
 
     defaults:
@@ -60,36 +46,28 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      - name: Install frontend dependencies
+      - name: Install dependencies
         run: npm ci
 
       - name: Build frontend
         run: npm run build
-
-      - name: Upload frontend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: barkly-web
-          path: web/dist/
-          if-no-files-found: error
-          retention-days: 7
 
   docker-build:
     name: Build Docker images
     runs-on: ubuntu-latest
 
     needs:
-      - backend-ci
-      - frontend-ci
+      - backend
+      - frontend
 
     steps:
       - name: Checkout repository
@@ -104,9 +82,10 @@ jobs:
           context: .
           file: infra/docker/api.Dockerfile
           push: false
-          tags: barkly-api:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: barkly-api:${{ github.sha }}
+          cache-from: type=gha,scope=barkly-api
+          cache-to: type=gha,mode=max,scope=barkly-api
+          outputs: type=docker,dest=/tmp/barkly-api.tar
 
       - name: Build web image
         uses: docker/build-push-action@v6
@@ -114,6 +93,89 @@ jobs:
           context: .
           file: infra/docker/web.Dockerfile
           push: false
-          tags: barkly-web:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: barkly-web:${{ github.sha }}
+          cache-from: type=gha,scope=barkly-web
+          cache-to: type=gha,mode=max,scope=barkly-web
+          outputs: type=docker,dest=/tmp/barkly-web.tar
+
+      - name: Upload API image
+        uses: actions/upload-artifact@v4
+        with:
+          name: barkly-api-image
+          path: /tmp/barkly-api.tar
+          retention-days: 1
+
+      - name: Upload web image
+        uses: actions/upload-artifact@v4
+        with:
+          name: barkly-web-image
+          path: /tmp/barkly-web.tar
+          retention-days: 1
+
+  docker-publish:
+    name: Publish Docker images
+    runs-on: ubuntu-latest
+
+    needs:
+      - docker-build
+
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download API image
+        uses: actions/download-artifact@v4
+        with:
+          name: barkly-api-image
+          path: /tmp
+
+      - name: Download web image
+        uses: actions/download-artifact@v4
+        with:
+          name: barkly-web-image
+          path: /tmp
+
+      - name: Load Docker images
+        run: |
+          docker load --input /tmp/barkly-api.tar
+          docker load --input /tmp/barkly-web.tar
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and publish API image
+        run: |
+          docker tag \
+            barkly-api:${{ github.sha }} \
+            ghcr.io/${{ github.repository_owner }}/barkly-api:${{ github.sha }}
+
+          docker tag \
+            barkly-api:${{ github.sha }} \
+            ghcr.io/${{ github.repository_owner }}/barkly-api:latest
+
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/barkly-api:${{ github.sha }}
+
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/barkly-api:latest
+
+      - name: Tag and publish web image
+        run: |
+          docker tag \
+            barkly-web:${{ github.sha }} \
+            ghcr.io/${{ github.repository_owner }}/barkly-web:${{ github.sha }}
+
+          docker tag \
+            barkly-web:${{ github.sha }} \
+            ghcr.io/${{ github.repository_owner }}/barkly-web:latest
+
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/barkly-web:${{ github.sha }}
+
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/barkly-web:latest
