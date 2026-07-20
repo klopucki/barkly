@@ -10,6 +10,36 @@ services:
       - "5433:5432"
     volumes:
       - barkly-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barkly -d barkly"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: barkly-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/barkly
+      SPRING_DATASOURCE_USERNAME: barkly
+      SPRING_DATASOURCE_PASSWORD: barkly
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/web.Dockerfile
+    container_name: barkly-web
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
 
 volumes:
   barkly-postgres-data:
