@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: barkly-web
+  namespace: barkly
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: barkly-web
+  template:
+    metadata:
+      labels:
+        app: barkly-web
+    spec:
+      containers:
+      - name: web
+        image: barkly-web:local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: barkly-web
+  namespace: barkly
+spec:
+  selector:
+    app: barkly-web
+  ports:
+  - port: 80
+    targetPort: 80

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: barkly-api-config
+  namespace: barkly
+data:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://barkly-postgres:5432/barkly
