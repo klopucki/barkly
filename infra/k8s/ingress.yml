@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: barkly
+  namespace: barkly
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: barkly.local
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: barkly-api
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: barkly-web
+            port:
+              number: 80
