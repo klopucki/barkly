@@ -4,7 +4,7 @@ metadata:
   name: barkly-postgres-pvc
   namespace: barkly
 spec:
-  accessModes: [ReadWriteOnce]
+  accessModes: [ ReadWriteOnce ]
   resources:
     requests:
       storage: 1Gi
@@ -25,22 +25,31 @@ spec:
         app: barkly-postgres
     spec:
       containers:
-      - name: postgres
-        image: postgres:17
-        env:
-        - name: POSTGRES_DB
-          value: barkly
-        - name: POSTGRES_USER
-          value: postgres
-        - name: POSTGRES_PASSWORD
-          value: postgres
-        volumeMounts:
-        - mountPath: /var/lib/postgresql
-          name: data
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: barkly
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          volumeMounts:
+            - mountPath: /var/lib/postgresql
+              name: data
       volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName:  barkly-postgres-pvc
+        - name: data
+          persistentVolumeClaim:
+            claimName: barkly-postgres-pvc
+
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+
+        limits:
+          cpu: "1"
+          memory: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -51,5 +60,5 @@ spec:
   selector:
     app: barkly-postgres
   ports:
-  - port: 5432
-    targetPort: 5432
+    - port: 5432
+      targetPort: 5432

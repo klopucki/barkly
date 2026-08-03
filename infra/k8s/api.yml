@@ -1,35 +1,107 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+
 metadata:
   name: barkly-api
   namespace: barkly
+
 spec:
-  replicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: barkly-api
+
+  minReplicas: 2
+  maxReplicas: 5
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: barkly-api
+  namespace: barkly
+
+spec:
+  replicas: 1
+
   selector:
     matchLabels:
       app: barkly-api
+
   template:
     metadata:
       labels:
         app: barkly-api
+
     spec:
       containers:
-      - name: api
-        image: barkly-api:local
-        envFrom:
-        - configMapRef:
-            name: barkly-api-config
-        - secretRef:
-            name: barkly-api-secret
+        - name: api
+          image: barkly-api:local
+          imagePullPolicy: Never
+
+          envFrom:
+            - configMapRef:
+                name: barkly-api-config
+
+            - secretRef:
+                name: barkly-api-secret
+
+          ports:
+            - containerPort: 8080
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 24
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+
 ---
 apiVersion: v1
 kind: Service
+
 metadata:
   name: barkly-api
   namespace: barkly
+
 spec:
   selector:
     app: barkly-api
+
   ports:
-  - port: 8080
-    targetPort: 8080
+    - port: 8080
+      targetPort: 8080
+
+  type: ClusterIP
