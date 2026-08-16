@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: barkly-api
+
+spec:
+  replicas: {{ .Values.api.replicas }}
+
+  selector:
+    matchLabels:
+      app: barkly-api
+
+  template:
+    metadata:
+      labels:
+        app: barkly-api
+
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+
+          ports:
+            - containerPort: {{ .Values.api.service.port }}
+
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.api.service.port }}
+            periodSeconds: 5
+            failureThreshold: 24
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ .Values.api.service.port }}
+            periodSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.api.service.port }}
+            periodSeconds: 10
+            failureThreshold: 3
+
+          envFrom:
+            - configMapRef:
+                name: barkly-api-config
+            - secretRef:
+                name: barkly-api-secret

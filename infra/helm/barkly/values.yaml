@@ -1,0 +1,70 @@
+namespace: barkly
+
+api:
+  image:
+    repository: barkly-api
+    tag: local
+    pullPolicy: Never
+
+  replicas: 2
+
+  service:
+    port: 8080
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+  datasource:
+    url: jdbc:postgresql://barkly-postgres:5432/barkly
+    username: barkly
+    password: barkly
+
+  probes:
+    startup:
+      periodSeconds: 5
+      failureThreshold: 24
+    readiness:
+      periodSeconds: 5
+      failureThreshold: 3
+    liveness:
+      periodSeconds: 10
+      failureThreshold: 3
+
+web:
+  image:
+    repository: barkly-web
+    tag: local
+    pullPolicy: Never
+
+  replicas: 1
+
+  service:
+    port: 80
+
+postgres:
+  image:
+    repository: postgres
+    tag: "18"
+
+  database: barkly
+  username: barkly
+  password: barkly
+
+  persistence:
+    size: 1Gi
+
+ingress:
+  enabled: true
+  className: traefik
+  host: barkly.local

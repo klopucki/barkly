@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: barkly-web
+
+spec:
+  selector:
+    app: barkly-web
+
+  ports:
+    - port: {{ .Values.web.service.port }}
+      targetPort: {{ .Values.web.service.port }}
+
+  type: ClusterIP
