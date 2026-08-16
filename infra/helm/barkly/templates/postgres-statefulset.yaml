@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: barkly-postgres
+
+spec:
+  serviceName: barkly-postgres
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: barkly-postgres
+
+  template:
+    metadata:
+      labels:
+        app: barkly-postgres
+
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.username | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgres.password | quote }}
+
+          ports:
+            - containerPort: 5432
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: barkly-postgres-pvc
