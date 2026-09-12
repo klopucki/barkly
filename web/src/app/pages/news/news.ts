@@ -9,4 +9,10 @@ import { SchoolNews } from '../../features/schools/school.model';
   templateUrl: './news.html',
   styleUrl: './news.css',
 })
-export class News implements OnInit { private readonly schools=inject(SchoolService); readonly items=signal<SchoolNews[]>([]); ngOnInit(){this.schools.allNews$().subscribe({next:n=>this.items.set(n)});} }
+export class News implements OnInit {
+  private readonly schools = inject(SchoolService);
+  readonly items = signal<SchoolNews[]>([]);
+  ngOnInit() {
+    this.schools.allNews$().subscribe({ next: (n) => this.items.set(n) });
+  }
+}

@@ -1,0 +1,44 @@
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Dog, DogImage, DogPayload, DogVisibility } from './dog.model';
+
+@Injectable({ providedIn: 'root' })
+export class DogService {
+  private readonly http = inject(HttpClient);
+
+  all$(): Observable<Dog[]> {
+    return this.http.get<Dog[]>('/api/dogs');
+  }
+
+  mine$(): Observable<Dog[]> {
+    return this.http.get<Dog[]>('/api/my/dogs');
+  }
+
+  one$(id: number): Observable<Dog> {
+    return this.http.get<Dog>(`/api/dogs/${id}`);
+  }
+
+  create$(body: DogPayload): Observable<Dog> {
+    return this.http.post<Dog>('/api/dogs', body);
+  }
+
+  update$(id: number, body: DogPayload): Observable<Dog> {
+    return this.http.put<Dog>(`/api/dogs/${id}`, body);
+  }
+
+  delete$(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/dogs/${id}`);
+  }
+
+  uploadImage$(id: number, image: File, visibility: DogVisibility): Observable<DogImage> {
+    const form = new FormData();
+    form.append('image', image);
+    form.append('visibility', visibility);
+    return this.http.post<DogImage>(`/api/dogs/${id}/images`, form);
+  }
+
+  deleteImage$(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/dog-images/${id}`);
+  }
+}

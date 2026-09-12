@@ -8,7 +8,8 @@ import pl.barkly.user.UserRole;
 
 public record RegisterRequest(
         @NotBlank @Email @Size(max = 320) String email,
-        @NotBlank @Size(min = 10, max = 100) String password,
+        // FIXME: Reinstate a password-strength policy before releasing publicly.
+        @NotBlank @Size(max = 100) String password,
         @NotBlank @Size(min = 2, max = 100) String displayName,
         @NotNull UserRole role
 ) {
