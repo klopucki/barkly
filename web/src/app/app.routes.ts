@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './features/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,9 +11,29 @@ export const routes: Routes = [
     path: 'schools',
     loadComponent: () => import('./pages/schools/schools').then((m) => m.Schools),
   },
-  { path: 'schools/:slug', loadComponent: () => import('./pages/school-details/school-details').then((m) => m.SchoolDetails) },
-  { path: 'account', loadComponent: () => import('./pages/account/account').then((m) => m.Account) },
-  { path: 'my-school', loadComponent: () => import('./pages/my-school/my-school').then((m) => m.MySchool) },
+  {
+    path: 'schools/:slug',
+    loadComponent: () =>
+      import('./pages/school-details/school-details').then((m) => m.SchoolDetails),
+  },
+  {
+    path: 'account',
+    loadComponent: () => import('./pages/account/account').then((m) => m.Account),
+  },
+  {
+    path: 'my-school',
+    loadComponent: () => import('./pages/my-school/my-school').then((m) => m.MySchool),
+  },
+  { path: 'dogs', loadComponent: () => import('./pages/dogs/dogs').then((m) => m.Dogs) },
+  {
+    path: 'dogs/:id',
+    loadComponent: () => import('./pages/dog-details/dog-details').then((m) => m.DogDetails),
+  },
+  {
+    path: 'my-dogs',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/my-dogs/my-dogs').then((m) => m.MyDogs),
+  },
 
   {
     path: 'trainings',

@@ -51,11 +51,21 @@ export class TrainingForm implements OnInit {
     schoolId: [0, [Validators.required, Validators.min(1)]],
     title: [
       '',
-      [Validators.required, Validators.pattern(/\S/), Validators.minLength(3), Validators.maxLength(200)],
+      [
+        Validators.required,
+        Validators.pattern(/\S/),
+        Validators.minLength(3),
+        Validators.maxLength(200),
+      ],
     ],
     trainerName: [
       '',
-      [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
+      [
+        Validators.required,
+        Validators.pattern(/\S/),
+        Validators.minLength(2),
+        Validators.maxLength(200),
+      ],
     ],
     trainingTypeId: [0, [Validators.required, Validators.min(1)]],
     trainingLevelId: [null as number | null],
@@ -66,10 +76,13 @@ export class TrainingForm implements OnInit {
   });
 
   ngOnInit(): void {
-    this.schoolService.mine$().subscribe({ next: (schools) => {
-      this.schools = schools;
-      if (!this.training() && schools.length === 1) this.form.controls.schoolId.setValue(schools[0].id);
-    }});
+    this.schoolService.mine$().subscribe({
+      next: (schools) => {
+        this.schools = schools;
+        if (!this.training() && schools.length === 1)
+          this.form.controls.schoolId.setValue(schools[0].id);
+      },
+    });
     this.trainingService.getTrainingDictionaries$().subscribe((dictionaries) => {
       this.dictionaries = dictionaries;
       if (dictionaries.trainingTypes.length > 0) {

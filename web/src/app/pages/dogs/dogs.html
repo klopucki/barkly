@@ -1,0 +1,29 @@
+<section>
+  <div class="mb-6 flex items-end justify-between">
+    <div>
+      <h1 class="text-3xl font-bold">Psy społeczności</h1>
+      <p class="mt-1 text-gray-600">Poznaj psiaki Barkly.</p>
+    </div>
+    @if (auth.currentUser()) {
+      <a routerLink="/my-dogs" class="rounded-lg border px-4 py-2">Moje psy</a>
+    }
+  </div>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (dog of dogs(); track dog.id) {
+      <a
+        [routerLink]="['/dogs', dog.id]"
+        class="overflow-hidden rounded-xl border hover:border-black"
+      >
+        @if (dog.images[0]; as image) {
+          <img class="h-48 w-full object-cover" [src]="imageUrl(image.id)" [alt]="dog.name" />
+        }
+        <div class="p-4">
+          <h2 class="text-xl font-semibold">{{ dog.name }}</h2>
+          <p class="text-gray-600">{{ dog.breed || 'Rasa nieuzupełniona' }}</p>
+        </div>
+      </a>
+    } @empty {
+      <p class="text-gray-600">Nie ma jeszcze profili dostępnych dla Ciebie.</p>
+    }
+  </div>
+</section>

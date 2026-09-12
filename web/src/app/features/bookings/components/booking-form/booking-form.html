@@ -5,7 +5,12 @@
 >
   <h2 class="text-xl font-semibold">Book this training</h2>
 
-  <input class="w-full rounded border p-2" placeholder="Owner name" formControlName="ownerName" maxlength="200" />
+  <input
+    class="w-full rounded border p-2"
+    placeholder="Owner name"
+    formControlName="ownerName"
+    maxlength="200"
+  />
   @if (hasError('ownerName', 'required')) {
     <p class="text-sm text-red-600">Owner name is required.</p>
   }
@@ -17,7 +22,13 @@
     <p class="text-sm text-red-600">Owner name must have at least 2 characters.</p>
   }
 
-  <input class="w-full rounded border p-2" type="email" placeholder="Email" formControlName="email" maxlength="320" />
+  <input
+    class="w-full rounded border p-2"
+    type="email"
+    placeholder="Email"
+    formControlName="email"
+    maxlength="320"
+  />
   @if (hasError('email', 'required')) {
     <p class="text-sm text-red-600">Email is required.</p>
   }
@@ -26,7 +37,12 @@
     <p class="text-sm text-red-600">Email format is invalid.</p>
   }
 
-  <input class="w-full rounded border p-2" placeholder="Dog name" formControlName="dogName" maxlength="200" />
+  <input
+    class="w-full rounded border p-2"
+    placeholder="Dog name"
+    formControlName="dogName"
+    maxlength="200"
+  />
   @if (hasError('dogName', 'required')) {
     <p class="text-sm text-red-600">Dog name is required.</p>
   }
@@ -37,7 +53,14 @@
     <p class="text-sm text-red-600">Dog name must have at least 2 characters.</p>
   }
 
-  <input class="w-full rounded border p-2" type="number" min="0" max="30" placeholder="Dog age" formControlName="dogAge" />
+  <input
+    class="w-full rounded border p-2"
+    type="number"
+    min="0"
+    max="30"
+    placeholder="Dog age"
+    formControlName="dogAge"
+  />
   @if (hasError('dogAge', 'required')) {
     <p class="text-sm text-red-600">Dog age is required.</p>
   }
@@ -49,18 +72,16 @@
     <p class="text-sm text-red-600">Dog age cannot exceed 30 years.</p>
   }
 
-  <textarea class="w-full rounded border p-2" placeholder="Notes" formControlName="notes" maxlength="1000"></textarea>
+  <textarea
+    class="w-full rounded border p-2"
+    placeholder="Notes"
+    formControlName="notes"
+    maxlength="1000"
+  ></textarea>
   @if (hasError('notes', 'maxlength')) {
     <p class="text-sm text-red-600">Notes cannot exceed 1000 characters.</p>
   }
 
-  <button class="rounded-lg bg-black px-4 py-2 text-white" type="submit">
-    Confirm booking
-  </button>
-  <button
-    type="button"
-    (click)="cancel()"
-  >
-    Cancel
-  </button>
+  <button class="rounded-lg bg-black px-4 py-2 text-white" type="submit">Confirm booking</button>
+  <button type="button" (click)="cancel()">Cancel</button>
 </form>

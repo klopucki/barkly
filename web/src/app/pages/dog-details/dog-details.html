@@ -1,0 +1,26 @@
+@if (dog(); as dog) {
+  <section class="max-w-3xl">
+    <a routerLink="/dogs" class="text-sm underline">← Wszystkie psy</a>
+    <h1 class="mt-4 text-3xl font-bold">{{ dog.name }}</h1>
+    <p class="mt-1 text-gray-600">
+      {{ dog.breed || 'Rasa nieuzupełniona' }}
+      @if (dog.sex) {
+        · {{ dog.sex }}
+      }
+    </p>
+    @if (dog.description) {
+      <p class="mt-5 whitespace-pre-wrap">{{ dog.description }}</p>
+    }
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      @for (image of dog.images; track image.id) {
+        <img
+          class="aspect-square w-full rounded-xl object-cover"
+          [src]="imageUrl(image.id)"
+          [alt]="dog.name"
+        />
+      }
+    </div>
+  </section>
+} @else {
+  <p class="text-gray-600">{{ error() || 'Ładowanie…' }}</p>
+}

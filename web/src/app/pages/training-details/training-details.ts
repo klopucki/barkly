@@ -149,5 +149,4 @@ export class TrainingDetails implements OnInit {
       },
     });
   }
-
 }

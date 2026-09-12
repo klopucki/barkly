@@ -10,6 +10,7 @@ import pl.barkly.user.api.CurrentUserResponse;
 import pl.barkly.user.api.RegisterRequest;
 
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -41,6 +42,15 @@ public class UserService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserEntity> optionalCurrentUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmailIgnoreCase(authentication.getName());
     }
 
     @Transactional(readOnly = true)

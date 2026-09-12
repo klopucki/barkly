@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './features/auth/auth.service';
 
 @Component({
@@ -10,5 +10,11 @@ import { AuthService } from './features/auth/auth.service';
 })
 export class App {
   protected readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly title = signal('barkly');
+
+  protected logout(): void {
+    this.auth.logout();
+    this.router.navigateByUrl('/');
+  }
 }

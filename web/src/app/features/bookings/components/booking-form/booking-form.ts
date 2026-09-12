@@ -23,12 +23,22 @@ export class BookingForm {
   bookingForm = this.fb.nonNullable.group({
     ownerName: [
       '',
-      [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
+      [
+        Validators.required,
+        Validators.pattern(/\S/),
+        Validators.minLength(2),
+        Validators.maxLength(200),
+      ],
     ],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(320)]],
     dogName: [
       '',
-      [Validators.required, Validators.pattern(/\S/), Validators.minLength(2), Validators.maxLength(200)],
+      [
+        Validators.required,
+        Validators.pattern(/\S/),
+        Validators.minLength(2),
+        Validators.maxLength(200),
+      ],
     ],
     dogAge: [1, [Validators.required, Validators.min(0), Validators.max(30)]],
     notes: ['', [Validators.maxLength(1000)]],

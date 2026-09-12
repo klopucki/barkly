@@ -14,5 +14,7 @@ export class Schools implements OnInit {
   private readonly schools = inject(SchoolService);
   protected readonly auth = inject(AuthService);
   readonly items = signal<School[]>([]);
-  ngOnInit(): void { this.schools.all$().subscribe({ next: value => this.items.set(value) }); }
+  ngOnInit(): void {
+    this.schools.all$().subscribe({ next: (value) => this.items.set(value) });
+  }
 }
