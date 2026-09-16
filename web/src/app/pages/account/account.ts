@@ -1,8 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../features/auth/auth.service';
-@Component({ selector: 'app-account', imports: [FormsModule], templateUrl: './account.html' })
+@Component({
+  selector: 'app-account',
+  imports: [FormsModule, RouterLink],
+  templateUrl: './account.html',
+})
 export class Account {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -46,12 +50,10 @@ export class Account {
       });
   }
   private login() {
-    this.auth
-      .login$(this.email.trim(), this.password)
-      .subscribe({
-        next: () => this.router.navigateByUrl('/'),
-        error: () => (this.error = 'Nieprawidłowy e-mail lub hasło.'),
-      });
+    this.auth.login$(this.email.trim(), this.password).subscribe({
+      next: () => this.router.navigateByUrl('/'),
+      error: () => (this.error = 'Nieprawidłowy e-mail lub hasło.'),
+    });
   }
   private apiMessage(error: any): string | null {
     const body = error.error;

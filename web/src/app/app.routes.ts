@@ -21,8 +21,17 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/account/account').then((m) => m.Account),
   },
   {
+    path: 'me',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/me/me').then((m) => m.Me),
+  },
+  {
     path: 'my-school',
     loadComponent: () => import('./pages/my-school/my-school').then((m) => m.MySchool),
+  },
+  {
+    path: 'community',
+    loadComponent: () => import('./pages/community/community').then((m) => m.Community),
   },
   { path: 'dogs', loadComponent: () => import('./pages/dogs/dogs').then((m) => m.Dogs) },
   {

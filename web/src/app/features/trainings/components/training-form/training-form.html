@@ -111,7 +111,7 @@
     <input
       class="w-full rounded border p-2"
       type="file"
-      accept="image/jpeg,image/png,image/webp"
+      accept="image/jpeg,image/png"
       (change)="selectImage($event)"
     />
   </label>
@@ -119,7 +119,7 @@
     <p class="text-sm text-red-600">{{ imageError }}</p>
   }
   <p class="text-sm text-gray-500">
-    JPEG, PNG or WebP. The maximum size is configured by the server.
+    JPG lub PNG, maks. 10 MB i minimum 640 × 480 px. Zdjęcie zostanie automatycznie zoptymalizowane.
   </p>
 
   <div class="flex gap-2">

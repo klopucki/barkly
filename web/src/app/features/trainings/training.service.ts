@@ -3,6 +3,7 @@ import { Training, TrainingCreatePayload, TrainingDictionaries } from './trainin
 import { Booking } from '../bookings/components/booking-form/booking.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { PageResult } from '../../shared/page-result';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +15,18 @@ export class TrainingService {
 
   getTrainings$(): Observable<Training[]> {
     return this.http.get<Training[]>(this.apiUrl);
+  }
+
+  search$(
+    query: string,
+    type: string,
+    page = 0,
+    size = 20,
+    favoritesOnly = false,
+  ): Observable<PageResult<Training>> {
+    return this.http.get<PageResult<Training>>('/api/query/trainings', {
+      params: { query, type, page, size, favoritesOnly },
+    });
   }
 
   getTrainingById$(id: number): Observable<Training> {

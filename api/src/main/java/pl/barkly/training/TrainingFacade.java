@@ -6,9 +6,12 @@ import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 
 import java.util.List;
+import pl.barkly.query.PageResponse;
 
 public interface TrainingFacade {
     List<TrainingResponse> findTrainings();
+
+    PageResponse<TrainingResponse> searchTrainings(String query, String type, int page, int size, boolean favoritesOnly);
 
     TrainingResponse findTraining(Long id);
 

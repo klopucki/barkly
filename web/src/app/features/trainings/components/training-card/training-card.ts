@@ -14,7 +14,9 @@ export class TrainingCard {
   protected readonly trainingImageUrl = trainingImageUrl;
 
   training = input.required<Training>();
+  favorite = input(false);
 
   deleteClicked = output<number>();
   editClicked = output<Training>();
+  favoriteClicked = output<Training>();
 }

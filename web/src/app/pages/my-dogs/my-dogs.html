@@ -52,9 +52,13 @@
         <input
           class="hidden"
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png"
           (change)="upload($event, dog)"
       /></label>
+      <p class="mt-2 text-xs text-stone-500">
+        JPG lub PNG · maks. 10 MB · minimum 640 × 480 px. Zdjęcie zostanie automatycznie
+        zoptymalizowane.
+      </p>
     </article>
   } @empty {
     <div class="rounded-xl border border-dashed p-8 text-center text-gray-600">

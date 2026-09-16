@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Dog, DogImage, DogPayload, DogVisibility } from './dog.model';
+import { Dog, DogImage, DogPayload, DogPost, DogVisibility } from './dog.model';
 
 @Injectable({ providedIn: 'root' })
 export class DogService {
@@ -40,5 +40,17 @@ export class DogService {
 
   deleteImage$(id: number): Observable<void> {
     return this.http.delete<void>(`/api/dog-images/${id}`);
+  }
+
+  posts$(): Observable<DogPost[]> {
+    return this.http.get<DogPost[]>('/api/dog-posts');
+  }
+
+  createPost$(dogId: number, content: string, image: File | null): Observable<DogPost> {
+    const form = new FormData();
+    form.append('dogId', String(dogId));
+    form.append('content', content);
+    if (image) form.append('image', image);
+    return this.http.post<DogPost>('/api/dog-posts', form);
   }
 }

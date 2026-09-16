@@ -1,15 +1,58 @@
 <section>
-  <h1 class="mb-6 text-3xl font-bold">Artykuły szkół</h1>
-  @for (item of items(); track item.id) {
-    <article class="mb-4 rounded-xl border p-5">
-      <h2 class="text-xl font-semibold">{{ item.title }}</h2>
-      <div class="prose mt-3 max-w-none" [innerHTML]="item.content"></div>
-      <div class="mt-4 text-sm text-gray-500">
+  <div class="mb-8">
+    <p class="barkly-eyebrow">Wiedza i inspiracje</p>
+    <h1 class="barkly-page-title mt-2">Artykuły szkół</h1>
+    <p class="mt-3 text-stone-600">Nowości, porady i historie od społeczności Barkly.</p>
+  </div>
+  <div class="mb-7 flex flex-wrap gap-3">
+    <input
+      class="barkly-input max-w-xl"
+      type="search"
+      placeholder="Szukaj artykułu lub szkoły…"
+      #searchInput
+      (input)="search(searchInput.value)"
+    /><button
+      type="button"
+      class="barkly-button-secondary"
+      [class.!border-emerald-700]="favoritesOnly()"
+      [class.!bg-emerald-50]="favoritesOnly()"
+      (click)="toggleFavorites()"
+    >
+      ★ Ulubione
+    </button>
+  </div>
+  @if (loading()) {
+    <p class="mb-4 text-sm text-stone-500">Ładowanie artykułów…</p>
+  }
+  @for (item of filteredItems(); track item.id) {
+    <article class="barkly-card relative mb-5 p-6">
+      <button
+        type="button"
+        class="absolute right-4 top-4 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
+        [attr.aria-label]="
+          favorites.has('article', item.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'
+        "
+        (click)="favorites.toggle('article', item.id)"
+      >
+        {{ favorites.has('article', item.id) ? '★' : '☆' }}
+      </button>
+      <h2 class="text-2xl font-semibold tracking-tight">{{ item.title }}</h2>
+      <div class="prose mt-4 max-w-none text-stone-700" [innerHTML]="item.content"></div>
+      <div class="mt-5 border-t border-stone-100 pt-4 text-sm text-stone-500">
         {{ item.schoolName }} · Autor: {{ item.authorDisplayName }} ·
         <time>{{ item.publishedAt | date: 'dd.MM.yyyy' }}</time>
       </div>
     </article>
   } @empty {
-    <p class="text-gray-500">Brak artykułów.</p>
+    <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">
+      Nie znaleziono artykułów pasujących do kryteriów.
+    </p>
+  }
+  @if (page() + 1 < totalPages()) {
+    <div class="mt-7 text-center">
+      <button type="button" class="barkly-button-secondary" (click)="loadMore()">
+        Pokaż więcej artykułów
+      </button>
+    </div>
   }
 </section>

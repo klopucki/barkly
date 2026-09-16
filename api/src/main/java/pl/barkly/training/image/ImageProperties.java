@@ -9,6 +9,10 @@ import java.nio.file.Path;
 public record ImageProperties(
         Path storageDirectory,
         DataSize maxFileSize,
-        DataSize maxRequestSize
+        DataSize maxRequestSize,
+        int minWidth,
+        int minHeight,
+        int maxWidth,
+        int maxHeight
 ) {
 }

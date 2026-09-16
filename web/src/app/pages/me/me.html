@@ -1,0 +1,105 @@
+@if (auth.currentUser(); as user) {
+  <section class="max-w-4xl">
+    <div class="rounded-3xl bg-stone-950 px-7 py-10 text-white sm:px-10">
+      <p class="barkly-eyebrow !text-lime-300">Twoje miejsce</p>
+      <div class="mt-5 flex items-center gap-4">
+        <div
+          class="flex h-16 w-16 items-center justify-center rounded-full bg-lime-300 text-2xl font-bold text-stone-950"
+        >
+          {{ user.displayName.slice(0, 1).toUpperCase() }}
+        </div>
+        <div>
+          <h1 class="text-3xl font-semibold tracking-tight">Cześć, {{ user.displayName }}.</h1>
+          <p class="mt-1 text-stone-300">{{ user.email }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="mt-8 grid gap-5 sm:grid-cols-2">
+      <a routerLink="/my-dogs" class="barkly-card group p-6"
+        ><p class="barkly-eyebrow">Twój profil</p>
+        <h2 class="mt-3 text-2xl font-semibold">Moje psy</h2>
+        <p class="mt-2 text-stone-600">Dodawaj profile i zdjęcia swoich psiaków.</p>
+        <span class="mt-5 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
+          >Zarządzaj →</span
+        ></a
+      >
+      @if (canManageSchools()) {
+        <a routerLink="/my-school" class="barkly-card group p-6"
+          ><p class="barkly-eyebrow">Twoja organizacja</p>
+          <h2 class="mt-3 text-2xl font-semibold">Moje szkoły</h2>
+          <p class="mt-2 text-stone-600">Uzupełniaj profil, publikuj artykuły i rozwijaj ofertę.</p>
+          <span class="mt-5 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
+            >Zarządzaj →</span
+          ></a
+        >
+        <a routerLink="/trainings" class="barkly-card group p-6"
+          ><p class="barkly-eyebrow">Oferta</p>
+          <h2 class="mt-3 text-2xl font-semibold">Treningi</h2>
+          <p class="mt-2 text-stone-600">Dodawaj i aktualizuj zajęcia dla swoich szkół.</p>
+          <span class="mt-5 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
+            >Otwórz treningi →</span
+          ></a
+        >
+      }
+      <a routerLink="/news" class="barkly-card group p-6"
+        ><p class="barkly-eyebrow">Inspiracje</p>
+        <h2 class="mt-3 text-2xl font-semibold">Artykuły</h2>
+        <p class="mt-2 text-stone-600">Czytaj najnowsze informacje od szkół Barkly.</p>
+        <span class="mt-5 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
+          >Przeglądaj →</span
+        ></a
+      >
+    </div>
+    <section class="mt-12">
+      <div class="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <p class="barkly-eyebrow">Zapisane na później</p>
+          <h2 class="mt-2 text-3xl font-semibold tracking-tight">Ulubione</h2>
+        </div>
+        <span class="text-sm text-stone-500">Zapisane w tej przeglądarce</span>
+      </div>
+      @if (favoriteSchools().length || favoriteTrainings().length || favoriteArticles().length) {
+        <div class="grid gap-4 md:grid-cols-2">
+          @for (school of favoriteSchools(); track school.id) {
+            <a [routerLink]="['/schools', school.slug]" class="barkly-card group p-5"
+              ><p class="barkly-eyebrow">Szkoła</p>
+              <h3 class="mt-2 text-xl font-semibold">{{ school.name }}</h3>
+              <p class="mt-1 text-stone-600">{{ school.address }}</p>
+              <span class="mt-4 inline-block text-sm font-semibold text-emerald-800"
+                >Otwórz →</span
+              ></a
+            >
+          }
+          @for (training of favoriteTrainings(); track training.id) {
+            <a [routerLink]="['/trainings', training.id]" class="barkly-card group p-5"
+              ><p class="barkly-eyebrow">Trening</p>
+              <h3 class="mt-2 text-xl font-semibold">{{ training.title }}</h3>
+              <p class="mt-1 text-stone-600">
+                {{ training.trainerName }} · {{ training.trainingType.name }}
+              </p>
+              <span class="mt-4 inline-block text-sm font-semibold text-emerald-800"
+                >Otwórz →</span
+              ></a
+            >
+          }
+          @for (article of favoriteArticles(); track article.id) {
+            <a routerLink="/news" class="barkly-card group p-5"
+              ><p class="barkly-eyebrow">Artykuł · {{ article.schoolName }}</p>
+              <h3 class="mt-2 text-xl font-semibold">{{ article.title }}</h3>
+              <span class="mt-4 inline-block text-sm font-semibold text-emerald-800"
+                >Czytaj →</span
+              ></a
+            >
+          }
+        </div>
+      } @else {
+        <div class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-600">
+          <p class="font-semibold text-stone-900">Nie masz jeszcze ulubionych.</p>
+          <p class="mt-1">
+            Użyj gwiazdki przy szkole, treningu lub artykule, aby wrócić do nich tutaj.
+          </p>
+        </div>
+      }
+    </section>
+  </section>
+}

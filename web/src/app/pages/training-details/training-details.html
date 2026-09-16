@@ -23,10 +23,14 @@
           <input
             class="sr-only"
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png"
             (change)="uploadImage($event)"
           />
         </label>
+        <p class="mt-2 text-sm text-stone-500">
+          JPG lub PNG · maks. 10 MB · minimum 640 × 480 px. Zdjęcie zostanie automatycznie
+          zoptymalizowane.
+        </p>
         @if (imageUploadError()) {
           <p class="mt-2 text-sm text-red-600">{{ imageUploadError() }}</p>
         }

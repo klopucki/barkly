@@ -1,57 +1,152 @@
-<section class="mx-auto max-w-md">
-  <div class="mb-6 flex gap-2">
-    <button
-      type="button"
-      class="rounded px-3 py-2"
-      [class.bg-black]="mode() === 'login'"
-      [class.text-white]="mode() === 'login'"
-      (click)="setMode('login')"
-    >
-      Logowanie</button
-    ><button
-      type="button"
-      class="rounded px-3 py-2"
-      [class.bg-black]="mode() === 'register'"
-      [class.text-white]="mode() === 'register'"
-      (click)="setMode('register')"
-    >
-      Rejestracja
-    </button>
+<section
+  class="mx-auto grid min-h-[calc(100vh-13rem)] max-w-5xl overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-xl shadow-stone-900/5 md:grid-cols-[0.95fr_1.05fr]"
+>
+  <aside class="relative hidden overflow-hidden bg-stone-950 p-10 text-white md:flex md:flex-col">
+    <div class="absolute -right-20 -top-16 h-64 w-64 rounded-full bg-lime-300/20 blur-3xl"></div>
+    <div class="absolute -bottom-24 -left-12 h-64 w-64 rounded-full bg-amber-300/10 blur-3xl"></div>
+    <a routerLink="/" class="relative text-2xl font-bold tracking-tight">Barkly</a>
+    <div class="relative my-auto">
+      <div
+        class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-300 text-3xl text-stone-950"
+      >
+        ♡
+      </div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-lime-300">
+        Wspólna przestrzeń
+      </p>
+      <h1 class="mt-4 text-4xl font-semibold leading-tight">
+        Dobre życie z psem zaczyna się blisko.
+      </h1>
+      <p class="mt-5 max-w-sm leading-7 text-stone-300">
+        Odkrywaj sprawdzone szkoły, treningi i ludzi, którzy rozumieją Twojego psa.
+      </p>
+    </div>
+    <p class="relative text-sm text-stone-400">Dla opiekunów, psów i dobrych relacji.</p>
+  </aside>
+  <div class="flex items-center px-6 py-10 sm:px-10 md:px-12">
+    <div class="w-full">
+      <div class="mb-8">
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          Witaj w Barkly
+        </p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-stone-900">
+          {{ mode() === 'login' ? 'Miło Cię znów widzieć' : 'Załóż swoje konto' }}
+        </h1>
+        <p class="mt-2 text-stone-600">
+          {{
+            mode() === 'login'
+              ? 'Zaloguj się, aby wrócić do swoich spraw.'
+              : 'To zajmie tylko chwilę.'
+          }}
+        </p>
+      </div>
+      <div
+        class="mb-7 grid grid-cols-2 rounded-xl bg-stone-100 p-1"
+        role="tablist"
+        aria-label="Wybierz rodzaj formularza"
+      >
+        <button
+          type="button"
+          role="tab"
+          class="rounded-lg px-3 py-2.5 text-sm font-semibold transition"
+          [class.bg-white]="mode() === 'login'"
+          [class.text-stone-950]="mode() === 'login'"
+          [class.shadow-sm]="mode() === 'login'"
+          [class.text-stone-500]="mode() !== 'login'"
+          [attr.aria-selected]="mode() === 'login'"
+          (click)="setMode('login')"
+        >
+          Logowanie
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="rounded-lg px-3 py-2.5 text-sm font-semibold transition"
+          [class.bg-white]="mode() === 'register'"
+          [class.text-stone-950]="mode() === 'register'"
+          [class.shadow-sm]="mode() === 'register'"
+          [class.text-stone-500]="mode() !== 'register'"
+          [attr.aria-selected]="mode() === 'register'"
+          (click)="setMode('register')"
+        >
+          Rejestracja
+        </button>
+      </div>
+      <form class="space-y-5" novalidate (ngSubmit)="submit()">
+        @if (mode() === 'register') {
+          <label class="block text-sm font-medium text-stone-800" for="displayName"
+            >Jak mamy się do Ciebie zwracać?<input
+              id="displayName"
+              class="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
+              [(ngModel)]="displayName"
+              name="displayName"
+              autocomplete="name"
+              placeholder="np. Ania"
+              minlength="2"
+              maxlength="100"
+              required
+          /></label>
+          <label class="block text-sm font-medium text-stone-800" for="role"
+            >Typ konta<select
+              id="role"
+              class="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-stone-900 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
+              [(ngModel)]="role"
+              name="role"
+            >
+              <option value="USER">Opiekun psa</option>
+              <option value="SCHOOL_ADMIN">Administrator szkoły</option>
+            </select></label
+          >
+        }
+        <label class="block text-sm font-medium text-stone-800" for="email"
+          >Adres e-mail<input
+            id="email"
+            class="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
+            [(ngModel)]="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="ty@przyklad.pl"
+            maxlength="320"
+            required
+        /></label>
+        <label class="block text-sm font-medium text-stone-800" for="password"
+          >Hasło<input
+            id="password"
+            class="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
+            [(ngModel)]="password"
+            name="password"
+            type="password"
+            [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+            placeholder="Wpisz hasło"
+            maxlength="100"
+            required
+        /></label>
+        @if (error) {
+          <p
+            class="rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-800"
+            role="alert"
+          >
+            {{ error }}
+          </p>
+        }
+        <button
+          type="submit"
+          class="w-full rounded-xl bg-stone-950 px-4 py-3 font-semibold text-white shadow-lg shadow-stone-950/15 transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+        >
+          {{ mode() === 'login' ? 'Zaloguj się' : 'Załóż konto' }}
+        </button>
+      </form>
+      <p class="mt-7 text-center text-sm text-stone-600">
+        {{ mode() === 'login' ? 'Nie masz jeszcze konta?' : 'Masz już konto?' }}
+        <button
+          type="button"
+          class="font-semibold text-emerald-800 underline underline-offset-4"
+          (click)="setMode(mode() === 'login' ? 'register' : 'login')"
+        >
+          {{ mode() === 'login' ? 'Zarejestruj się' : 'Zaloguj się' }}
+        </button>
+      </p>
+    </div>
   </div>
-  <form class="space-y-4" novalidate (ngSubmit)="submit()">
-    @if (mode() === 'register') {
-      <input
-        class="w-full rounded border p-2"
-        [(ngModel)]="displayName"
-        name="displayName"
-        placeholder="Imię (min. 2 znaki)"
-        minlength="2"
-        maxlength="100"
-      /><label class="block text-sm" for="role">Typ konta</label
-      ><select id="role" class="w-full rounded border p-2" [(ngModel)]="role" name="role">
-        <option value="USER">Użytkownik</option>
-        <option value="SCHOOL_ADMIN">Administrator szkoły</option>
-      </select>
-    }
-    <input
-      class="w-full rounded border p-2"
-      [(ngModel)]="email"
-      name="email"
-      type="email"
-      placeholder="E-mail"
-      maxlength="320"
-    /><input
-      class="w-full rounded border p-2"
-      [(ngModel)]="password"
-      name="password"
-      type="password"
-      placeholder="Hasło"
-      maxlength="100"
-    /><button type="submit" class="rounded bg-black px-4 py-2 text-white">
-      {{ mode() === 'login' ? 'Zaloguj się' : 'Załóż konto' }}
-    </button>
-    @if (error) {
-      <p class="text-red-600">{{ error }}</p>
-    }
-  </form>
 </section>
