@@ -26,4 +26,15 @@ export interface DogPayload {
   visibility: DogVisibility;
 }
 
+export interface DogPost {
+  id: number;
+  dogId: number;
+  dogName: string;
+  ownerDisplayName: string;
+  content: string;
+  hasImage: boolean;
+  publishedAt: string;
+}
+
 export const dogImageUrl = (id: number) => `/api/dog-images/${id}`;
+export const dogPostImageUrl = (id: number) => `/api/dog-post-images/${id}`;

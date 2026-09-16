@@ -13,22 +13,38 @@ import pl.barkly.user.UserService;
 
 import java.text.Normalizer;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import pl.barkly.query.PageResponse;
+import pl.barkly.favorite.FavoriteService;
+import pl.barkly.favorite.FavoriteType;
 
 @Service
 public class SchoolService {
     private final SchoolRepository schools;
     private final UserService users;
     private final SchoolImageRepository images;
+    private final FavoriteService favorites;
 
-    public SchoolService(SchoolRepository schools, UserService users, SchoolImageRepository images) {
+    public SchoolService(SchoolRepository schools, UserService users, SchoolImageRepository images, FavoriteService favorites) {
         this.schools = schools;
         this.users = users;
         this.images = images;
+        this.favorites = favorites;
     }
 
     @Transactional(readOnly = true)
     public List<SchoolResponse> findAll() {
         return schools.findAllByOrderByNameAsc().stream().map(this::response).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<SchoolResponse> search(String query, int page, int size, boolean favoritesOnly) {
+        var pageable = pageRequest(page, size);
+        if (!favoritesOnly) return PageResponse.from(schools.search(normalizeQuery(query), pageable), this::response);
+        var ids = favorites.ids(FavoriteType.SCHOOL);
+        if (ids.isEmpty()) return new PageResponse<>(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0, 0);
+        return PageResponse.from(schools.searchFavorites(normalizeQuery(query), ids, pageable), this::response);
     }
 
     @Transactional(readOnly = true)
@@ -112,6 +128,14 @@ public class SchoolService {
         var gallery = images.findAllBySchool_IdOrderByIdAsc(school.getId()).stream().map(SchoolImageResponse::from).toList();
         return new SchoolResponse(school.getId(), school.getName(), school.getSlug(), school.getAddress(), school.getKrs(),
                 school.getDescription(), school.getActivities(), school.getPricing(), gallery);
+    }
+
+    private PageRequest pageRequest(int page, int size) {
+        return PageRequest.of(Math.max(0, page), Math.clamp(size, 1, 50), Sort.by("name").ascending());
+    }
+
+    private String normalizeQuery(String query) {
+        return query == null ? "" : query.trim();
     }
 
     private String slugBase(String name) {

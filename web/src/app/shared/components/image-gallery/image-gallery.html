@@ -1,0 +1,83 @@
+@if (current(); as image) {
+  <div>
+    <button
+      type="button"
+      class="group relative flex h-72 w-full items-center justify-center overflow-hidden rounded-2xl bg-stone-100 sm:h-96"
+      (click)="open()"
+    >
+      <img
+        class="h-full max-w-full object-contain transition duration-500 group-hover:scale-[1.02]"
+        [src]="image.src"
+        [alt]="image.alt"
+      />
+      <span
+        class="absolute bottom-3 right-3 rounded-full bg-stone-950/75 px-3 py-1.5 text-sm font-semibold text-white"
+        >{{ currentIndex() + 1 }} / {{ images().length }} · Powiększ</span
+      >
+    </button>
+    @if (images().length > 1) {
+      <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+        @for (thumbnail of images(); track thumbnail.src; let index = $index) {
+          <button
+            type="button"
+            class="h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2"
+            [class.border-emerald-700]="index === currentIndex()"
+            [class.border-transparent]="index !== currentIndex()"
+            (click)="select(index)"
+          >
+            <img class="h-full w-full object-cover" [src]="thumbnail.src" [alt]="thumbnail.alt" />
+          </button>
+        }
+      </div>
+    }
+  </div>
+}
+@if (isOpen() && current(); as image) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/90 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Galeria zdjęć"
+    (click)="close()"
+  >
+    <div
+      class="relative flex max-h-full w-full max-w-5xl items-center justify-center"
+      (click)="$event.stopPropagation()"
+    >
+      <img
+        class="max-h-[85vh] max-w-full rounded-xl object-contain"
+        [src]="image.src"
+        [alt]="image.alt"
+      />
+      <button
+        type="button"
+        class="absolute right-2 top-2 rounded-full bg-white/90 px-3 py-2 text-lg text-stone-900"
+        aria-label="Zamknij galerię"
+        (click)="close()"
+      >
+        ×
+      </button>
+      @if (images().length > 1) {
+        <button
+          type="button"
+          class="absolute left-2 rounded-full bg-white/90 px-4 py-3 text-2xl text-stone-900"
+          aria-label="Poprzednie zdjęcie"
+          (click)="previous()"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          class="absolute right-2 rounded-full bg-white/90 px-4 py-3 text-2xl text-stone-900"
+          aria-label="Następne zdjęcie"
+          (click)="next()"
+        >
+          ›
+        </button>
+      }
+      <p class="absolute -bottom-8 text-sm text-white">
+        {{ currentIndex() + 1 }} z {{ images().length }}
+      </p>
+    </div>
+  </div>
+}

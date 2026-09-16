@@ -1,23 +1,46 @@
-import { Component, ElementRef, OnInit, ViewChild, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { School, SchoolNews, schoolImageUrl } from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
 import { AuthService } from '../../features/auth/auth.service';
+import { Training } from '../../features/trainings/training.model';
+import { TrainingService } from '../../features/trainings/training.service';
+import { GalleryImage, ImageGallery } from '../../shared/components/image-gallery/image-gallery';
 @Component({
   selector: 'app-school-details',
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, RouterLink, ImageGallery],
   templateUrl: './school-details.html',
 })
 export class SchoolDetails implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(SchoolService);
   private readonly auth = inject(AuthService);
+  private readonly trainingsService = inject(TrainingService);
   readonly school = signal<School | null>(null);
   readonly news = signal<SchoolNews[]>([]);
   readonly canManage = signal(false);
+  readonly trainings = signal<Training[]>([]);
+  readonly activeTab = signal<'about' | 'trainings' | 'news'>('about');
   protected readonly imageUrl = schoolImageUrl;
+  readonly galleryImages = computed<GalleryImage[]>(
+    () =>
+      this.school()?.images.map((image) => ({
+        src: schoolImageUrl(image.imageKey),
+        alt: this.school()!.name,
+      })) ?? [],
+  );
   articleTitle = '';
   articleContent = '';
   articleActive = true;
@@ -49,6 +72,7 @@ export class SchoolDetails implements OnInit {
       next: (s) => {
         this.school.set(s);
         this.loadNews();
+        this.loadTrainings(s.id);
       },
     });
   }
@@ -59,6 +83,16 @@ export class SchoolDetails implements OnInit {
       next: (n) => this.news.set(n),
       error: () => (this.error = 'Nie udało się pobrać artykułów.'),
     });
+  }
+  private loadTrainings(schoolId: number) {
+    this.trainingsService.getTrainings$().subscribe({
+      next: (trainings) =>
+        this.trainings.set(trainings.filter((training) => training.schoolId === schoolId)),
+      error: () => this.trainings.set([]),
+    });
+  }
+  setTab(tab: 'about' | 'trainings' | 'news') {
+    this.activeTab.set(tab);
   }
   format(command: string, value?: string) {
     this.editor?.nativeElement.focus();

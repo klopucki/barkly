@@ -14,6 +14,8 @@ import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
+import pl.barkly.query.PageResponse;
 
 @RestController
 class TrainingController {
@@ -27,6 +29,15 @@ class TrainingController {
     @GetMapping("/api/trainings")
     List<TrainingResponse> findAll() {
         return trainingFacade.findTrainings();
+    }
+
+    @GetMapping("/api/query/trainings")
+    PageResponse<TrainingResponse> search(@RequestParam(defaultValue = "") String query,
+                                          @RequestParam(defaultValue = "") String type,
+                                          @RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "20") int size,
+                                          @RequestParam(defaultValue = "false") boolean favoritesOnly) {
+        return trainingFacade.searchTrainings(query, type, page, size, favoritesOnly);
     }
 
     @GetMapping("/api/trainings/{id}")

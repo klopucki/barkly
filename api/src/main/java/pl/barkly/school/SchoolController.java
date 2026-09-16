@@ -11,6 +11,8 @@ import pl.barkly.school.api.SchoolCreateRequest;
 import pl.barkly.school.api.SchoolResponse;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
+import pl.barkly.query.PageResponse;
 
 @RestController
 class SchoolController {
@@ -20,6 +22,14 @@ class SchoolController {
 
     @GetMapping("/api/schools")
     List<SchoolResponse> findAll() { return schoolService.findAll(); }
+
+    @GetMapping("/api/query/schools")
+    PageResponse<SchoolResponse> search(@RequestParam(defaultValue = "") String query,
+                                        @RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "20") int size,
+                                        @RequestParam(defaultValue = "false") boolean favoritesOnly) {
+        return schoolService.search(query, page, size, favoritesOnly);
+    }
 
     @GetMapping("/api/my/schools")
     List<SchoolResponse> findMine() { return schoolService.findMine(); }

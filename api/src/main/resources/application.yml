@@ -24,5 +24,9 @@ spring:
 barkly:
   images:
     storage-directory: ${BARKLY_IMAGE_STORAGE_DIRECTORY:./uploads/training-images}
-    max-file-size: ${BARKLY_IMAGE_MAX_FILE_SIZE:2MB}
-    max-request-size: ${BARKLY_IMAGE_MAX_REQUEST_SIZE:3MB}
+    max-file-size: ${BARKLY_IMAGE_MAX_FILE_SIZE:10MB}
+    max-request-size: ${BARKLY_IMAGE_MAX_REQUEST_SIZE:12MB}
+    min-width: 640
+    min-height: 480
+    max-width: 1600
+    max-height: 1600

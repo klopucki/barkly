@@ -8,6 +8,7 @@ import {
 } from '../../features/trainings/components/training-form/training-form';
 import { Modal } from '../../shared/components/modal/modal';
 import { AuthService } from '../../features/auth/auth.service';
+import { FavoritesService } from '../../shared/favorites.service';
 
 @Component({
   selector: 'app-trainings',
@@ -17,31 +18,41 @@ import { AuthService } from '../../features/auth/auth.service';
 export class Trainings implements OnInit {
   private readonly trainingService = inject(TrainingService);
   protected readonly auth = inject(AuthService);
+  protected readonly favorites = inject(FavoritesService);
 
   searchText = signal('');
+  typeFilter = signal('');
+  favoritesOnly = signal(false);
   trainingsFromApi = signal<Training[]>([]);
+  page = signal(0);
+  totalPages = signal(0);
   isLoading = signal(true);
   isAddTrainingOpen = signal(false);
   addTrainingError = signal<string | null>(null);
   editingTraining = signal<Training | null>(null);
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
   trainings = computed(() => {
     const search = this.searchText().trim().toLowerCase();
+    const type = this.typeFilter();
     const trainings = this.trainingsFromApi();
-
-    if (!search) {
-      return trainings;
-    }
 
     return trainings.filter(
       (training) =>
-        training.title.toLowerCase().includes(search) ||
-        training.trainerName.toLowerCase().includes(search) ||
-        training.trainingType.name.toLowerCase().includes(search) ||
-        training.trainingLevel?.name.toLowerCase().includes(search) ||
-        training.targetGroup?.name.toLowerCase().includes(search),
+        (!search ||
+          training.title.toLowerCase().includes(search) ||
+          training.trainerName.toLowerCase().includes(search) ||
+          training.trainingType.name.toLowerCase().includes(search) ||
+          training.trainingLevel?.name.toLowerCase().includes(search) ||
+          training.targetGroup?.name.toLowerCase().includes(search)) &&
+        (!type || training.trainingType.name === type) &&
+        (!this.favoritesOnly() || this.favorites.has('training', training.id)),
     );
   });
+
+  trainingTypes = computed(() => [
+    ...new Set(this.trainingsFromApi().map((training) => training.trainingType.name)),
+  ]);
 
   constructor() {
     effect(() => {
@@ -54,17 +65,48 @@ export class Trainings implements OnInit {
   }
 
   loadTrainings(): void {
+    this.loadPage(0);
+  }
+
+  search(query: string): void {
+    this.searchText.set(query);
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.loadPage(0), 250);
+  }
+
+  setType(type: string): void {
+    this.typeFilter.set(type);
+    this.loadPage(0);
+  }
+
+  loadMore(): void {
+    this.loadPage(this.page() + 1, true);
+  }
+
+  toggleFavorites(): void {
+    if (!this.auth.currentUser()) return;
+    this.favoritesOnly.set(!this.favoritesOnly());
+    this.loadPage(0);
+  }
+
+  private loadPage(page: number, append = false): void {
     this.isLoading.set(true);
 
-    this.trainingService.getTrainings$().subscribe({
-      next: (trainings) => {
-        this.trainingsFromApi.set(trainings);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-      },
-    });
+    this.trainingService
+      .search$(this.searchText(), this.typeFilter(), page, 20, this.favoritesOnly())
+      .subscribe({
+        next: (result) => {
+          this.trainingsFromApi.set(
+            append ? [...this.trainingsFromApi(), ...result.items] : result.items,
+          );
+          this.page.set(result.page);
+          this.totalPages.set(result.totalPages);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        },
+      });
   }
 
   openAddTraining(): void {
@@ -103,9 +145,14 @@ export class Trainings implements OnInit {
         }
         this.trainingService.uploadTrainingImage$(id, submission.image).subscribe({
           next: (withImage) => this.finishUpdatingTraining(withImage),
-          error: () => {
+          error: (error) => {
             this.finishUpdatingTraining(updated);
-            this.addTrainingError.set('Training was updated, but the image could not be uploaded.');
+            const message = error.error?.image ?? error.error?.message;
+            this.addTrainingError.set(
+              message
+                ? `Trening został zapisany, ale zdjęcie nie zostało przesłane: ${message}`
+                : 'Trening został zapisany, ale zdjęcie nie zostało przesłane.',
+            );
           },
         });
       },

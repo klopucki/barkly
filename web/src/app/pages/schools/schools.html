@@ -1,22 +1,69 @@
 <section>
-  <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-3xl font-bold">Szkoły</h1>
+  <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="barkly-eyebrow">Miejsca z dobrym podejściem</p>
+      <h1 class="barkly-page-title mt-2">Szkoły dla Was</h1>
+      <p class="mt-3 text-stone-600">Poznaj ofertę szkół i znajdź swój kolejny krok.</p>
+    </div>
     @if (auth.currentUser()) {
-      <a routerLink="/my-school" class="rounded-lg bg-black px-4 py-2 text-white">Moje szkoły</a>
+      <a routerLink="/my-school" class="barkly-button">Moje szkoły</a>
     }
   </div>
-  <div class="grid gap-4 md:grid-cols-2">
-    @for (school of items(); track school.id) {
-      <a
-        [routerLink]="['/schools', school.slug]"
-        class="rounded-xl border border-gray-200 p-5 hover:border-black"
-      >
-        <h2 class="text-xl font-semibold">{{ school.name }}</h2>
-        <p class="mt-1 text-gray-600">{{ school.address }}</p>
-        <p class="mt-3 line-clamp-3">{{ school.description || school.activities }}</p>
-      </a>
+  <div class="mb-7 flex flex-wrap gap-3">
+    <input
+      class="barkly-input max-w-xl"
+      type="search"
+      placeholder="Szukaj po nazwie, mieście lub ofercie…"
+      #searchInput
+      (input)="search(searchInput.value)"
+    /><button
+      type="button"
+      class="barkly-button-secondary"
+      [class.!border-emerald-700]="favoritesOnly()"
+      [class.!bg-emerald-50]="favoritesOnly()"
+      (click)="toggleFavorites()"
+    >
+      ★ Ulubione
+    </button>
+  </div>
+  @if (loading()) {
+    <p class="mb-4 text-sm text-stone-500">Ładowanie szkół…</p>
+  }
+  <div class="grid gap-5 md:grid-cols-2">
+    @for (school of filteredItems(); track school.id) {
+      <article class="barkly-card group relative p-6">
+        <button
+          type="button"
+          class="absolute right-4 top-4 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
+          [attr.aria-label]="
+            favorites.has('school', school.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'
+          "
+          (click)="favorites.toggle('school', school.id)"
+        >
+          {{ favorites.has('school', school.id) ? '★' : '☆' }}</button
+        ><a [routerLink]="['/schools', school.slug]" class="block pr-8"
+          ><p class="text-sm font-medium text-emerald-800">{{ school.address }}</p>
+          <h2 class="mt-2 text-2xl font-semibold tracking-tight">{{ school.name }}</h2>
+          <p class="mt-4 line-clamp-3 leading-6 text-stone-600">
+            {{ school.description || school.activities || 'Poznaj ofertę tej szkoły.' }}
+          </p>
+          <span
+            class="mt-6 inline-block text-sm font-semibold text-emerald-800 group-hover:translate-x-1"
+            >Zobacz profil →</span
+          ></a
+        >
+      </article>
     } @empty {
-      <p class="text-gray-500">Nie ma jeszcze szkół.</p>
+      <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">
+        Nie znaleziono szkół pasujących do kryteriów.
+      </p>
     }
   </div>
+  @if (page() + 1 < totalPages()) {
+    <div class="mt-7 text-center">
+      <button type="button" class="barkly-button-secondary" (click)="loadMore()">
+        Pokaż więcej szkół
+      </button>
+    </div>
+  }
 </section>

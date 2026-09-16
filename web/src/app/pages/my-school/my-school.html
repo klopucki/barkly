@@ -23,43 +23,55 @@
   } @else {
     <div class="grid gap-4 md:grid-cols-2">
       @for (s of mine(); track s.id) {
-        <a
-          [routerLink]="['/schools', s.slug]"
-          class="block rounded-xl border p-5 transition hover:border-black hover:shadow-sm"
-          ><h2 class="text-xl font-semibold">{{ s.name }}</h2>
-          <p class="mt-1 text-sm text-gray-500">{{ s.address }}</p>
-          @if (s.description) {
-            <p class="mt-3 line-clamp-3 text-gray-700">{{ s.description }}</p>
-          }
-          <span class="mt-4 inline-block text-sm font-medium underline"
-            >Otwórz szkołę i dodaj artykuł</span
-          ></a
-        >
+        <article class="rounded-xl border p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-semibold">{{ s.name }}</h2>
+              <p class="mt-1 text-sm text-gray-500">{{ s.address }}</p>
+              @if (s.description) {
+                <p class="mt-3 line-clamp-3 text-gray-700">{{ s.description }}</p>
+              }
+            </div>
+            <button
+              type="button"
+              class="rounded border px-3 py-1.5 text-sm"
+              (click)="openEditDialog(s)"
+            >
+              Edytuj
+            </button>
+          </div>
+          <a
+            [routerLink]="['/schools', s.slug]"
+            class="mt-4 inline-block text-sm font-medium underline"
+          >
+            Otwórz szkołę i dodaj artykuł
+          </a>
+        </article>
       } @empty {
         <p class="text-gray-500">Nie masz jeszcze szkoły. Dodaj pierwszą, aby rozpocząć.</p>
       }
     </div>
   }
-  @if (showCreateDialog) {
+  @if (showFormDialog) {
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Dodaj szkołę"
-      (click)="closeCreateDialog()"
+      aria-label="Formularz szkoły"
+      (click)="closeFormDialog()"
     >
       <form
         class="max-h-full w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
         (click)="$event.stopPropagation()"
-        (ngSubmit)="create()"
+        (ngSubmit)="save()"
       >
         <div class="mb-5 flex items-center justify-between">
-          <h2 class="text-2xl font-bold">Dodaj szkołę</h2>
+          <h2 class="text-2xl font-bold">{{ editing ? 'Edytuj szkołę' : 'Dodaj szkołę' }}</h2>
           <button
             type="button"
             class="text-2xl leading-none"
             aria-label="Zamknij"
-            (click)="closeCreateDialog()"
+            (click)="closeFormDialog()"
           >
             ×
           </button>
@@ -105,9 +117,11 @@
           ></textarea>
         </div>
         <div class="mt-5 flex justify-end gap-3">
-          <button type="button" class="rounded border px-4 py-2" (click)="closeCreateDialog()">
+          <button type="button" class="rounded border px-4 py-2" (click)="closeFormDialog()">
             Anuluj</button
-          ><button class="rounded bg-black px-4 py-2 text-white">Utwórz szkołę</button>
+          ><button class="rounded bg-black px-4 py-2 text-white">
+            {{ editing ? 'Zapisz zmiany' : 'Utwórz szkołę' }}
+          </button>
         </div>
       </form>
     </div>

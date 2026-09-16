@@ -1,11 +1,12 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Dog, dogImageUrl } from '../../features/dogs/dog.model';
 import { DogService } from '../../features/dogs/dog.service';
+import { GalleryImage, ImageGallery } from '../../shared/components/image-gallery/image-gallery';
 
 @Component({
   selector: 'app-dog-details',
-  imports: [RouterLink],
+  imports: [RouterLink, ImageGallery],
   templateUrl: './dog-details.html',
 })
 export class DogDetails implements OnInit {
@@ -15,6 +16,11 @@ export class DogDetails implements OnInit {
   readonly dog = signal<Dog | null>(null);
   readonly imageUrl = dogImageUrl;
   readonly error = signal('');
+  readonly galleryImages = computed<GalleryImage[]>(
+    () =>
+      this.dog()?.images.map((image) => ({ src: dogImageUrl(image.id), alt: this.dog()!.name })) ??
+      [],
+  );
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));

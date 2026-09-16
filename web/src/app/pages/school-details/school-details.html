@@ -7,77 +7,129 @@
         <p class="text-sm text-gray-500">KRS: {{ s.krs }}</p>
       }
     </div>
-    @if (s.images.length) {
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-        @for (image of s.images; track image.id) {
-          <img
-            [src]="imageUrl(image.imageKey)"
-            [alt]="s.name"
-            class="aspect-video w-full rounded-lg object-cover"
-          />
-        }
-      </div>
-    }
-    @if (s.description) {
-      <div>
-        <h2 class="text-xl font-semibold">O szkole</h2>
-        <p class="whitespace-pre-line">{{ s.description }}</p>
-      </div>
-    }
-    @if (s.activities) {
-      <div>
-        <h2 class="text-xl font-semibold">Czym się zajmujemy</h2>
-        <p class="whitespace-pre-line">{{ s.activities }}</p>
-      </div>
-    }
-    @if (s.pricing) {
-      <div>
-        <h2 class="text-xl font-semibold">Cennik</h2>
-        <p class="whitespace-pre-line">{{ s.pricing }}</p>
-      </div>
-    }
-    <div>
-      <div class="mb-3 flex items-center justify-between gap-3">
-        <h2 class="text-xl font-semibold">Artykuły</h2>
-        @if (canManage()) {
-          <button
-            type="button"
-            class="rounded bg-black px-4 py-2 text-white"
-            (click)="openArticleDialog()"
-          >
-            Napisz artykuł
-          </button>
-        }
-      </div>
-      @for (item of news(); track item.id) {
-        <article class="mb-4 rounded-lg border p-5">
-          <div class="flex items-start justify-between gap-4">
-            <h3 class="text-lg font-semibold">{{ item.title }}</h3>
-            @if (canManage()) {
-              <div class="flex items-center gap-3">
-                <span
-                  class="rounded px-2 py-1 text-xs"
-                  [class.bg-green-100]="item.active"
-                  [class.text-green-800]="item.active"
-                  [class.bg-gray-100]="!item.active"
-                  [class.text-gray-600]="!item.active"
-                  >{{ item.active ? 'Widoczny' : 'Ukryty' }}</span
-                ><button type="button" class="text-sm underline" (click)="openArticleDialog(item)">
-                  Edytuj
-                </button>
-              </div>
-            }
-          </div>
-          <div class="prose mt-3 max-w-none" [innerHTML]="item.content"></div>
-          <div class="mt-4 text-sm text-gray-500">
-            {{ item.schoolName }} · Autor: {{ item.authorDisplayName }} ·
-            <time>{{ item.publishedAt | date: 'dd.MM.yyyy' }}</time>
-          </div>
-        </article>
-      } @empty {
-        <p class="text-gray-500">Brak artykułów.</p>
-      }
+    <div class="flex gap-2 border-b border-stone-200" role="tablist" aria-label="Profil szkoły">
+      <button
+        type="button"
+        class="border-b-2 px-3 py-3 text-sm font-semibold"
+        [class.border-emerald-700]="activeTab() === 'about'"
+        [class.text-emerald-800]="activeTab() === 'about'"
+        [class.border-transparent]="activeTab() !== 'about'"
+        (click)="setTab('about')"
+      >
+        O szkole
+      </button>
+      <button
+        type="button"
+        class="border-b-2 px-3 py-3 text-sm font-semibold"
+        [class.border-emerald-700]="activeTab() === 'trainings'"
+        [class.text-emerald-800]="activeTab() === 'trainings'"
+        [class.border-transparent]="activeTab() !== 'trainings'"
+        (click)="setTab('trainings')"
+      >
+        Treningi ({{ trainings().length }})
+      </button>
+      <button
+        type="button"
+        class="border-b-2 px-3 py-3 text-sm font-semibold"
+        [class.border-emerald-700]="activeTab() === 'news'"
+        [class.text-emerald-800]="activeTab() === 'news'"
+        [class.border-transparent]="activeTab() !== 'news'"
+        (click)="setTab('news')"
+      >
+        Artykuły
+      </button>
     </div>
+    @if (activeTab() === 'about') {
+      @if (galleryImages().length) {
+        <app-image-gallery [images]="galleryImages()" />
+      }
+      @if (s.description) {
+        <div>
+          <h2 class="text-xl font-semibold">O szkole</h2>
+          <p class="whitespace-pre-line">{{ s.description }}</p>
+        </div>
+      }
+      @if (s.activities) {
+        <div>
+          <h2 class="text-xl font-semibold">Czym się zajmujemy</h2>
+          <p class="whitespace-pre-line">{{ s.activities }}</p>
+        </div>
+      }
+      @if (s.pricing) {
+        <div>
+          <h2 class="text-xl font-semibold">Cennik</h2>
+          <p class="whitespace-pre-line">{{ s.pricing }}</p>
+        </div>
+      }
+    } @else if (activeTab() === 'trainings') {
+      <div class="grid gap-4 md:grid-cols-2">
+        @for (training of trainings(); track training.id) {
+          <a [routerLink]="['/trainings', training.id]" class="barkly-card block p-5"
+            ><p class="text-sm font-semibold text-emerald-800">
+              {{ training.startAt | date: 'dd.MM.yyyy, HH:mm' }}
+            </p>
+            <h2 class="mt-2 text-xl font-semibold">{{ training.title }}</h2>
+            <p class="mt-2 text-stone-600">
+              Trener: {{ training.trainerName }} · {{ training.trainingType.name }}
+            </p>
+            <span class="mt-4 inline-block text-sm font-semibold text-emerald-800"
+              >Zobacz trening →</span
+            ></a
+          >
+        } @empty {
+          <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">
+            Ta szkoła nie ma jeszcze opublikowanych treningów.
+          </p>
+        }
+      </div>
+    } @else {
+      <div>
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h2 class="text-xl font-semibold">Artykuły</h2>
+          @if (canManage()) {
+            <button
+              type="button"
+              class="rounded bg-black px-4 py-2 text-white"
+              (click)="openArticleDialog()"
+            >
+              Napisz artykuł
+            </button>
+          }
+        </div>
+        @for (item of news(); track item.id) {
+          <article class="mb-4 rounded-lg border p-5">
+            <div class="flex items-start justify-between gap-4">
+              <h3 class="text-lg font-semibold">{{ item.title }}</h3>
+              @if (canManage()) {
+                <div class="flex items-center gap-3">
+                  <span
+                    class="rounded px-2 py-1 text-xs"
+                    [class.bg-green-100]="item.active"
+                    [class.text-green-800]="item.active"
+                    [class.bg-gray-100]="!item.active"
+                    [class.text-gray-600]="!item.active"
+                    >{{ item.active ? 'Widoczny' : 'Ukryty' }}</span
+                  ><button
+                    type="button"
+                    class="text-sm underline"
+                    (click)="openArticleDialog(item)"
+                  >
+                    Edytuj
+                  </button>
+                </div>
+              }
+            </div>
+            <div class="prose mt-3 max-w-none" [innerHTML]="item.content"></div>
+            <div class="mt-4 text-sm text-gray-500">
+              {{ item.schoolName }} · Autor: {{ item.authorDisplayName }} ·
+              <time>{{ item.publishedAt | date: 'dd.MM.yyyy' }}</time>
+            </div>
+          </article>
+        } @empty {
+          <p class="text-gray-500">Brak artykułów.</p>
+        }
+      </div>
+    }
     @if (showArticleDialog) {
       <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -149,11 +201,13 @@
               (click)="addLink()"
             >
               Link</button
-            ><label class="cursor-pointer rounded border px-2 py-1"
+            ><label
+              class="cursor-pointer rounded border px-2 py-1"
+              title="JPG lub PNG, maks. 10 MB, minimum 640 × 480 px. Zdjęcie zostanie zoptymalizowane."
               >Zdjęcie<input
                 class="hidden"
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png"
                 (change)="uploadArticleImage($event)"
             /></label>
           </div>
@@ -165,6 +219,10 @@
             aria-multiline="true"
             (input)="syncEditor()"
           ></div>
+          <p class="mt-2 text-xs text-stone-500">
+            Zdjęcia: JPG lub PNG, maks. 10 MB, minimum 640 × 480 px. Automatycznie optymalizujemy je
+            przed publikacją.
+          </p>
           <label class="mt-4 flex items-center gap-2 text-sm"
             ><input type="checkbox" [(ngModel)]="articleActive" name="articleActive" /> Widoczny
             publicznie</label

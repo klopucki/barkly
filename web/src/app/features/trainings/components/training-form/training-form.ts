@@ -165,7 +165,7 @@ export class TrainingForm implements OnInit {
 
     if (file && !allowedTypes.includes(file.type)) {
       this.selectedImage = null;
-      this.imageError = 'Only JPEG, PNG and WebP images are supported.';
+      this.imageError = 'Dozwolone są tylko zdjęcia JPG i PNG.';
       input.value = '';
       return;
     }

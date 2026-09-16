@@ -8,6 +8,7 @@ import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 
 import java.util.List;
+import pl.barkly.query.PageResponse;
 
 @Service
 class TrainingFacadeImpl implements TrainingFacade {
@@ -42,6 +43,11 @@ class TrainingFacadeImpl implements TrainingFacade {
     @Override
     public TrainingResponse createTraining(TrainingCreateRequest request) {
         return trainingCommandService.create(request);
+    }
+
+    @Override
+    public PageResponse<TrainingResponse> searchTrainings(String query, String type, int page, int size, boolean favoritesOnly) {
+        return trainingQueryService.search(query, type, page, size, favoritesOnly);
     }
 
     @Override
