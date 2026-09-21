@@ -7,7 +7,11 @@
         <p class="text-sm text-gray-500">KRS: {{ s.krs }}</p>
       }
     </div>
-    <div class="flex gap-2 border-b border-stone-200" role="tablist" aria-label="Profil szkoły">
+    <div
+      class="flex gap-1 overflow-x-auto border-b border-stone-200"
+      role="tablist"
+      aria-label="Profil szkoły"
+    >
       <button
         type="button"
         class="border-b-2 px-3 py-3 text-sm font-semibold"
@@ -84,7 +88,9 @@
       </div>
     } @else {
       <div>
-        <div class="mb-3 flex items-center justify-between gap-3">
+        <div
+          class="mb-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center"
+        >
           <h2 class="text-xl font-semibold">Artykuły</h2>
           @if (canManage()) {
             <button
@@ -97,11 +103,11 @@
           }
         </div>
         @for (item of news(); track item.id) {
-          <article class="mb-4 rounded-lg border p-5">
-            <div class="flex items-start justify-between gap-4">
+          <article class="barkly-card mb-4 p-5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <h3 class="text-lg font-semibold">{{ item.title }}</h3>
               @if (canManage()) {
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                   <span
                     class="rounded px-2 py-1 text-xs"
                     [class.bg-green-100]="item.active"
@@ -142,8 +148,8 @@
           class="max-h-full w-full max-w-3xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
           (click)="$event.stopPropagation()"
         >
-          <div class="mb-5 flex items-center justify-between">
-            <div>
+          <div class="mb-5 flex items-start justify-between gap-3">
+            <div class="min-w-0">
               <h2 class="text-2xl font-bold">
                 {{ editingArticle ? 'Edytuj artykuł' : 'Napisz artykuł' }}
               </h2>
@@ -227,7 +233,7 @@
             ><input type="checkbox" [(ngModel)]="articleActive" name="articleActive" /> Widoczny
             publicznie</label
           >
-          <div class="mt-5 flex justify-end gap-3">
+          <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button type="button" class="rounded border px-4 py-2" (click)="closeArticleDialog()">
               Anuluj</button
             ><button
