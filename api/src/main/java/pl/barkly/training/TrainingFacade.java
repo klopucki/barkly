@@ -21,9 +21,13 @@ public interface TrainingFacade {
 
     BookingResponse bookTraining(Long trainingId, BookingCreateRequest request);
 
+    BookingResponse quickBookTraining(Long trainingId, Long dogId);
+
     List<BookingResponse> findBookings(Long trainingId);
 
     void deleteTraining(Long id);
 
     void deleteBooking(Long id);
+
+    TrainingResponse togglePaw(Long id);
 }

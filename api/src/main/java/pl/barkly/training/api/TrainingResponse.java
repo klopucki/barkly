@@ -14,6 +14,8 @@ public record TrainingResponse(
         LocalDateTime startAt,
         Integer capacity,
         int bookedCount,
-        String imageKey
+        String imageKey,
+        long pawCount,
+        boolean pawedByCurrentUser
 ) {
 }

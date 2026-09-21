@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "dog")
-class DogEntity {
+public class DogEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -64,15 +64,15 @@ class DogEntity {
         this.visibility = visibility;
     }
 
-    Long getId() {
+    public Long getId() {
         return id;
     }
 
-    UserEntity getOwner() {
+    public UserEntity getOwner() {
         return owner;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
@@ -80,7 +80,7 @@ class DogEntity {
         return breed;
     }
 
-    LocalDate getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 

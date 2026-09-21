@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record BookingResponse(
         Long id,
         Long trainingId,
+        Long dogId,
         String ownerName,
         String email,
         String dogName,

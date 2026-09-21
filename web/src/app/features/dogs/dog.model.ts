@@ -34,6 +34,24 @@ export interface DogPost {
   content: string;
   hasImage: boolean;
   publishedAt: string;
+  reactions: PostReactionSummary[];
+  myReaction: PostReactionType | null;
+  commentCount: number;
+}
+
+export type PostReactionType = 'HEART' | 'THUMBS_UP' | 'PAW';
+
+export interface PostReactionSummary {
+  reactionType: PostReactionType;
+  count: number;
+}
+
+export interface DogPostComment {
+  id: number;
+  authorDisplayName: string;
+  content: string;
+  publishedAt: string;
+  mine: boolean;
 }
 
 export const dogImageUrl = (id: number) => `/api/dog-images/${id}`;

@@ -60,4 +60,7 @@ class TrainingController {
     public void deleteTraining(@PathVariable Long id) {
         trainingFacade.deleteTraining(id);
     }
+
+    @PutMapping("/api/trainings/{id}/paw")
+    TrainingResponse togglePaw(@PathVariable Long id) { return trainingFacade.togglePaw(id); }
 }

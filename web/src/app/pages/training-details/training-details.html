@@ -17,6 +17,16 @@
         }
         <p>Date: {{ training()!.startAt }}</p>
         <p>Booked: {{ training()!.bookedCount }}</p>
+        <button
+          type="button"
+          class="mt-3 rounded-full px-3 py-1 text-sm hover:bg-lime-100"
+          [class.bg-lime-200]="training()!.pawedByCurrentUser"
+          [disabled]="!auth.currentUser()"
+          (click)="togglePaw()"
+        >
+          🐾 {{ training()!.pawCount }}
+          {{ training()!.pawCount === 1 ? 'osoba lubi ten trening' : 'osób lubi ten trening' }}
+        </button>
 
         <label class="mt-4 inline-block cursor-pointer rounded-lg border border-gray-300 px-4 py-2">
           {{ training()!.imageKey ? 'Replace image' : 'Add image' }}
@@ -67,13 +77,72 @@
     </app-modal>
   }
 
-  <button
-    type="button"
-    class="mt-6 rounded-lg bg-black px-4 py-2 text-white"
-    (click)="openBookingModal()"
-  >
-    Book training
-  </button>
+  @if (auth.currentUser()) {
+    <button
+      type="button"
+      class="mt-6 rounded-lg bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:bg-stone-300"
+      [disabled]="dogs().length === 0 || !hasAvailableDog()"
+      (click)="openQuickBookingModal()"
+    >
+      {{
+        dogs().length === 0
+          ? 'Dodaj psa, aby się zapisać'
+          : hasAvailableDog()
+            ? 'Zapisz psa'
+            : 'Wszystkie Twoje psy są zapisane'
+      }}
+    </button>
+    @if (dogs().length > 0) {
+      <button
+        type="button"
+        class="ml-2 mt-6 rounded-lg border border-gray-300 px-4 py-2"
+        (click)="openBookingModal()"
+      >
+        Zapis ręczny
+      </button>
+    }
+  } @else {
+    <button
+      type="button"
+      class="mt-6 rounded-lg bg-black px-4 py-2 text-white"
+      (click)="openBookingModal()"
+    >
+      Book training
+    </button>
+  }
+
+  @if (isQuickBookingModalOpen()) {
+    <app-modal title="Wybierz psa" (closed)="closeQuickBookingModal()">
+      <p class="mb-4 text-stone-600">Wybierz psa, którego chcesz zapisać na ten trening.</p>
+      <div class="space-y-2">
+        @for (dog of dogs(); track dog.id) {
+          @if (enrolledDogIds().has(dog.id)) {
+            <div
+              class="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 p-3"
+            >
+              <span class="font-medium">{{ dog.name }}</span
+              ><span class="text-sm text-stone-500">Już zapisany</span>
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="flex w-full items-center justify-between rounded-xl border border-stone-200 p-3 text-left hover:border-emerald-500 hover:bg-emerald-50"
+              [disabled]="quickBookingDogId() !== null"
+              (click)="quickBook(dog)"
+            >
+              <span class="font-medium">{{ dog.name }}</span
+              ><span class="text-sm text-emerald-800">{{
+                quickBookingDogId() === dog.id ? 'Zapisywanie…' : 'Zapisz'
+              }}</span>
+            </button>
+          }
+        }
+      </div>
+      @if (bookingError()) {
+        <p class="mt-3 text-sm text-red-700">{{ bookingError() }}</p>
+      }
+    </app-modal>
+  }
 
   @if (isBookingModalOpen()) {
     <app-modal title="Book training" (closed)="closeBookingModal()">

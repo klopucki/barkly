@@ -39,6 +39,8 @@ export interface Training {
   capacity: number | null;
   bookedCount: number;
   imageKey: string | null;
+  pawCount: number;
+  pawedByCurrentUser: boolean;
 }
 
 export function trainingImageUrl(imageKey: string): string {

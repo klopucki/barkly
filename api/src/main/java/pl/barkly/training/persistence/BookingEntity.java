@@ -25,6 +25,9 @@ public class BookingEntity {
     @Column(name = "dog_name")
     private String dogName;
 
+    @Column(name = "dog_id")
+    private Long dogId;
+
     @Column(name = "dog_age")
     private int dogAge;
 
@@ -56,6 +59,17 @@ public class BookingEntity {
         return deletedAt != null;
     }
 
+    public BookingEntity(Long trainingId, Long dogId, String ownerName, String email, String dogName, int dogAge) {
+        this.trainingId = trainingId;
+        this.dogId = dogId;
+        this.ownerName = ownerName;
+        this.email = email;
+        this.dogName = dogName;
+        this.dogAge = dogAge;
+        this.notes = "";
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Long getTrainingId() {
         return trainingId;
     }
@@ -64,6 +78,7 @@ public class BookingEntity {
         return new BookingResponse(
                 id,
                 trainingId,
+                dogId,
                 ownerName,
                 email,
                 dogName,
