@@ -4,12 +4,15 @@
 
 @layer base {
   html {
-    background: #f7f7f3;
+    background: #f4f5ef;
   }
   body {
     min-width: 320px;
-    background: #f7f7f3;
+    background:
+      radial-gradient(circle at 8% 4%, rgb(217 249 157 / 0.22), transparent 22rem),
+      radial-gradient(circle at 92% 24%, rgb(167 243 208 / 0.18), transparent 24rem), #f4f5ef;
     color: #292524;
+    font-feature-settings: 'ss01', 'ss02', 'cv02';
   }
   ::selection {
     background: #bef264;
@@ -19,10 +22,12 @@
 
 @layer components {
   .barkly-card {
-    border: 1px solid #e7e5e4;
-    border-radius: 1rem;
-    background: #fff;
-    box-shadow: 0 1px 2px rgb(28 25 23 / 0.04);
+    border: 1px solid rgb(231 229 228 / 0.9);
+    border-radius: 1.25rem;
+    background: rgb(255 255 255 / 0.9);
+    box-shadow:
+      0 2px 4px rgb(28 25 23 / 0.03),
+      0 10px 30px rgb(28 25 23 / 0.035);
     transition:
       border-color 0.2s,
       box-shadow 0.2s,
@@ -30,24 +35,29 @@
   }
   .barkly-card:hover {
     border-color: #a8a29e;
-    box-shadow: 0 12px 24px rgb(28 25 23 / 0.08);
+    box-shadow: 0 16px 34px rgb(28 25 23 / 0.09);
+    transform: translateY(-2px);
   }
   .barkly-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 0.75rem;
-    background: #1c1917;
+    background: #175c48;
     padding: 0.7rem 1rem;
     font-size: 0.875rem;
     font-weight: 600;
     color: #fff;
     transition:
       background-color 0.2s,
-      transform 0.2s;
+      transform 0.2s,
+      box-shadow 0.2s;
+    box-shadow: 0 6px 14px rgb(6 78 59 / 0.18);
   }
   .barkly-button:hover {
-    background: #047857;
+    background: #0f766e;
+    box-shadow: 0 8px 18px rgb(6 78 59 / 0.24);
+    transform: translateY(-1px);
   }
   .barkly-button:focus-visible,
   .barkly-link:focus-visible {
@@ -60,7 +70,7 @@
     justify-content: center;
     border: 1px solid #d6d3d1;
     border-radius: 0.75rem;
-    background: #fff;
+    background: rgb(255 255 255 / 0.82);
     padding: 0.65rem 0.95rem;
     font-size: 0.875rem;
     font-weight: 600;
@@ -83,7 +93,7 @@
   .barkly-page-title {
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.055em;
     line-height: 1.05;
     color: #1c1917;
   }
@@ -91,7 +101,7 @@
     width: 100%;
     border: 1px solid #d6d3d1;
     border-radius: 0.75rem;
-    background: #fff;
+    background: rgb(255 255 255 / 0.92);
     padding: 0.75rem;
     outline: none;
     transition:
@@ -110,6 +120,38 @@
     margin: 1.5rem auto;
     border-radius: 0.75rem;
     object-fit: contain;
+  }
+
+  .barkly-glass-panel {
+    border: 1px solid rgb(255 255 255 / 0.72);
+    background: rgb(255 255 255 / 0.72);
+    box-shadow: 0 18px 40px rgb(28 25 23 / 0.1);
+    backdrop-filter: blur(12px);
+  }
+
+  .barkly-section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 9999px;
+    background: #ecfccb;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #365314;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 

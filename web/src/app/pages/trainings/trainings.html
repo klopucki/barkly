@@ -31,11 +31,15 @@
 
   <div class="mb-7 flex flex-wrap gap-3">
     <input
-      class="barkly-input max-w-xl"
+      class="barkly-input w-full sm:max-w-xl"
       placeholder="Szukaj po nazwie, trenerze lub poziomie…"
       #searchInput
       (input)="search(searchInput.value)"
-    /><select class="barkly-input w-auto min-w-44" #type (change)="setType(type.value)">
+    /><select
+      class="barkly-input w-full sm:w-auto sm:min-w-44"
+      #type
+      (change)="setType(type.value)"
+    >
       <option value="">Wszystkie rodzaje</option>
       @for (trainingType of trainingTypes(); track trainingType) {
         <option [value]="trainingType">{{ trainingType }}</option>

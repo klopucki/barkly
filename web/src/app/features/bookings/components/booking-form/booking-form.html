@@ -3,16 +3,16 @@
   [formGroup]="bookingForm"
   (ngSubmit)="submitBooking()"
 >
-  <h2 class="text-xl font-semibold">Book this training</h2>
+  <h2 class="text-xl font-semibold">Zapis ręczny na trening</h2>
 
   <input
     class="w-full rounded border p-2"
-    placeholder="Owner name"
+    placeholder="Imię i nazwisko opiekuna"
     formControlName="ownerName"
     maxlength="200"
   />
   @if (hasError('ownerName', 'required')) {
-    <p class="text-sm text-red-600">Owner name is required.</p>
+    <p class="text-sm text-red-600">Podaj imię i nazwisko opiekuna.</p>
   }
   @if (hasError('ownerName', 'pattern')) {
     <p class="text-sm text-red-600">Owner name cannot contain only spaces.</p>
@@ -39,7 +39,7 @@
 
   <input
     class="w-full rounded border p-2"
-    placeholder="Dog name"
+    placeholder="Imię psa"
     formControlName="dogName"
     maxlength="200"
   />
@@ -58,7 +58,7 @@
     type="number"
     min="0"
     max="30"
-    placeholder="Dog age"
+    placeholder="Wiek psa"
     formControlName="dogAge"
   />
   @if (hasError('dogAge', 'required')) {
@@ -74,7 +74,7 @@
 
   <textarea
     class="w-full rounded border p-2"
-    placeholder="Notes"
+    placeholder="Dodatkowe informacje (opcjonalnie)"
     formControlName="notes"
     maxlength="1000"
   ></textarea>
@@ -82,6 +82,8 @@
     <p class="text-sm text-red-600">Notes cannot exceed 1000 characters.</p>
   }
 
-  <button class="rounded-lg bg-black px-4 py-2 text-white" type="submit">Confirm booking</button>
-  <button type="button" (click)="cancel()">Cancel</button>
+  <div class="flex flex-col gap-3 sm:flex-row">
+    <button class="barkly-button" type="submit">Potwierdź zapis</button>
+    <button class="barkly-button-secondary" type="button" (click)="cancel()">Anuluj</button>
+  </div>
 </form>
