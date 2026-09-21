@@ -48,7 +48,7 @@ public class TrainingImageService {
         }
 
         imageStorage.delete(previousKey);
-        int bookedCount = bookingRepository.countByTrainingId(trainingId);
+        int bookedCount = bookingRepository.countByTrainingIdAndDeletedAtIsNull(trainingId);
         return training.toResponse(bookedCount);
     }
 

@@ -86,10 +86,14 @@ public class TrainingEntity {
     }
 
     public TrainingResponse toResponse() {
-        return toResponse(0);
+        return toResponse(0, 0, false);
     }
 
     public TrainingResponse toResponse(int bookedCount) {
+        return toResponse(bookedCount, 0, false);
+    }
+
+    public TrainingResponse toResponse(int bookedCount, long pawCount, boolean pawedByCurrentUser) {
         return new TrainingResponse(
                 id,
                 schoolId,
@@ -102,7 +106,9 @@ public class TrainingEntity {
                 startAt,
                 capacity,
                 bookedCount,
-                imageKey
+                imageKey,
+                pawCount,
+                pawedByCurrentUser
         );
     }
 

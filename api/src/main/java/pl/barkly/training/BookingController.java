@@ -30,6 +30,11 @@ class BookingController {
         return trainingFacade.bookTraining(trainingId, request);
     }
 
+    @PostMapping("/api/trainings/{trainingId}/bookings/dogs/{dogId}")
+    BookingResponse quickBook(@PathVariable Long trainingId, @PathVariable Long dogId) {
+        return trainingFacade.quickBookTraining(trainingId, dogId);
+    }
+
     @GetMapping("/api/trainings/{trainingId}/bookings")
     List<BookingResponse> findBookings(@PathVariable Long trainingId) {
         return trainingFacade.findBookings(trainingId);

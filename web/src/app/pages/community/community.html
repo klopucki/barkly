@@ -93,6 +93,95 @@
         @if (post.hasImage) {
           <div class="px-5 pb-5"><app-image-gallery [images]="galleryImages(post)" /></div>
         }
+        <div class="border-t border-stone-100 px-5 py-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-sm hover:bg-rose-50"
+              [class.bg-rose-100]="post.myReaction === 'HEART'"
+              (click)="react(post, 'HEART')"
+              [disabled]="!auth.currentUser()"
+            >
+              ❤️ {{ reactionCount(post, 'HEART') || '' }}
+            </button>
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-sm hover:bg-amber-50"
+              [class.bg-amber-100]="post.myReaction === 'THUMBS_UP'"
+              (click)="react(post, 'THUMBS_UP')"
+              [disabled]="!auth.currentUser()"
+            >
+              👍 {{ reactionCount(post, 'THUMBS_UP') || '' }}
+            </button>
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-sm hover:bg-lime-50"
+              [class.bg-lime-200]="post.myReaction === 'PAW'"
+              (click)="react(post, 'PAW')"
+              [disabled]="!auth.currentUser()"
+            >
+              🐾 {{ reactionCount(post, 'PAW') || '' }}
+            </button>
+            <button
+              type="button"
+              class="ml-auto text-sm font-medium text-stone-600 hover:text-emerald-800"
+              (click)="toggleComments(post)"
+            >
+              {{ post.commentCount }} {{ post.commentCount === 1 ? 'komentarz' : 'komentarzy' }}
+            </button>
+          </div>
+          @if (expandedComments().has(post.id)) {
+            <div class="mt-4 space-y-3 border-t border-stone-100 pt-4">
+              @for (comment of commentsByPost()[post.id] ?? []; track comment.id) {
+                <div class="rounded-xl bg-stone-50 px-3 py-2">
+                  <div class="flex items-start justify-between gap-3">
+                    <p class="text-sm">
+                      <span class="font-semibold">{{ comment.authorDisplayName }}</span>
+                      <span class="text-stone-400"
+                        >· {{ comment.publishedAt | date: 'dd.MM, HH:mm' }}</span
+                      >
+                    </p>
+                    @if (comment.mine) {
+                      <button
+                        type="button"
+                        class="text-xs text-stone-500 hover:text-red-700"
+                        (click)="deleteComment(post, comment)"
+                      >
+                        Usuń
+                      </button>
+                    }
+                  </div>
+                  <p class="mt-1 whitespace-pre-wrap text-sm text-stone-700">
+                    {{ comment.content }}
+                  </p>
+                </div>
+              } @empty {
+                <p class="text-sm text-stone-500">Jeszcze bez komentarzy — zacznij rozmowę.</p>
+              }
+              @if (auth.currentUser()) {
+                <form class="flex gap-2" (ngSubmit)="addComment(post)">
+                  <input
+                    class="barkly-input min-w-0 flex-1"
+                    maxlength="1000"
+                    placeholder="Napisz komentarz…"
+                    [ngModel]="commentDrafts()[post.id] ?? ''"
+                    (ngModelChange)="setCommentDraft(post.id, $event)"
+                    [name]="'comment-' + post.id"
+                  />
+                  <button
+                    type="submit"
+                    class="barkly-button"
+                    [disabled]="sendingCommentFor() === post.id"
+                  >
+                    Wyślij
+                  </button>
+                </form>
+              } @else {
+                <p class="text-sm text-stone-500">Zaloguj się, aby dodać komentarz lub reakcję.</p>
+              }
+            </div>
+          }
+        </div>
       </article>
     } @empty {
       <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500">

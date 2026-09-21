@@ -17,17 +17,19 @@ class TrainingFacadeImpl implements TrainingFacade {
     private final TrainingQueryService trainingQueryService;
     private final BookingCommandService bookingCommandService;
     private final BookingQueryService bookingQueryService;
+    private final TrainingPawReactionService pawReactionService;
 
     TrainingFacadeImpl(
             TrainingCommandService trainingCommandService,
             TrainingQueryService trainingQueryService,
             BookingCommandService bookingCommandService,
-            BookingQueryService bookingQueryService
+            BookingQueryService bookingQueryService, TrainingPawReactionService pawReactionService
     ) {
         this.trainingCommandService = trainingCommandService;
         this.trainingQueryService = trainingQueryService;
         this.bookingCommandService = bookingCommandService;
         this.bookingQueryService = bookingQueryService;
+        this.pawReactionService = pawReactionService;
     }
 
     @Override
@@ -74,6 +76,12 @@ class TrainingFacadeImpl implements TrainingFacade {
     public void deleteBooking(Long id) {
         bookingCommandService.deleteBooking(id);
     }
+
+    @Override
+    public BookingResponse quickBookTraining(Long trainingId, Long dogId) { return bookingCommandService.quickBook(trainingId, dogId); }
+
+    @Override
+    public TrainingResponse togglePaw(Long id) { return pawReactionService.toggle(id); }
 
 
 }

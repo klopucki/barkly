@@ -8,6 +8,9 @@ import {
 } from '../../features/bookings/components/booking-form/booking-form';
 import { Booking } from '../../features/bookings/components/booking-form/booking.model';
 import { Training, trainingImageUrl } from '../../features/trainings/training.model';
+import { AuthService } from '../../features/auth/auth.service';
+import { DogService } from '../../features/dogs/dog.service';
+import { Dog } from '../../features/dogs/dog.model';
 import {
   TrainingForm,
   TrainingFormSubmission,
@@ -23,6 +26,8 @@ export class TrainingDetails implements OnInit {
 
   private readonly route = inject(ActivatedRoute);
   private readonly trainingService = inject(TrainingService);
+  protected readonly auth = inject(AuthService);
+  private readonly dogsApi = inject(DogService);
 
   trainingId = signal(Number(this.route.snapshot.paramMap.get('id')));
 
@@ -31,10 +36,15 @@ export class TrainingDetails implements OnInit {
   isBookingModalOpen = signal(false);
   imageUploadError = signal<string | null>(null);
   isEditModalOpen = signal(false);
+  isQuickBookingModalOpen = signal(false);
+  dogs = signal<Dog[]>([]);
+  bookingError = signal<string | null>(null);
+  quickBookingDogId = signal<number | null>(null);
 
   ngOnInit(): void {
     this.loadTraining();
     this.loadBookings();
+    if (this.auth.currentUser()) this.dogsApi.mine$().subscribe((dogs) => this.dogs.set(dogs));
   }
 
   loadTraining(): void {
@@ -55,6 +65,64 @@ export class TrainingDetails implements OnInit {
 
   closeBookingModal(): void {
     this.isBookingModalOpen.set(false);
+  }
+
+  enrolledDogIds(): Set<number> {
+    return new Set(
+      this.bookings()
+        .map((booking) => booking.dogId)
+        .filter((id): id is number => id !== null),
+    );
+  }
+
+  hasAvailableDog(): boolean {
+    const enrolled = this.enrolledDogIds();
+    return this.dogs().some((dog) => !enrolled.has(dog.id));
+  }
+
+  openQuickBookingModal(): void {
+    this.bookingError.set(null);
+    this.isQuickBookingModalOpen.set(true);
+  }
+
+  closeQuickBookingModal(): void {
+    this.isQuickBookingModalOpen.set(false);
+  }
+
+  quickBook(dog: Dog): void {
+    if (this.enrolledDogIds().has(dog.id)) return;
+    this.quickBookingDogId.set(dog.id);
+    this.bookingError.set(null);
+    this.trainingService.quickBook$(this.trainingId(), dog.id).subscribe({
+      next: (booking) => {
+        this.bookings.update((bookings) => [...bookings, booking]);
+        this.training.update((training) =>
+          training ? { ...training, bookedCount: training.bookedCount + 1 } : training,
+        );
+        this.quickBookingDogId.set(null);
+        this.closeQuickBookingModal();
+      },
+      error: (error) => {
+        this.bookingError.set(error.error?.message ?? 'Nie udało się zapisać psa.');
+        this.quickBookingDogId.set(null);
+      },
+    });
+  }
+
+  togglePaw(): void {
+    if (!this.auth.currentUser()) return;
+    this.trainingService.togglePaw$(this.trainingId()).subscribe({
+      next: (training) =>
+        this.training.update((current) =>
+          current
+            ? {
+                ...current,
+                pawCount: training.pawCount,
+                pawedByCurrentUser: training.pawedByCurrentUser,
+              }
+            : current,
+        ),
+    });
   }
 
   openEditModal(): void {

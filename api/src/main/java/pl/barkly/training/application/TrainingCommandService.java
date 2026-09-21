@@ -92,7 +92,7 @@ class TrainingCommandService {
         }
         TrainingConfiguration configuration = resolveConfiguration(request);
         training.update(request, configuration.type(), configuration.level(), configuration.targetGroup());
-        int bookedCount = bookingRepository.countByTrainingId(id);
+        int bookedCount = bookingRepository.countByTrainingIdAndDeletedAtIsNull(id);
         return training.toResponse(bookedCount);
     }
 

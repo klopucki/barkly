@@ -57,9 +57,17 @@ export class TrainingService {
 
   createBooking$(
     trainingId: number,
-    booking: Omit<Booking, 'id' | 'trainingId' | 'createdAt'>,
+    booking: Omit<Booking, 'id' | 'trainingId' | 'dogId' | 'createdAt'>,
   ): Observable<Booking> {
     return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings`, booking);
+  }
+
+  quickBook$(trainingId: number, dogId: number): Observable<Booking> {
+    return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings/dogs/${dogId}`, {});
+  }
+
+  togglePaw$(trainingId: number): Observable<Training> {
+    return this.http.put<Training>(`${this.apiUrl}/${trainingId}/paw`, {});
   }
 
   deleteTraining(id: number): Observable<void> {
