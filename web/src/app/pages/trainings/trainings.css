@@ -1,0 +1,58 @@
+:host {
+  display: block;
+}
+.training-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid rgb(231 229 228 / 0.9);
+  border-radius: 1.15rem;
+  background: rgb(255 255 255 / 0.64);
+  box-shadow: 0 12px 30px rgb(28 25 23 / 0.035);
+}
+.training-search {
+  display: flex;
+  min-width: min(100%, 20rem);
+  flex: 1;
+  align-items: center;
+  gap: 0.65rem;
+  color: #78716c;
+}
+.training-search span {
+  padding-left: 0.2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.training-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.55rem 0.25rem;
+  outline: 0;
+  color: #1c1917;
+}
+.training-search:focus-within {
+  color: #047857;
+}
+.training-select {
+  min-width: 11rem;
+  border: 1px solid #e7e5e4;
+  border-radius: 0.7rem;
+  background: white;
+  padding: 0.65rem 0.75rem;
+  color: #44403c;
+  font-size: 0.875rem;
+  outline: none;
+}
+.training-select:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px #d1fae5;
+}
+@media (max-width: 640px) {
+  .training-filters > button,
+  .training-select {
+    width: 100%;
+  }
+}

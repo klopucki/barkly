@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import { TrainingService } from '../../features/trainings/training.service';
 import { Modal } from '../../shared/components/modal/modal';
 import {
@@ -18,8 +19,9 @@ import {
 
 @Component({
   selector: 'app-training-details',
-  imports: [BookingForm, TrainingForm, Modal],
+  imports: [BookingForm, TrainingForm, Modal, DatePipe],
   templateUrl: './training-details.html',
+  styleUrl: './training-details.css',
 })
 export class TrainingDetails implements OnInit {
   protected readonly trainingImageUrl = trainingImageUrl;

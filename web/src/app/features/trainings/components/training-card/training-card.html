@@ -1,41 +1,48 @@
-<article class="barkly-card mb-5 flex flex-col p-5 md:flex-row md:items-start md:gap-6">
-  <div class="min-w-0 flex-1">
+<article
+  class="training-card barkly-card mb-5 overflow-hidden"
+  role="link"
+  tabindex="0"
+  (click)="openDetails($event)"
+  (keydown.enter)="openDetails($event)"
+  (keydown.space)="openDetails($event)"
+>
+  <div
+    class="training-date"
+    [attr.aria-label]="'Termin: ' + (training().startAt | date: 'dd.MM.yyyy')"
+  >
+    <span>{{ training().startAt | date: 'dd' }}</span>
+    <small>{{ training().startAt | date: 'MMM' }}</small>
+  </div>
+  <div class="training-card-content min-w-0 flex-1">
     <button
       type="button"
-      class="float-right min-h-11 min-w-11 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
+      class="float-right -mt-1 min-h-11 min-w-11 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
       [attr.aria-label]="favorite() ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'"
       (click)="favoriteClicked.emit(training())"
     >
       {{ favorite() ? '★' : '☆' }}
     </button>
-    <h2 class="text-2xl font-semibold tracking-tight">{{ training().title }}</h2>
-
-    <p class="mt-2 text-stone-600">Trener: {{ training().trainerName }}</p>
-    <p class="text-stone-600">Rodzaj: {{ training().trainingType.name }}</p>
-    @if (training().trainingLevel) {
-      <p class="text-stone-600">Poziom: {{ training().trainingLevel!.name }}</p>
-    }
-    @if (training().homeVisit) {
-      <p class="text-stone-600">Konsultacja domowa</p>
-    }
-    @if (training().targetGroup) {
-      <p class="text-stone-600">Dla: {{ training().targetGroup!.name }}</p>
-    }
-    <p class="text-stone-600">Termin: {{ training().startAt | date: 'dd.MM.yyyy' }}</p>
-
-    <p class="text-stone-600">
-      Miejsca:
-      @if (training().capacity === null) {
-        bez limitu
-      } @else {
-        {{ training().bookedCount }} / {{ training().capacity }}
+    <p class="barkly-eyebrow">{{ training().trainingType.name }}</p>
+    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-stone-950">
+      {{ training().title }}
+    </h2>
+    <p class="mt-2 text-sm text-stone-600">z {{ training().trainerName }}</p>
+    <div class="training-tags mt-4">
+      @if (training().trainingLevel) {
+        <span>{{ training().trainingLevel!.name }}</span>
       }
-    </p>
-    <div class="mt-4 flex flex-wrap gap-2">
-      <a [routerLink]="['/trainings', training().id]" class="barkly-button-secondary">
-        Szczegóły
-      </a>
-
+      @if (training().targetGroup) {
+        <span>{{ training().targetGroup!.name }}</span>
+      }
+      @if (training().homeVisit) {
+        <span>🏠 konsultacja domowa</span>
+      }
+    </div>
+    <div class="training-details mt-5">
+      <span>◷ {{ training().startAt | date: 'EEEE, dd MMMM · HH:mm' }}</span>
+      <span [class.training-capacity-low]="isCapacityLow()"> ◉ {{ capacityLabel() }} </span>
+    </div>
+    <div class="mt-5 flex flex-wrap gap-2">
       @if (auth.currentUser()?.role !== 'USER' && auth.currentUser()) {
         <button
           class="barkly-button-secondary"
@@ -56,11 +63,9 @@
   </div>
 
   @if (training().imageKey) {
-    <div
-      class="order-first mb-4 flex max-h-48 w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-100 md:mb-0 md:w-64"
-    >
+    <div class="training-image">
       <img
-        class="max-h-48 max-w-full object-contain"
+        class="h-full w-full object-cover"
         [src]="trainingImageUrl(training().imageKey!)"
         [alt]="'Training: ' + training().title"
       />

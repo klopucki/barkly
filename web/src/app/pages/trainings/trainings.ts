@@ -14,6 +14,7 @@ import { FavoritesService } from '../../shared/favorites.service';
   selector: 'app-trainings',
   imports: [TrainingCard, TrainingForm, Modal],
   templateUrl: './trainings.html',
+  styleUrl: './trainings.css',
 })
 export class Trainings implements OnInit {
   private readonly trainingService = inject(TrainingService);

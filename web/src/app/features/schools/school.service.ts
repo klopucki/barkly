@@ -37,8 +37,8 @@ export class SchoolService {
   managedNews$(id: number): Observable<SchoolNews[]> {
     return this.http.get<SchoolNews[]>(`/api/my/schools/${id}/news`);
   }
-  allNews$(): Observable<SchoolNews[]> {
-    return this.http.get<SchoolNews[]>('/api/news');
+  newsById$(id: number): Observable<SchoolNews> {
+    return this.http.get<SchoolNews>(`/api/news/${id}`);
   }
   searchNews$(
     query: string,

@@ -1,22 +1,28 @@
-<section>
-  <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+<section class="catalog-page">
+  <div class="catalog-heading mb-7 flex flex-wrap items-end justify-between gap-4">
     <div>
       <p class="barkly-eyebrow">Miejsca z dobrym podejściem</p>
       <h1 class="barkly-page-title mt-2">Szkoły dla Was</h1>
-      <p class="mt-3 text-stone-600">Poznaj ofertę szkół i znajdź swój kolejny krok.</p>
+      <p class="mt-3 max-w-xl text-stone-600">
+        Poznaj miejsca, w których liczy się Wasz komfort, relacja i wspólna droga.
+      </p>
     </div>
     @if (auth.currentUser()) {
       <a routerLink="/my-school" class="barkly-button">Moje szkoły</a>
     }
   </div>
-  <div class="mb-7 flex flex-wrap gap-3">
-    <input
-      class="barkly-input w-full sm:max-w-xl"
-      type="search"
-      placeholder="Szukaj po nazwie, mieście lub ofercie…"
-      #searchInput
-      (input)="search(searchInput.value)"
-    /><button
+  <div class="catalog-tools mb-8">
+    <label class="catalog-search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        placeholder="Nazwa szkoły, miasto lub oferta"
+        aria-label="Szukaj szkoły"
+        #searchInput
+        (input)="search(searchInput.value)"
+      />
+    </label>
+    <button
       type="button"
       class="barkly-button-secondary"
       [class.!border-emerald-700]="favoritesOnly()"
@@ -29,29 +35,51 @@
   @if (loading()) {
     <p class="mb-4 text-sm text-stone-500">Ładowanie szkół…</p>
   }
-  <div class="grid gap-5 md:grid-cols-2">
+  <div class="mb-5 flex items-center justify-between gap-4 text-sm text-stone-500">
+    <p>Wybierz miejsce, które pasuje do Was.</p>
+    @if (filteredItems().length) {
+      <p class="hidden whitespace-nowrap sm:block">
+        {{ filteredItems().length }} {{ filteredItems().length === 1 ? 'szkoła' : 'szkół' }} na
+        liście
+      </p>
+    }
+  </div>
+  <div class="school-grid grid gap-5 md:grid-cols-2">
     @for (school of filteredItems(); track school.id) {
-      <article class="barkly-card group relative p-6">
+      <article class="school-card barkly-card group relative overflow-hidden">
+        <a [routerLink]="['/schools', school.slug]" class="block">
+          <div class="school-card-visual" [class.has-image]="school.images.length > 0">
+            @if (school.images.length) {
+              <img [src]="schoolImageUrl(school.images[0].imageKey)" [alt]="school.name" />
+            } @else {
+              <span class="school-card-mark" aria-hidden="true">⌂</span>
+            }
+            <span class="school-card-address">{{ school.address }}</span>
+          </div>
+        </a>
         <button
           type="button"
-          class="absolute right-4 top-4 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
+          class="school-card-favorite absolute right-4 top-4 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
           [attr.aria-label]="
             favorites.has('school', school.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'
           "
           (click)="favorites.toggle('school', school.id)"
         >
-          {{ favorites.has('school', school.id) ? '★' : '☆' }}</button
-        ><a [routerLink]="['/schools', school.slug]" class="block pr-8"
-          ><p class="text-sm font-medium text-emerald-800">{{ school.address }}</p>
-          <h2 class="mt-2 text-2xl font-semibold tracking-tight">{{ school.name }}</h2>
-          <p class="mt-4 line-clamp-3 leading-6 text-stone-600">
+          {{ favorites.has('school', school.id) ? '★' : '☆' }}
+        </button>
+        <a [routerLink]="['/schools', school.slug]" class="block p-6 pt-5">
+          <p class="barkly-eyebrow">Szkoła dla psów</p>
+          <h2 class="mt-2 pr-8 text-2xl font-semibold tracking-tight text-stone-950">
+            {{ school.name }}
+          </h2>
+          <p class="school-card-description mt-3 leading-6 text-stone-600">
             {{ school.description || school.activities || 'Poznaj ofertę tej szkoły.' }}
           </p>
-          <span
-            class="mt-6 inline-block text-sm font-semibold text-emerald-800 group-hover:translate-x-1"
-            >Zobacz profil →</span
-          ></a
-        >
+          <span class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"
+            >Poznaj szkołę
+            <span class="transition-transform group-hover:translate-x-1">→</span></span
+          >
+        </a>
       </article>
     } @empty {
       <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">

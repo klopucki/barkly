@@ -1,0 +1,34 @@
+@if (article(); as item) {
+  <article class="article-page">
+    <a routerLink="/news" class="article-back">← Wszystkie artykuły</a>
+    <header class="article-header">
+      <p class="barkly-eyebrow">{{ item.schoolName }}</p>
+      <h1>{{ item.title }}</h1>
+      <div class="article-byline">
+        <span class="article-avatar">{{ item.authorDisplayName.slice(0, 1) }}</span>
+        <span
+          ><strong>{{ item.authorDisplayName }}</strong
+          ><small>dla {{ item.schoolName }}</small></span
+        >
+        <time>{{ item.publishedAt | date: 'dd MMMM yyyy' }}</time>
+      </div>
+    </header>
+    <div class="article-rule" aria-hidden="true"></div>
+    <div class="article-content prose" [innerHTML]="item.content"></div>
+    <footer class="article-footer">
+      <p>
+        Materiał opublikowany przez <strong>{{ item.schoolName }}</strong
+        >.
+      </p>
+      <a routerLink="/schools">Poznaj szkoły →</a>
+    </footer>
+  </article>
+} @else if (notFound()) {
+  <section class="article-error barkly-card">
+    <p class="barkly-eyebrow">Nie znaleziono</p>
+    <h1>Ten artykuł nie jest już dostępny.</h1>
+    <a routerLink="/news" class="barkly-button">Wróć do artykułów</a>
+  </section>
+} @else {
+  <p class="text-stone-500">Ładowanie artykułu…</p>
+}

@@ -33,6 +33,7 @@ export class TrainingForm implements OnInit {
   trainingSubmitted = output<TrainingFormSubmission>();
   cancelled = output<void>();
   training = input<Training | null>(null);
+  schoolId = input<number | null>(null);
 
   private readonly fb = new FormBuilder();
   private readonly trainingService = inject(TrainingService);
@@ -79,8 +80,12 @@ export class TrainingForm implements OnInit {
     this.schoolService.mine$().subscribe({
       next: (schools) => {
         this.schools = schools;
-        if (!this.training() && schools.length === 1)
+        const fixedSchoolId = this.schoolId();
+        if (!this.training() && fixedSchoolId !== null) {
+          this.form.controls.schoolId.setValue(fixedSchoolId);
+        } else if (!this.training() && schools.length === 1) {
           this.form.controls.schoolId.setValue(schools[0].id);
+        }
       },
     });
     this.trainingService.getTrainingDictionaries$().subscribe((dictionaries) => {

@@ -1,0 +1,109 @@
+:host {
+  display: block;
+}
+.journal-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgb(231 229 228 / 0.9);
+  border-radius: 1.15rem;
+  background: rgb(255 255 255 / 0.64);
+  box-shadow: 0 12px 30px rgb(28 25 23 / 0.035);
+}
+.journal-search {
+  display: flex;
+  min-width: min(100%, 18rem);
+  flex: 1;
+  align-items: center;
+  gap: 0.65rem;
+  color: #78716c;
+}
+.journal-search span {
+  padding-left: 0.2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.journal-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.55rem 0.25rem;
+  outline: 0;
+  color: #1c1917;
+}
+.journal-search:focus-within {
+  color: #047857;
+}
+.journal-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.journal-card {
+  display: flex;
+  min-height: 19rem;
+  flex-direction: column;
+}
+.journal-card-featured {
+  grid-row: span 2;
+  min-height: 100%;
+}
+.journal-card-accent {
+  display: flex;
+  height: 4.6rem;
+  align-items: center;
+  padding: 0 1.5rem;
+  background: linear-gradient(110deg, #ecfccb, #d1fae5);
+  color: rgb(6 78 59 / 0.35);
+  font-size: 3.3rem;
+  font-weight: 800;
+  letter-spacing: -0.09em;
+  line-height: 1;
+}
+.journal-card:nth-child(3n) .journal-card-accent {
+  background: linear-gradient(110deg, #fef3c7, #ffedd5);
+  color: rgb(180 83 9 / 0.32);
+}
+.journal-card:nth-child(3n + 2) .journal-card-accent {
+  background: linear-gradient(110deg, #fce7f3, #f3e8ff);
+  color: rgb(162 28 175 / 0.25);
+}
+.journal-card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+.journal-excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.journal-card-featured .journal-excerpt {
+  -webkit-line-clamp: 6;
+}
+.journal-card-content > div:last-child {
+  margin-top: auto;
+}
+.journal-card-favorite {
+  z-index: 1;
+  background: rgb(255 255 255 / 0.88);
+  box-shadow: 0 3px 12px rgb(28 25 23 / 0.1);
+}
+@media (max-width: 640px) {
+  .journal-tools > button {
+    width: 100%;
+  }
+  .journal-grid {
+    grid-template-columns: 1fr;
+  }
+  .journal-card-featured {
+    grid-row: auto;
+  }
+  .journal-card-featured .journal-excerpt {
+    -webkit-line-clamp: 3;
+  }
+}

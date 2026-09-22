@@ -30,6 +30,15 @@ class SchoolNewsController {
         return news.findAllByOrderByPublishedAtDesc().stream().map(SchoolNewsResponse::from).toList();
     }
 
+    @GetMapping("/api/news/{id}")
+    SchoolNewsResponse byId(@PathVariable Long id) {
+        var item = get(id);
+        if (!item.isActive()) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "News not found");
+        }
+        return SchoolNewsResponse.from(item);
+    }
+
     @GetMapping("/api/query/news")
     PageResponse<SchoolNewsResponse> search(@RequestParam(defaultValue = "") String query,
                                             @RequestParam(defaultValue = "0") int page,

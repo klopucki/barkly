@@ -1,0 +1,105 @@
+.training-card {
+  position: relative;
+  display: flex;
+  min-height: 12.5rem;
+}
+.training-card {
+  cursor: pointer;
+}
+.training-card:focus-visible {
+  outline: 3px solid #a7f3d0;
+  outline-offset: 3px;
+}
+.training-date {
+  display: flex;
+  width: 6.3rem;
+  flex: 0 0 6.3rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f0fdf4;
+  color: #065f46;
+}
+.training-date span {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.08em;
+  line-height: 1;
+}
+.training-date small {
+  margin-top: 0.35rem;
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.training-card-content {
+  padding: 1.5rem;
+}
+.training-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.training-tags span {
+  border-radius: 999px;
+  background: #f5f5f4;
+  padding: 0.3rem 0.6rem;
+  color: #57534e;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.training-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.1rem;
+  color: #57534e;
+  font-size: 0.82rem;
+}
+.training-capacity-low {
+  color: #b45309;
+  font-weight: 700;
+}
+.training-image {
+  width: 13.5rem;
+  flex: 0 0 13.5rem;
+  overflow: hidden;
+  background: #f5f5f4;
+}
+.training-image img {
+  transition: transform 0.45s ease;
+}
+.training-card:hover .training-image img {
+  transform: scale(1.045);
+}
+
+@media (max-width: 640px) {
+  .training-card {
+    display: grid;
+    grid-template-columns: 4.8rem 1fr;
+  }
+  .training-date {
+    width: 4.8rem;
+    flex-basis: 4.8rem;
+  }
+  .training-date span {
+    font-size: 1.75rem;
+  }
+  .training-image {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    height: 10rem;
+  }
+  .training-card:has(.training-image) .training-date,
+  .training-card:has(.training-image) .training-card-content {
+    margin-top: 10rem;
+  }
+  .training-card:has(.training-image) .training-image {
+    position: absolute;
+    inset: 0 0 auto;
+  }
+  .training-card-content {
+    padding: 1.25rem;
+  }
+}

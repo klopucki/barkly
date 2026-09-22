@@ -1,12 +1,22 @@
 @if (school(); as s) {
-  <section class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold">{{ s.name }}</h1>
-      <p class="mt-2 text-gray-600">{{ s.address }}</p>
-      @if (s.krs) {
-        <p class="text-sm text-gray-500">KRS: {{ s.krs }}</p>
-      }
-    </div>
+  <section class="school-profile space-y-8">
+    <header class="school-profile-header barkly-card overflow-hidden">
+      <div class="school-profile-cover">
+        @if (s.images.length) {
+          <img [src]="imageUrl(s.images[0].imageKey)" [alt]="s.name" />
+        } @else {
+          <span aria-hidden="true">⌂</span>
+        }
+      </div>
+      <div class="school-profile-intro">
+        <p class="barkly-eyebrow">Profil szkoły</p>
+        <h1>{{ s.name }}</h1>
+        <p class="school-profile-address">⌖ {{ s.address }}</p>
+        @if (s.krs) {
+          <p class="mt-2 text-xs text-stone-500">KRS: {{ s.krs }}</p>
+        }
+      </div>
+    </header>
     <div
       class="flex gap-1 overflow-x-auto border-b border-stone-200"
       role="tablist"
@@ -47,28 +57,51 @@
       @if (galleryImages().length) {
         <app-image-gallery [images]="galleryImages()" />
       }
-      @if (s.description) {
-        <div>
-          <h2 class="text-xl font-semibold">O szkole</h2>
-          <p class="whitespace-pre-line">{{ s.description }}</p>
-        </div>
-      }
-      @if (s.activities) {
-        <div>
-          <h2 class="text-xl font-semibold">Czym się zajmujemy</h2>
-          <p class="whitespace-pre-line">{{ s.activities }}</p>
-        </div>
-      }
-      @if (s.pricing) {
-        <div>
-          <h2 class="text-xl font-semibold">Cennik</h2>
-          <p class="whitespace-pre-line">{{ s.pricing }}</p>
-        </div>
-      }
+      <div class="school-about-grid">
+        @if (s.description) {
+          <div class="school-about-card">
+            <p class="barkly-eyebrow">Podejście</p>
+            <h2>O szkole</h2>
+            <p class="whitespace-pre-line">{{ s.description }}</p>
+          </div>
+        }
+        @if (s.activities) {
+          <div class="school-about-card">
+            <p class="barkly-eyebrow">Oferta</p>
+            <h2>Czym się zajmujemy</h2>
+            <p class="whitespace-pre-line">{{ s.activities }}</p>
+          </div>
+        }
+        @if (s.pricing) {
+          <div class="school-about-card school-pricing-card">
+            <p class="barkly-eyebrow">Informacje</p>
+            <h2>Cennik</h2>
+            <p class="whitespace-pre-line">{{ s.pricing }}</p>
+          </div>
+        }
+      </div>
     } @else if (activeTab() === 'trainings') {
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p class="barkly-eyebrow">Oferta szkoły</p>
+          <h2 class="mt-1 text-xl font-semibold">Nadchodzące treningi</h2>
+        </div>
+        @if (canManage()) {
+          <button type="button" class="barkly-button" (click)="openAddTraining()">
+            + Dodaj trening
+          </button>
+        }
+      </div>
+      @if (addTrainingError()) {
+        <p class="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700">
+          {{ addTrainingError() }}
+        </p>
+      }
       <div class="grid gap-4 md:grid-cols-2">
         @for (training of trainings(); track training.id) {
-          <a [routerLink]="['/trainings', training.id]" class="barkly-card block p-5"
+          <a
+            [routerLink]="['/trainings', training.id]"
+            class="school-training-card barkly-card block p-5"
             ><p class="text-sm font-semibold text-emerald-800">
               {{ training.startAt | date: 'dd.MM.yyyy, HH:mm' }}
             </p>
@@ -103,9 +136,13 @@
           }
         </div>
         @for (item of news(); track item.id) {
-          <article class="barkly-card mb-4 p-5">
+          <article class="school-news-card barkly-card mb-4 p-5">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-              <h3 class="text-lg font-semibold">{{ item.title }}</h3>
+              <a
+                [routerLink]="['/news', item.id]"
+                class="text-lg font-semibold hover:text-emerald-800"
+                >{{ item.title }}</a
+              >
               @if (canManage()) {
                 <div class="flex flex-wrap items-center gap-3">
                   <span
@@ -125,7 +162,11 @@
                 </div>
               }
             </div>
-            <div class="prose mt-3 max-w-none" [innerHTML]="item.content"></div>
+            <a
+              [routerLink]="['/news', item.id]"
+              class="school-news-preview prose mt-3 block max-w-none"
+              [innerHTML]="item.content"
+            ></a>
             <div class="mt-4 text-sm text-gray-500">
               {{ item.schoolName }} · Autor: {{ item.authorDisplayName }} ·
               <time>{{ item.publishedAt | date: 'dd.MM.yyyy' }}</time>
@@ -135,6 +176,15 @@
           <p class="text-gray-500">Brak artykułów.</p>
         }
       </div>
+    }
+    @if (isAddTrainingOpen()) {
+      <app-modal title="Dodaj trening" (closed)="closeAddTraining()">
+        <app-training-form
+          [schoolId]="s.id"
+          (trainingSubmitted)="addTraining($event)"
+          (cancelled)="closeAddTraining()"
+        />
+      </app-modal>
     }
     @if (showArticleDialog) {
       <div

@@ -1,0 +1,96 @@
+.training-detail-hero {
+  display: flex;
+  min-height: 23rem;
+}
+.training-detail-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+.training-detail-main h1 {
+  margin-top: 0.75rem;
+  color: #1c1917;
+  font-size: clamp(2.2rem, 5vw, 4.1rem);
+  font-weight: 700;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+}
+.training-detail-trainer {
+  margin-top: 1.2rem;
+  color: #57534e;
+}
+.training-detail-trainer strong {
+  color: #292524;
+}
+.training-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.25rem;
+}
+.training-detail-tags span {
+  border-radius: 999px;
+  background: #f5f5f4;
+  padding: 0.35rem 0.65rem;
+  color: #57534e;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.training-detail-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.3rem;
+  margin-top: 1.4rem;
+  color: #57534e;
+  font-size: 0.88rem;
+}
+.training-detail-image {
+  width: min(40%, 25rem);
+  flex: 0 0 min(40%, 25rem);
+  background: #f0fdf4;
+}
+.training-detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.training-bookings {
+  padding: 1.5rem;
+  border: 1px solid #e7e5e4;
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 0.68);
+}
+.training-bookings h2 {
+  margin-top: 0.35rem;
+  color: #1c1917;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.training-bookings > div:first-child > span {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.training-booking {
+  background: white;
+}
+@media (max-width: 640px) {
+  .training-detail-hero {
+    flex-direction: column;
+  }
+  .training-detail-image {
+    order: -1;
+    width: 100%;
+    height: 13rem;
+    flex-basis: auto;
+  }
+}

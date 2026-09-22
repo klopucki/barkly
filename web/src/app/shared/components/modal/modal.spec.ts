@@ -12,7 +12,9 @@ describe('Modal', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(Modal);
+    fixture.componentRef.setInput('title', 'Przykładowy modal');
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
