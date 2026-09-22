@@ -1,0 +1,109 @@
+:host {
+  display: block;
+}
+
+.catalog-heading {
+  position: relative;
+}
+
+.catalog-tools {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid rgb(231 229 228 / 0.9);
+  border-radius: 1.15rem;
+  background: rgb(255 255 255 / 0.64);
+  box-shadow: 0 12px 30px rgb(28 25 23 / 0.035);
+}
+
+.catalog-search {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.65rem;
+  color: #78716c;
+}
+.catalog-search span {
+  padding-left: 0.2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.catalog-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.55rem 0.25rem;
+  outline: 0;
+  color: #1c1917;
+}
+.catalog-search:focus-within {
+  color: #047857;
+}
+
+.school-card-visual {
+  position: relative;
+  display: flex;
+  height: 9.5rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #d9f99d, #d1fae5 52%, #fef3c7);
+}
+.school-card-visual::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgb(28 25 23 / 0.42));
+  content: '';
+}
+.school-card-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+.school-card:hover .school-card-visual img {
+  transform: scale(1.045);
+}
+.school-card-mark {
+  color: rgb(6 78 59 / 0.68);
+  font-size: 3rem;
+}
+.school-card-address {
+  position: absolute;
+  z-index: 1;
+  right: 1rem;
+  bottom: 0.8rem;
+  left: 1rem;
+  overflow: hidden;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgb(28 25 23 / 0.5);
+  white-space: nowrap;
+}
+.school-card-favorite {
+  z-index: 2;
+  background: rgb(255 255 255 / 0.88);
+  box-shadow: 0 3px 12px rgb(28 25 23 / 0.1);
+}
+.school-card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 3rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 640px) {
+  .catalog-tools {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .catalog-tools > button {
+    width: 100%;
+  }
+}

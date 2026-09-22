@@ -1,17 +1,23 @@
-<section>
-  <div class="mb-8">
+<section class="journal-page">
+  <div class="journal-heading mb-7">
     <p class="barkly-eyebrow">Wiedza i inspiracje</p>
     <h1 class="barkly-page-title mt-2">Artykuły szkół</h1>
-    <p class="mt-3 text-stone-600">Nowości, porady i historie od społeczności Barkly.</p>
+    <p class="mt-3 max-w-xl text-stone-600">
+      Nowości, sprawdzone wskazówki i historie od ludzi, którzy znają psy od środka.
+    </p>
   </div>
-  <div class="mb-7 flex flex-wrap gap-3">
-    <input
-      class="barkly-input w-full sm:max-w-xl"
-      type="search"
-      placeholder="Szukaj artykułu lub szkoły…"
-      #searchInput
-      (input)="search(searchInput.value)"
-    /><button
+  <div class="journal-tools mb-8">
+    <label class="journal-search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        placeholder="Temat, tytuł lub szkoła"
+        aria-label="Szukaj artykułu"
+        #searchInput
+        (input)="search(searchInput.value)"
+      />
+    </label>
+    <button
       type="button"
       class="barkly-button-secondary"
       [class.!border-emerald-700]="favoritesOnly()"
@@ -24,30 +30,53 @@
   @if (loading()) {
     <p class="mb-4 text-sm text-stone-500">Ładowanie artykułów…</p>
   }
-  @for (item of filteredItems(); track item.id) {
-    <article class="barkly-card relative mb-5 p-6">
-      <button
-        type="button"
-        class="absolute right-4 top-4 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
-        [attr.aria-label]="
-          favorites.has('article', item.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'
-        "
-        (click)="favorites.toggle('article', item.id)"
+  <div class="mb-5 flex items-center justify-between gap-4 text-sm text-stone-500">
+    <p>Co nowego w dobrych szkołach.</p>
+    @if (filteredItems().length) {
+      <p class="hidden sm:block">
+        {{ filteredItems().length }} {{ filteredItems().length === 1 ? 'artykuł' : 'artykułów' }}
+      </p>
+    }
+  </div>
+  <div class="journal-grid">
+    @for (item of filteredItems(); track item.id; let index = $index) {
+      <article
+        class="journal-card barkly-card relative overflow-hidden"
+        [class.journal-card-featured]="index === 0"
       >
-        {{ favorites.has('article', item.id) ? '★' : '☆' }}
-      </button>
-      <h2 class="text-2xl font-semibold tracking-tight">{{ item.title }}</h2>
-      <div class="prose mt-4 max-w-none text-stone-700" [innerHTML]="item.content"></div>
-      <div class="mt-5 border-t border-stone-100 pt-4 text-sm text-stone-500">
-        {{ item.schoolName }} · Autor: {{ item.authorDisplayName }} ·
-        <time>{{ item.publishedAt | date: 'dd.MM.yyyy' }}</time>
-      </div>
-    </article>
-  } @empty {
-    <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">
-      Nie znaleziono artykułów pasujących do kryteriów.
-    </p>
-  }
+        <div class="journal-card-accent" aria-hidden="true">
+          <span>{{ index + 1 < 10 ? '0' : '' }}{{ index + 1 }}</span>
+        </div>
+        <button
+          type="button"
+          class="journal-card-favorite absolute right-4 top-4 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
+          [attr.aria-label]="
+            favorites.has('article', item.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'
+          "
+          (click)="favorites.toggle('article', item.id)"
+        >
+          {{ favorites.has('article', item.id) ? '★' : '☆' }}
+        </button>
+        <a [routerLink]="['/news', item.id]" class="journal-card-content journal-card-link">
+          <p class="barkly-eyebrow">{{ item.schoolName }}</p>
+          <h2 class="mt-3 pr-8 text-2xl font-semibold tracking-tight text-stone-950">
+            {{ item.title }}
+          </h2>
+          <p class="journal-excerpt mt-4 leading-6 text-stone-600">{{ excerpt(item.content) }}</p>
+          <div
+            class="mt-6 flex items-center justify-between gap-3 border-t border-stone-100 pt-4 text-sm text-stone-500"
+          >
+            <span class="min-w-0 truncate">{{ item.authorDisplayName }}</span>
+            <time class="shrink-0">{{ item.publishedAt | date: 'dd MMM yyyy' }}</time>
+          </div>
+        </a>
+      </article>
+    } @empty {
+      <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">
+        Nie znaleziono artykułów pasujących do kryteriów.
+      </p>
+    }
+  </div>
   @if (page() + 1 < totalPages()) {
     <div class="mt-7 text-center">
       <button type="button" class="barkly-button-secondary" (click)="loadMore()">

@@ -8,8 +8,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { School, SchoolNews, schoolImageUrl } from '../../features/schools/school.model';
@@ -18,10 +17,16 @@ import { AuthService } from '../../features/auth/auth.service';
 import { Training } from '../../features/trainings/training.model';
 import { TrainingService } from '../../features/trainings/training.service';
 import { GalleryImage, ImageGallery } from '../../shared/components/image-gallery/image-gallery';
+import { Modal } from '../../shared/components/modal/modal';
+import {
+  TrainingForm,
+  TrainingFormSubmission,
+} from '../../features/trainings/components/training-form/training-form';
 @Component({
   selector: 'app-school-details',
-  imports: [DatePipe, FormsModule, RouterLink, ImageGallery],
+  imports: [DatePipe, FormsModule, RouterLink, ImageGallery, Modal, TrainingForm],
   templateUrl: './school-details.html',
+  styleUrl: './school-details.css',
 })
 export class SchoolDetails implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -47,6 +52,8 @@ export class SchoolDetails implements OnInit {
   editingArticle: SchoolNews | null = null;
   error = '';
   showArticleDialog = false;
+  readonly isAddTrainingOpen = signal(false);
+  readonly addTrainingError = signal<string | null>(null);
   @ViewChild('editor') private editor?: ElementRef<HTMLElement>;
   constructor() {
     effect(() => {
@@ -93,6 +100,37 @@ export class SchoolDetails implements OnInit {
   }
   setTab(tab: 'about' | 'trainings' | 'news') {
     this.activeTab.set(tab);
+  }
+  openAddTraining(): void {
+    this.addTrainingError.set(null);
+    this.isAddTrainingOpen.set(true);
+  }
+  closeAddTraining(): void {
+    this.isAddTrainingOpen.set(false);
+  }
+  addTraining(submission: TrainingFormSubmission): void {
+    this.addTrainingError.set(null);
+    this.trainingsService.addTraining$(submission.training).subscribe({
+      next: (saved) => {
+        if (!submission.image) {
+          this.finishAddingTraining(saved);
+          return;
+        }
+        this.trainingsService.uploadTrainingImage$(saved.id, submission.image).subscribe({
+          next: (withImage) => this.finishAddingTraining(withImage),
+          error: () => {
+            this.finishAddingTraining(saved);
+            this.addTrainingError.set('Trening zapisany, ale nie udało się przesłać zdjęcia.');
+          },
+        });
+      },
+      error: (error) =>
+        this.addTrainingError.set(error.error?.message ?? 'Nie udało się dodać treningu.'),
+    });
+  }
+  private finishAddingTraining(training: Training): void {
+    this.trainings.update((items) => [training, ...items]);
+    this.closeAddTraining();
   }
   format(command: string, value?: string) {
     this.editor?.nativeElement.focus();

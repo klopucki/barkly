@@ -1,9 +1,11 @@
-<section>
-  <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+<section class="trainings-page">
+  <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
     <div>
       <p class="barkly-eyebrow">Zajęcia dla Was</p>
       <h1 class="barkly-page-title mt-2">Treningi</h1>
-      <p class="mt-3 text-stone-600">Wybierz zajęcia, które odpowiadają Waszym potrzebom.</p>
+      <p class="mt-3 max-w-xl text-stone-600">
+        Wybierz zajęcia, które odpowiadają Waszym potrzebom i tempu pracy.
+      </p>
     </div>
     @if (auth.currentUser()?.role !== 'USER' && auth.currentUser()) {
       <button type="button" class="barkly-button" (click)="openAddTraining()">Dodaj trening</button>
@@ -29,17 +31,17 @@
     </p>
   }
 
-  <div class="mb-7 flex flex-wrap gap-3">
-    <input
-      class="barkly-input w-full sm:max-w-xl"
-      placeholder="Szukaj po nazwie, trenerze lub poziomie…"
-      #searchInput
-      (input)="search(searchInput.value)"
-    /><select
-      class="barkly-input w-full sm:w-auto sm:min-w-44"
-      #type
-      (change)="setType(type.value)"
-    >
+  <div class="training-filters mb-5">
+    <label class="training-search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        placeholder="Szukaj treningu, trenera lub poziomu"
+        aria-label="Szukaj treningu"
+        #searchInput
+        (input)="search(searchInput.value)"
+      />
+    </label>
+    <select class="training-select" #type (change)="setType(type.value)">
       <option value="">Wszystkie rodzaje</option>
       @for (trainingType of trainingTypes(); track trainingType) {
         <option [value]="trainingType">{{ trainingType }}</option>
@@ -53,6 +55,12 @@
     >
       ★ Ulubione
     </button>
+  </div>
+  <div class="mb-5 flex items-center justify-between text-sm text-stone-500">
+    <p>Terminy, które możesz spokojnie porównać.</p>
+    @if (trainings().length) {
+      <p class="hidden sm:block">{{ trainings().length }} dostępnych propozycji</p>
+    }
   </div>
 
   @if (isLoading()) {

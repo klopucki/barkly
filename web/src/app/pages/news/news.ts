@@ -4,10 +4,11 @@ import { SchoolService } from '../../features/schools/school.service';
 import { SchoolNews } from '../../features/schools/school.model';
 import { FavoritesService } from '../../shared/favorites.service';
 import { AuthService } from '../../features/auth/auth.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-news',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './news.html',
   styleUrl: './news.css',
 })
@@ -41,6 +42,15 @@ export class News implements OnInit {
     this.query.set(query);
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => this.load(0), 250);
+  }
+
+  excerpt(content: string): string {
+    const text = content
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return text.length > 190 ? `${text.slice(0, 187).trimEnd()}…` : text;
   }
 
   loadMore(): void {

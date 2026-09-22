@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TrainingForm } from './training-form';
 import { TrainingService } from '../../training.service';
+import { SchoolService } from '../../../schools/school.service';
 import { of } from 'rxjs';
 
 describe('TrainingForm', () => {
@@ -23,6 +24,7 @@ describe('TrainingForm', () => {
               }),
           },
         },
+        { provide: SchoolService, useValue: { mine$: () => of([]) } },
       ],
     }).compileComponents();
 

@@ -1,70 +1,76 @@
 @if (training()) {
-  <section>
-    <div class="flex flex-col md:flex-row md:items-start md:gap-8">
-      <div class="min-w-0 flex-1">
-        <h1 class="mb-4 text-3xl font-bold">{{ training()!.title }}</h1>
-
-        <p>Trener: {{ training()!.trainerName }}</p>
-        <p>Rodzaj: {{ training()!.trainingType.name }}</p>
+  <section class="training-detail-hero barkly-card overflow-hidden">
+    <div class="training-detail-main min-w-0 flex-1">
+      <p class="barkly-eyebrow">{{ training()!.trainingType.name }}</p>
+      <h1>{{ training()!.title }}</h1>
+      <p class="training-detail-trainer">
+        Prowadzi <strong>{{ training()!.trainerName }}</strong>
+      </p>
+      <div class="training-detail-tags">
         @if (training()!.trainingLevel) {
-          <p>Poziom: {{ training()!.trainingLevel!.name }}</p>
+          <span>{{ training()!.trainingLevel!.name }}</span>
         }
         @if (training()!.targetGroup) {
-          <p>Dla: {{ training()!.targetGroup!.name }}</p>
+          <span>{{ training()!.targetGroup!.name }}</span>
         }
         @if (training()!.homeVisit) {
-          <p>Konsultacja domowa</p>
+          <span>🏠 konsultacja domowa</span>
         }
-        <p>Termin: {{ training()!.startAt }}</p>
-        <p>Zapisanych: {{ training()!.bookedCount }}</p>
-        <button
-          type="button"
-          class="mt-3 min-h-11 rounded-full px-3 py-1 text-sm hover:bg-lime-100"
-          [class.bg-lime-200]="training()!.pawedByCurrentUser"
-          [disabled]="!auth.currentUser()"
-          (click)="togglePaw()"
-        >
-          🐾 {{ training()!.pawCount }}
-          {{ training()!.pawCount === 1 ? 'osoba lubi ten trening' : 'osób lubi ten trening' }}
-        </button>
-
-        <label class="mt-4 inline-block cursor-pointer rounded-lg border border-gray-300 px-4 py-2">
-          {{ training()!.imageKey ? 'Zmień zdjęcie' : 'Dodaj zdjęcie' }}
-          <input
-            class="sr-only"
-            type="file"
-            accept="image/jpeg,image/png"
-            (change)="uploadImage($event)"
-          />
-        </label>
-        <p class="mt-2 text-sm text-stone-500">
-          JPG lub PNG · maks. 10 MB · minimum 640 × 480 px. Zdjęcie zostanie automatycznie
-          zoptymalizowane.
-        </p>
-        @if (imageUploadError()) {
-          <p class="mt-2 text-sm text-red-600">{{ imageUploadError() }}</p>
-        }
-        <button
-          type="button"
-          class="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 sm:ml-2 sm:mt-4 sm:w-auto"
-          (click)="openEditModal()"
-        >
-          Edytuj trening
-        </button>
       </div>
+      <div class="training-detail-facts">
+        <span>◷ {{ training()!.startAt | date: 'EEEE, dd MMMM · HH:mm' }}</span>
+        <span
+          >◉ {{ training()!.bookedCount }} zapisanych
+          @if (training()!.capacity !== null) {
+            / {{ training()!.capacity }} miejsc
+          }
+        </span>
+      </div>
+      <button
+        type="button"
+        class="mt-3 min-h-11 rounded-full px-3 py-1 text-sm hover:bg-lime-100"
+        [class.bg-lime-200]="training()!.pawedByCurrentUser"
+        [disabled]="!auth.currentUser()"
+        (click)="togglePaw()"
+      >
+        🐾 {{ training()!.pawCount }}
+        {{ training()!.pawCount === 1 ? 'osoba lubi ten trening' : 'osób lubi ten trening' }}
+      </button>
 
-      @if (training()!.imageKey) {
-        <div
-          class="order-first mb-6 flex max-h-80 w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 md:order-last md:mb-0 md:w-96"
-        >
-          <img
-            class="max-h-80 max-w-full object-contain"
-            [src]="trainingImageUrl(training()!.imageKey!)"
-            [alt]="'Training: ' + training()!.title"
-          />
-        </div>
+      <label class="mt-5 inline-block cursor-pointer rounded-lg border border-gray-300 px-4 py-2">
+        {{ training()!.imageKey ? 'Zmień zdjęcie' : 'Dodaj zdjęcie' }}
+        <input
+          class="sr-only"
+          type="file"
+          accept="image/jpeg,image/png"
+          (change)="uploadImage($event)"
+        />
+      </label>
+      <p class="mt-2 text-sm text-stone-500">
+        JPG lub PNG · maks. 10 MB · minimum 640 × 480 px. Zdjęcie zostanie automatycznie
+        zoptymalizowane.
+      </p>
+      @if (imageUploadError()) {
+        <p class="mt-2 text-sm text-red-600">{{ imageUploadError() }}</p>
       }
+      <button
+        type="button"
+        class="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 sm:ml-2 sm:mt-5 sm:w-auto"
+        (click)="openEditModal()"
+      >
+        Edytuj trening
+      </button>
     </div>
+
+    @if (training()!.imageKey) {
+      <div class="training-detail-image">
+        <img
+          class="h-full w-full object-cover"
+          [src]="trainingImageUrl(training()!.imageKey!)"
+          [alt]="'Training: ' + training()!.title"
+        />
+      </div>
+    }
   </section>
 
   @if (isEditModalOpen()) {
@@ -153,15 +159,21 @@
     </app-modal>
   }
 
-  <section class="mt-8">
-    <h2 class="mb-4 text-xl font-semibold">Zapisy</h2>
+  <section class="training-bookings mt-8">
+    <div class="mb-4 flex items-end justify-between gap-3">
+      <div>
+        <p class="barkly-eyebrow">Uczestnicy</p>
+        <h2>Zapisy</h2>
+      </div>
+      <span>{{ bookings().length }}</span>
+    </div>
 
     @if (bookings().length === 0) {
       <p class="text-gray-500">Nie ma jeszcze zapisów.</p>
     } @else {
       <ul class="space-y-3">
         @for (booking of bookings(); track booking.id) {
-          <li class="rounded-lg border border-gray-200 p-3">
+          <li class="training-booking rounded-lg border border-gray-200 p-3">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div class="min-w-0">
                 <p class="font-medium">{{ booking.ownerName }} & {{ booking.dogName }}</p>

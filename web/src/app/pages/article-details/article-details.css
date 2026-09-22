@@ -1,0 +1,129 @@
+:host {
+  display: block;
+}
+.article-page {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+.article-back {
+  display: inline-flex;
+  margin-bottom: 2.5rem;
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.article-header {
+  max-width: 43rem;
+}
+.article-header h1 {
+  margin-top: 0.85rem;
+  color: #1c1917;
+  font-size: clamp(2.35rem, 6vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+}
+.article-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  color: #57534e;
+  font-size: 0.85rem;
+}
+.article-byline strong,
+.article-byline small {
+  display: block;
+}
+.article-byline strong {
+  color: #292524;
+}
+.article-byline small {
+  margin-top: 0.1rem;
+}
+.article-byline time {
+  margin-left: auto;
+  white-space: nowrap;
+  color: #78716c;
+}
+.article-avatar {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #065f46;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.article-rule {
+  width: 100%;
+  height: 1px;
+  margin: 2rem 0;
+  background: #d6d3d1;
+}
+.article-content {
+  color: #44403c;
+  font-size: 1.08rem;
+  line-height: 1.85;
+}
+.article-content :is(h1, h2, h3) {
+  margin-top: 2.4rem;
+  color: #1c1917;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+.article-content h2 {
+  font-size: 1.7rem;
+}
+.article-content p + p {
+  margin-top: 1.25rem;
+}
+.article-content ul,
+.article-content ol {
+  margin: 1.25rem 0;
+  padding-left: 1.5rem;
+}
+.article-content li + li {
+  margin-top: 0.45rem;
+}
+.article-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: #ecfdf5;
+  color: #57534e;
+  font-size: 0.9rem;
+}
+.article-footer a {
+  color: #047857;
+  font-weight: 700;
+}
+.article-error {
+  max-width: 32rem;
+  margin: 4rem auto;
+  padding: 2rem;
+  text-align: center;
+}
+.article-error h1 {
+  margin: 0.75rem 0 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+@media (max-width: 640px) {
+  .article-byline time {
+    display: none;
+  }
+  .article-content {
+    font-size: 1rem;
+  }
+}
