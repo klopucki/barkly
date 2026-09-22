@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.Instant;
@@ -64,6 +65,29 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleMaxUploadSize() {
         return ResponseEntity.badRequest()
                 .body(Map.of("image", "Image exceeds the configured size limit"));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(
+            ResponseStatusException exception,
+            HttpServletRequest request
+    ) {
+        var status = exception.getStatusCode();
+        var response = new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.toString(),
+                exception.getReason() == null ? "Request could not be completed" : exception.getReason(),
+                request.getRequestURI()
+        );
+
+        if (status.is5xxServerError()) {
+            log.error("Request failed with {}: {}", status, exception.getReason());
+        } else {
+            log.debug("Request rejected with {}: {}", status, exception.getReason());
+        }
+
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(Exception.class)

@@ -8,7 +8,6 @@ import pl.barkly.training.persistence.TrainingRepository;
 
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import pl.barkly.query.PageResponse;
 import pl.barkly.favorite.FavoriteService;
 import pl.barkly.favorite.FavoriteType;
@@ -35,14 +34,14 @@ class TrainingQueryService {
     }
 
     List<TrainingResponse> findAll() {
-        return trainingRepository.findAllByDeletedAtIsNull()
+        return trainingRepository.findAllActiveOrdered()
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     PageResponse<TrainingResponse> search(String query, String type, int page, int size, boolean favoritesOnly) {
-        var pageable = PageRequest.of(Math.max(0, page), Math.clamp(size, 1, 50), Sort.by("startAt").ascending());
+        var pageable = PageRequest.of(Math.max(0, page), Math.clamp(size, 1, 50));
         var ids = favoritesOnly ? favorites.ids(FavoriteType.TRAINING) : List.<Long>of();
         if (favoritesOnly && ids.isEmpty()) return new PageResponse<>(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0, 0);
         var result = favoritesOnly ? trainingRepository.searchFavorites(normalize(query), normalize(type), ids, pageable) : trainingRepository.search(normalize(query), normalize(type), pageable);

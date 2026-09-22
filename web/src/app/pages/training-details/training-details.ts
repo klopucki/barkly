@@ -69,6 +69,11 @@ export class TrainingDetails implements OnInit {
     this.isBookingModalOpen.set(false);
   }
 
+  protected isPast(): boolean {
+    const training = this.training();
+    return training !== null && new Date(training.startAt) <= new Date();
+  }
+
   enrolledDogIds(): Set<number> {
     return new Set(
       this.bookings()

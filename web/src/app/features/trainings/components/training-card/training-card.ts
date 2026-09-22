@@ -27,6 +27,10 @@ export class TrainingCard {
     return capacity !== null && capacity - bookedCount <= 2;
   }
 
+  protected isPast(): boolean {
+    return new Date(this.training().startAt) <= new Date();
+  }
+
   protected capacityLabel(): string {
     const { capacity, bookedCount } = this.training();
     return capacity === null

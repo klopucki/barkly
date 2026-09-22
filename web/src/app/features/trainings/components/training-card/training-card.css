@@ -72,6 +72,39 @@
 .training-card:hover .training-image img {
   transform: scale(1.045);
 }
+.training-card-past {
+  border-style: dashed;
+  border-color: #a8a29e;
+  background: #fafaf9;
+  box-shadow: none;
+  transform: none;
+}
+.training-card-past:hover {
+  border-color: #78716c;
+  box-shadow: none;
+  transform: none;
+}
+.training-card-past .training-date {
+  background: #e7e5e4;
+  color: #57534e;
+}
+.training-card-past .training-image {
+  filter: grayscale(0.75);
+}
+.training-past-status {
+  border-radius: 999px;
+  background: #e7e5e4;
+  padding: 0.25rem 0.55rem;
+  color: #57534e;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.training-past-label {
+  color: #57534e;
+  font-weight: 700;
+}
 
 @media (max-width: 640px) {
   .training-card {

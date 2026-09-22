@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import pl.barkly.training.api.BookingCreateRequest;
 import pl.barkly.training.api.BookingResponse;
+import pl.barkly.training.api.MyTrainingBookingResponse;
 
 import java.util.List;
 
@@ -38,6 +39,11 @@ class BookingController {
     @GetMapping("/api/trainings/{trainingId}/bookings")
     List<BookingResponse> findBookings(@PathVariable Long trainingId) {
         return trainingFacade.findBookings(trainingId);
+    }
+
+    @GetMapping("/api/my/bookings")
+    List<MyTrainingBookingResponse> findMyBookings() {
+        return trainingFacade.findMyBookings();
     }
 
     @DeleteMapping("/api/booking/{id}")

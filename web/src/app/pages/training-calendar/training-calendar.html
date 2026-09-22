@@ -1,0 +1,106 @@
+<section class="calendar-page">
+  <a routerLink="/me" class="calendar-back">← Twoje miejsce</a>
+  <header class="calendar-header">
+    <div>
+      <p class="barkly-eyebrow">Twój rytm</p>
+      <h1 class="barkly-page-title mt-2">Kalendarz treningów</h1>
+      <p class="mt-3 max-w-xl text-stone-600">
+        Wszystkie spotkania Twoich psów — nadchodzące i te, do których możesz wrócić.
+      </p>
+    </div>
+  </header>
+
+  @if (today().length) {
+    <section class="today-card">
+      <div>
+        <p class="barkly-eyebrow !text-lime-200">Dzisiaj</p>
+        <h2>Macie trening.</h2>
+      </div>
+      <div class="today-list">
+        @for (item of today(); track item.bookingId) {
+          <a [routerLink]="['/trainings', item.trainingId]"
+            >{{ item.startAt | date: 'HH:mm' }} · {{ item.dogName }} · {{ item.trainingTitle }} →</a
+          >
+        }
+      </div>
+    </section>
+  }
+
+  <div class="calendar-tabs" role="tablist" aria-label="Widok kalendarza">
+    <button type="button" [class.active]="view() === 'upcoming'" (click)="setView('upcoming')">
+      Nadchodzące
+    </button>
+    <button type="button" [class.active]="view() === 'month'" (click)="setView('month')">
+      Miesiąc
+    </button>
+    <button type="button" [class.active]="view() === 'past'" (click)="setView('past')">
+      Historia
+    </button>
+  </div>
+
+  @if (loading()) {
+    <p class="mt-6 text-stone-500">Ładowanie kalendarza…</p>
+  } @else if (view() === 'month') {
+    <section class="month-view barkly-card">
+      <div class="month-controls">
+        <button type="button" (click)="previousMonth()" aria-label="Poprzedni miesiąc">←</button>
+        <h2>{{ month() | date: 'LLLL y' }}</h2>
+        <button type="button" (click)="nextMonth()" aria-label="Następny miesiąc">→</button>
+      </div>
+      <div class="weekday-row">
+        <span>Pon</span><span>Wt</span><span>Śr</span><span>Czw</span><span>Pt</span><span>Sob</span
+        ><span>Nie</span>
+      </div>
+      <div class="month-grid">
+        @for (day of days(); track day.date.toISOString()) {
+          <div
+            class="calendar-day"
+            [class.outside]="!day.currentMonth"
+            [class.today]="isToday(day.date)"
+          >
+            <span>{{ day.date | date: 'd' }}</span>
+            @for (item of day.entries; track item.bookingId) {
+              <a
+                [routerLink]="['/trainings', item.trainingId]"
+                [attr.aria-label]="item.trainingTitle + ', ' + item.dogName"
+              >
+                {{ item.startAt | date: 'HH:mm' }} {{ item.dogName }}
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="agenda-list">
+      @for (item of view() === 'upcoming' ? upcoming() : past(); track item.bookingId) {
+        <a [routerLink]="['/trainings', item.trainingId]" class="agenda-item barkly-card group">
+          <time
+            ><strong>{{ item.startAt | date: 'dd' }}</strong
+            ><span>{{ item.startAt | date: 'MMM' }}</span></time
+          >
+          <div>
+            <p class="barkly-eyebrow">{{ item.trainingType }}</p>
+            <h2>{{ item.trainingTitle }}</h2>
+            <p>{{ item.startAt | date: 'EEEE, HH:mm' }} · z {{ item.trainerName }}</p>
+          </div>
+          <span class="agenda-dog">🐾 {{ item.dogName }}</span
+          ><span class="agenda-arrow">→</span>
+        </a>
+      } @empty {
+        <div class="calendar-empty">
+          <p class="text-2xl">🐾</p>
+          <h2>
+            {{
+              view() === 'upcoming'
+                ? 'Nie macie jeszcze zaplanowanych treningów.'
+                : 'Nie ma jeszcze treningów w historii.'
+            }}
+          </h2>
+          <p>Gdy zapiszesz psa na trening, pojawi się on właśnie tutaj.</p>
+          <a routerLink="/trainings" class="barkly-button">Znajdź trening</a>
+        </div>
+      }
+    </section>
+  }
+</section>
