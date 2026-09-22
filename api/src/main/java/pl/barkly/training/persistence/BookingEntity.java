@@ -74,6 +74,18 @@ public class BookingEntity {
         return trainingId;
     }
 
+    public Long getDogId() {
+        return dogId;
+    }
+
+    public String getDogName() {
+        return dogName;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
     public BookingResponse toResponse() {
         return new BookingResponse(
                 id,

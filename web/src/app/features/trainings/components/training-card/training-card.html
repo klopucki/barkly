@@ -1,5 +1,6 @@
 <article
   class="training-card barkly-card mb-5 overflow-hidden"
+  [class.training-card-past]="isPast()"
   role="link"
   tabindex="0"
   (click)="openDetails($event)"
@@ -22,7 +23,12 @@
     >
       {{ favorite() ? '★' : '☆' }}
     </button>
-    <p class="barkly-eyebrow">{{ training().trainingType.name }}</p>
+    <div class="flex flex-wrap items-center gap-2">
+      <p class="barkly-eyebrow">{{ training().trainingType.name }}</p>
+      @if (isPast()) {
+        <span class="training-past-status">Zakończony</span>
+      }
+    </div>
     <h2 class="mt-2 text-2xl font-semibold tracking-tight text-stone-950">
       {{ training().title }}
     </h2>
@@ -40,7 +46,11 @@
     </div>
     <div class="training-details mt-5">
       <span>◷ {{ training().startAt | date: 'EEEE, dd MMMM · HH:mm' }}</span>
-      <span [class.training-capacity-low]="isCapacityLow()"> ◉ {{ capacityLabel() }} </span>
+      @if (isPast()) {
+        <span class="training-past-label">✓ Termin minął</span>
+      } @else {
+        <span [class.training-capacity-low]="isCapacityLow()"> ◉ {{ capacityLabel() }} </span>
+      }
     </div>
     <div class="mt-5 flex flex-wrap gap-2">
       @if (auth.currentUser()?.role !== 'USER' && auth.currentUser()) {

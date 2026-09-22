@@ -12,6 +12,7 @@ import pl.barkly.training.api.DictionaryValueResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 import pl.barkly.training.exceptions.TrainingCapacityExceededException;
+import pl.barkly.training.exceptions.TrainingRegistrationClosedException;
 
 import java.time.LocalDateTime;
 
@@ -75,6 +76,22 @@ public class TrainingEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getTrainerName() {
+        return trainerName;
+    }
+
+    public String getTrainingTypeName() {
+        return trainingType.getName();
+    }
+
+    public LocalDateTime getStartAt() {
+        return startAt;
     }
 
     public void softDelete() {
@@ -151,6 +168,9 @@ public class TrainingEntity {
     }
 
     public void validateBooking(int bookedCount) {
+        if (!startAt.isAfter(LocalDateTime.now())) {
+            throw new TrainingRegistrationClosedException(id);
+        }
         if (capacity != null && bookedCount >= capacity) {
             throw new TrainingCapacityExceededException(id);
         }

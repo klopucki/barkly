@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Training, TrainingCreatePayload, TrainingDictionaries } from './training.model';
-import { Booking } from '../bookings/components/booking-form/booking.model';
+import { Booking, MyTrainingBooking } from '../bookings/components/booking-form/booking.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { PageResult } from '../../shared/page-result';
@@ -53,6 +53,10 @@ export class TrainingService {
 
   getBookingsForTraining$(trainingId: number): Observable<Booking[]> {
     return this.http.get<Booking[]>(`${this.apiUrl}/${trainingId}/bookings`);
+  }
+
+  getMyBookings$(): Observable<MyTrainingBooking[]> {
+    return this.http.get<MyTrainingBooking[]>('/api/my/bookings');
   }
 
   createBooking$(

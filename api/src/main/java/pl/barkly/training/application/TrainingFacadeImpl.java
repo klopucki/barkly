@@ -6,6 +6,7 @@ import pl.barkly.training.api.BookingCreateRequest;
 import pl.barkly.training.api.BookingResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
+import pl.barkly.training.api.MyTrainingBookingResponse;
 
 import java.util.List;
 import pl.barkly.query.PageResponse;
@@ -75,6 +76,11 @@ class TrainingFacadeImpl implements TrainingFacade {
     @Override
     public void deleteBooking(Long id) {
         bookingCommandService.deleteBooking(id);
+    }
+
+    @Override
+    public List<MyTrainingBookingResponse> findMyBookings() {
+        return bookingQueryService.findMine();
     }
 
     @Override

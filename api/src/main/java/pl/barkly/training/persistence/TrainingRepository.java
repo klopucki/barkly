@@ -15,10 +15,21 @@ import org.springframework.data.repository.query.Param;
 public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> {
 
     @EntityGraph(attributePaths = {"trainingType", "trainingLevel", "targetGroup"})
-    List<TrainingEntity> findAllByDeletedAtIsNull();
+    @Query("""
+            select training from TrainingEntity training
+            where training.deletedAt is null
+            order by
+                case when training.startAt >= CURRENT_TIMESTAMP then 0 else 1 end,
+                case when training.startAt >= CURRENT_TIMESTAMP then training.startAt else null end asc,
+                case when training.startAt < CURRENT_TIMESTAMP then training.startAt else null end desc
+            """)
+    List<TrainingEntity> findAllActiveOrdered();
 
     @EntityGraph(attributePaths = {"trainingType", "trainingLevel", "targetGroup"})
     Optional<TrainingEntity> findByIdAndDeletedAtIsNull(Long id);
+
+    @EntityGraph(attributePaths = {"trainingType", "trainingLevel", "targetGroup"})
+    List<TrainingEntity> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
 
     @EntityGraph(attributePaths = {"trainingType", "trainingLevel", "targetGroup"})
     @Query("""
@@ -32,6 +43,10 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
                    or lower(level.name) like lower(concat('%', :query, '%'))
                    or lower(targetGroup.name) like lower(concat('%', :query, '%')))
               and (:type = '' or training.trainingType.name = :type)
+            order by
+                case when training.startAt >= CURRENT_TIMESTAMP then 0 else 1 end,
+                case when training.startAt >= CURRENT_TIMESTAMP then training.startAt else null end asc,
+                case when training.startAt < CURRENT_TIMESTAMP then training.startAt else null end desc
             """)
     Page<TrainingEntity> search(@Param("query") String query, @Param("type") String type, Pageable pageable);
 
@@ -42,6 +57,10 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
               and (:query = '' or lower(training.title) like lower(concat('%', :query, '%')) or lower(training.trainerName) like lower(concat('%', :query, '%'))
                    or lower(training.trainingType.name) like lower(concat('%', :query, '%')) or lower(level.name) like lower(concat('%', :query, '%')) or lower(targetGroup.name) like lower(concat('%', :query, '%')))
               and (:type = '' or training.trainingType.name = :type)
+            order by
+                case when training.startAt >= CURRENT_TIMESTAMP then 0 else 1 end,
+                case when training.startAt >= CURRENT_TIMESTAMP then training.startAt else null end asc,
+                case when training.startAt < CURRENT_TIMESTAMP then training.startAt else null end desc
             """)
     Page<TrainingEntity> searchFavorites(@Param("query") String query, @Param("type") String type, @Param("ids") List<Long> ids, Pageable pageable);
 }
