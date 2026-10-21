@@ -1,7 +1,8 @@
 package pl.barkly.user;
 
-import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,14 +10,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import pl.barkly.user.api.CurrentUserResponse;
-import pl.barkly.user.api.RegisterRequest;
 import pl.barkly.user.api.LoginRequest;
+import pl.barkly.user.api.RegisterRequest;
 
 @RestController
 class AuthController {
@@ -34,10 +36,13 @@ class AuthController {
     }
 
     @PostMapping("/api/auth/login")
-    CurrentUserResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest) {
+    CurrentUserResponse login(
+            @Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest) {
         try {
-            var authentication = authenticationManager.authenticate(
-                    UsernamePasswordAuthenticationToken.unauthenticated(request.email(), request.password()));
+            var authentication =
+                    authenticationManager.authenticate(
+                            UsernamePasswordAuthenticationToken.unauthenticated(
+                                    request.email(), request.password()));
             servletRequest.getSession();
             servletRequest.changeSessionId();
             SecurityContext context = SecurityContextHolder.createEmptyContext();

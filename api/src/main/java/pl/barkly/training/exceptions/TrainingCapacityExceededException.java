@@ -8,8 +8,6 @@ public class TrainingCapacityExceededException extends BarklyException {
         super(
                 HttpStatus.CONFLICT,
                 ErrorCode.TRAINING_CAPACITY_EXCEEDED,
-                "Training %d is already full.".formatted(trainingId)
-        );
+                "Training %d is already full.".formatted(trainingId));
     }
-
 }

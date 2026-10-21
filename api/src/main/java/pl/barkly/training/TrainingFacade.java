@@ -1,18 +1,19 @@
 package pl.barkly.training;
 
+import pl.barkly.query.PageResponse;
 import pl.barkly.training.api.BookingCreateRequest;
 import pl.barkly.training.api.BookingResponse;
+import pl.barkly.training.api.MyTrainingBookingResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
-import pl.barkly.training.api.MyTrainingBookingResponse;
 
 import java.util.List;
-import pl.barkly.query.PageResponse;
 
 public interface TrainingFacade {
     List<TrainingResponse> findTrainings();
 
-    PageResponse<TrainingResponse> searchTrainings(String query, String type, int page, int size, boolean favoritesOnly);
+    PageResponse<TrainingResponse> searchTrainings(
+            String query, String type, int page, int size, boolean favoritesOnly);
 
     TrainingResponse findTraining(Long id);
 

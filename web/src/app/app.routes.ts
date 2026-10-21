@@ -3,6 +3,11 @@ import { authGuard } from './features/auth/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'me/notifications',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/notifications/notifications').then((m) => m.Notifications),
+  },
+  {
     path: '',
     loadComponent: () => import('./pages/home/home').then((m) => m.Home),
   },

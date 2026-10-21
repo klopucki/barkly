@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Training, TrainingCreatePayload, TrainingDictionaries } from './training.model';
 import { Booking, MyTrainingBooking } from '../bookings/components/booking-form/booking.model';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { NotificationService } from '../notifications/notification.service';
 import { HttpClient } from '@angular/common/http';
 import { PageResult } from '../../shared/page-result';
 
@@ -10,6 +11,7 @@ import { PageResult } from '../../shared/page-result';
 })
 export class TrainingService {
   private readonly http = inject(HttpClient);
+  private readonly notifications = inject(NotificationService);
   private readonly apiUrl = '/api/trainings';
   private readonly bookingApiUrl = '/api/booking';
 
@@ -63,11 +65,15 @@ export class TrainingService {
     trainingId: number,
     booking: Omit<Booking, 'id' | 'trainingId' | 'dogId' | 'createdAt'>,
   ): Observable<Booking> {
-    return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings`, booking);
+    return this.http
+      .post<Booking>(`${this.apiUrl}/${trainingId}/bookings`, booking)
+      .pipe(tap(() => this.notifications.refresh()));
   }
 
   quickBook$(trainingId: number, dogId: number): Observable<Booking> {
-    return this.http.post<Booking>(`${this.apiUrl}/${trainingId}/bookings/dogs/${dogId}`, {});
+    return this.http
+      .post<Booking>(`${this.apiUrl}/${trainingId}/bookings/dogs/${dogId}`, {})
+      .pipe(tap(() => this.notifications.refresh()));
   }
 
   togglePaw$(trainingId: number): Observable<Training> {

@@ -4,13 +4,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
 import pl.barkly.training.exceptions.InvalidImageException;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -21,6 +17,12 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 @Component
 class LocalTrainingImageStorage implements TrainingImageStorage {
@@ -107,8 +109,17 @@ class LocalTrainingImageStorage implements TrainingImageStorage {
         byte[] header = new byte[8];
         try (InputStream input = image.getInputStream()) {
             int length = input.read(header);
-            boolean jpeg = length >= 3 && (header[0] & 0xff) == 0xff && (header[1] & 0xff) == 0xd8 && (header[2] & 0xff) == 0xff;
-            boolean png = length >= 8 && header[0] == (byte) 0x89 && header[1] == 0x50 && header[2] == 0x4e && header[3] == 0x47;
+            boolean jpeg =
+                    length >= 3
+                            && (header[0] & 0xff) == 0xff
+                            && (header[1] & 0xff) == 0xd8
+                            && (header[2] & 0xff) == 0xff;
+            boolean png =
+                    length >= 8
+                            && header[0] == (byte) 0x89
+                            && header[1] == 0x50
+                            && header[2] == 0x4e
+                            && header[3] == 0x47;
             if (jpeg || png) return;
         } catch (IOException exception) {
             throw new InvalidImageException("Could not read image file");
@@ -118,19 +129,27 @@ class LocalTrainingImageStorage implements TrainingImageStorage {
 
     private void validateDimensions(BufferedImage image) {
         if (image.getWidth() < minWidth || image.getHeight() < minHeight) {
-            throw new InvalidImageException("Image must be at least " + minWidth + " × " + minHeight + " pixels");
+            throw new InvalidImageException(
+                    "Image must be at least " + minWidth + " × " + minHeight + " pixels");
         }
     }
 
     private BufferedImage resize(BufferedImage source) {
-        double ratio = Math.min(1d, Math.min((double) maxWidth / source.getWidth(), (double) maxHeight / source.getHeight()));
+        double ratio =
+                Math.min(
+                        1d,
+                        Math.min(
+                                (double) maxWidth / source.getWidth(),
+                                (double) maxHeight / source.getHeight()));
         int width = (int) Math.round(source.getWidth() * ratio);
         int height = (int) Math.round(source.getHeight() * ratio);
         BufferedImage target = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = target.createGraphics();
         try {
-            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            graphics.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            graphics.setRenderingHint(
+                    RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             graphics.setColor(java.awt.Color.WHITE);
             graphics.fillRect(0, 0, width, height);
             graphics.drawImage(source, 0, 0, width, height, null);
@@ -142,7 +161,8 @@ class LocalTrainingImageStorage implements TrainingImageStorage {
 
     private void writeJpeg(BufferedImage image, Path destination) throws IOException {
         ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-        try (OutputStream output = Files.newOutputStream(destination); ImageOutputStream stream = ImageIO.createImageOutputStream(output)) {
+        try (OutputStream output = Files.newOutputStream(destination);
+                ImageOutputStream stream = ImageIO.createImageOutputStream(output)) {
             writer.setOutput(stream);
             ImageWriteParam parameters = writer.getDefaultWriteParam();
             parameters.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);

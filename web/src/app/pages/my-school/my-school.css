@@ -1,0 +1,64 @@
+.school-list-heading {
+  padding-block: 1rem;
+  border-bottom: 1px solid #a8a29e;
+  color: #57534e;
+  font-size: 0.875rem;
+}
+
+.catalog-story {
+  padding-right: 0;
+}
+
+.school-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.75rem;
+  margin-top: 0.625rem;
+}
+
+.school-actions .catalog-read {
+  margin-top: 0;
+}
+
+.school-edit {
+  min-height: 2.75rem;
+  color: #57534e;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.school-edit:hover {
+  color: #1c1917;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.school-action {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid #a8a29e;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.school-action:hover {
+  border-color: #292524;
+}
+
+.school-action-primary {
+  border-color: #175c48;
+  background: #175c48;
+  color: white;
+}
+
+.school-action-primary:hover {
+  border-color: #124a3a;
+  background: #124a3a;
+}

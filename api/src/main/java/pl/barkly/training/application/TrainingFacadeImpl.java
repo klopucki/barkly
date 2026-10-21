@@ -1,15 +1,16 @@
 package pl.barkly.training.application;
 
 import org.springframework.stereotype.Service;
+
+import pl.barkly.query.PageResponse;
 import pl.barkly.training.TrainingFacade;
 import pl.barkly.training.api.BookingCreateRequest;
 import pl.barkly.training.api.BookingResponse;
+import pl.barkly.training.api.MyTrainingBookingResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
-import pl.barkly.training.api.MyTrainingBookingResponse;
 
 import java.util.List;
-import pl.barkly.query.PageResponse;
 
 @Service
 class TrainingFacadeImpl implements TrainingFacade {
@@ -24,8 +25,8 @@ class TrainingFacadeImpl implements TrainingFacade {
             TrainingCommandService trainingCommandService,
             TrainingQueryService trainingQueryService,
             BookingCommandService bookingCommandService,
-            BookingQueryService bookingQueryService, TrainingPawReactionService pawReactionService
-    ) {
+            BookingQueryService bookingQueryService,
+            TrainingPawReactionService pawReactionService) {
         this.trainingCommandService = trainingCommandService;
         this.trainingQueryService = trainingQueryService;
         this.bookingCommandService = bookingCommandService;
@@ -49,7 +50,8 @@ class TrainingFacadeImpl implements TrainingFacade {
     }
 
     @Override
-    public PageResponse<TrainingResponse> searchTrainings(String query, String type, int page, int size, boolean favoritesOnly) {
+    public PageResponse<TrainingResponse> searchTrainings(
+            String query, String type, int page, int size, boolean favoritesOnly) {
         return trainingQueryService.search(query, type, page, size, favoritesOnly);
     }
 
@@ -84,10 +86,12 @@ class TrainingFacadeImpl implements TrainingFacade {
     }
 
     @Override
-    public BookingResponse quickBookTraining(Long trainingId, Long dogId) { return bookingCommandService.quickBook(trainingId, dogId); }
+    public BookingResponse quickBookTraining(Long trainingId, Long dogId) {
+        return bookingCommandService.quickBook(trainingId, dogId);
+    }
 
     @Override
-    public TrainingResponse togglePaw(Long id) { return pawReactionService.toggle(id); }
-
-
+    public TrainingResponse togglePaw(Long id) {
+        return pawReactionService.toggle(id);
+    }
 }

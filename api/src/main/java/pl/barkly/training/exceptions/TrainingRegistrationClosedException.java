@@ -7,7 +7,6 @@ public class TrainingRegistrationClosedException extends BarklyException {
         super(
                 HttpStatus.CONFLICT,
                 ErrorCode.TRAINING_REGISTRATION_CLOSED,
-                "Registration is closed because this training has already started: " + trainingId
-        );
+                "Registration is closed because this training has already started: " + trainingId);
     }
 }

@@ -1,64 +1,55 @@
 package pl.barkly.training.exceptions;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    private final static Logger log = getLogger(ApiExceptionHandler.class);
+    private static final Logger log = getLogger(ApiExceptionHandler.class);
 
     @ExceptionHandler(BarklyException.class)
     public ResponseEntity<ErrorResponse> handle(
-            BarklyException exception,
-            HttpServletRequest request
-    ) {
+            BarklyException exception, HttpServletRequest request) {
 
-        ErrorResponse response = new ErrorResponse(
-                Instant.now(),
-                exception.getStatus().value(),
-                exception.getStatus().getReasonPhrase(),
-                exception.getMessage(),
-                request.getRequestURI()
-        );
+        ErrorResponse response =
+                new ErrorResponse(
+                        Instant.now(),
+                        exception.getStatus().value(),
+                        exception.getStatus().getReasonPhrase(),
+                        exception.getMessage(),
+                        request.getRequestURI());
 
-        log.warn(
-                "Business exception [{}]: {}",
-                exception.getErrorCode(),
-                exception.getMessage()
-        );
+        log.warn("Business exception [{}]: {}", exception.getErrorCode(), exception.getMessage());
 
-        return ResponseEntity
-                .status(exception.getStatus())
-                .body(response);
+        return ResponseEntity.status(exception.getStatus()).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidation(
-            MethodArgumentNotValidException exception
-    ) {
+            MethodArgumentNotValidException exception) {
 
         Map<String, String> errors = new HashMap<>();
 
-        exception.getBindingResult()
+        exception
+                .getBindingResult()
                 .getFieldErrors()
-                .forEach(error ->
-                        errors.put(error.getField(), error.getDefaultMessage()));
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
-        return ResponseEntity.badRequest()
-                .body(errors);
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -69,17 +60,17 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatus(
-            ResponseStatusException exception,
-            HttpServletRequest request
-    ) {
+            ResponseStatusException exception, HttpServletRequest request) {
         var status = exception.getStatusCode();
-        var response = new ErrorResponse(
-                Instant.now(),
-                status.value(),
-                status.toString(),
-                exception.getReason() == null ? "Request could not be completed" : exception.getReason(),
-                request.getRequestURI()
-        );
+        var response =
+                new ErrorResponse(
+                        Instant.now(),
+                        status.value(),
+                        status.toString(),
+                        exception.getReason() == null
+                                ? "Request could not be completed"
+                                : exception.getReason(),
+                        request.getRequestURI());
 
         if (status.is5xxServerError()) {
             log.error("Request failed with {}: {}", status, exception.getReason());
@@ -92,21 +83,17 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(
-            Exception exception,
-            HttpServletRequest request
-    ) {
+            Exception exception, HttpServletRequest request) {
 
-        ErrorResponse response = new ErrorResponse(
-                Instant.now(),
-                500,
-                "Internal Server Error",
-                "Unexpected error occurred",
-                request.getRequestURI()
-        );
+        ErrorResponse response =
+                new ErrorResponse(
+                        Instant.now(),
+                        500,
+                        "Internal Server Error",
+                        "Unexpected error occurred",
+                        request.getRequestURI());
 
         log.error("Unexpected error", exception);
-        return ResponseEntity.internalServerError()
-                .body(response);
+        return ResponseEntity.internalServerError().body(response);
     }
-
 }

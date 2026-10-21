@@ -9,8 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+
 import pl.barkly.user.UserEntity;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "dog_post_comment")
@@ -33,8 +35,7 @@ class DogPostCommentEntity {
     @Column(nullable = false)
     private LocalDateTime publishedAt;
 
-    protected DogPostCommentEntity() {
-    }
+    protected DogPostCommentEntity() {}
 
     DogPostCommentEntity(DogPostEntity post, UserEntity user, String content) {
         this.post = post;

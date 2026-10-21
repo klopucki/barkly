@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import pl.barkly.training.api.TrainingResponse;
 
 import java.util.concurrent.TimeUnit;
@@ -23,11 +24,11 @@ class TrainingImageController {
         this.imageService = imageService;
     }
 
-    @PutMapping(path = "/api/trainings/{trainingId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(
+            path = "/api/trainings/{trainingId}/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     TrainingResponse replace(
-            @PathVariable Long trainingId,
-            @RequestParam("image") MultipartFile image
-    ) {
+            @PathVariable Long trainingId, @RequestParam("image") MultipartFile image) {
         return imageService.replace(trainingId, image);
     }
 

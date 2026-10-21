@@ -10,6 +10,4 @@ public record MyTrainingBookingResponse(
         String trainingTitle,
         String trainerName,
         String trainingType,
-        LocalDateTime startAt
-) {
-}
+        LocalDateTime startAt) {}

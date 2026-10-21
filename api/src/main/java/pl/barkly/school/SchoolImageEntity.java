@@ -12,7 +12,8 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "school_image")
 public class SchoolImageEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -21,9 +22,22 @@ public class SchoolImageEntity {
 
     private String imageKey;
 
-    protected SchoolImageEntity() { }
-    public SchoolImageEntity(SchoolEntity school, String imageKey) { this.school = school; this.imageKey = imageKey; }
-    public Long getId() { return id; }
-    public Long getSchoolId() { return school.getId(); }
-    public String getImageKey() { return imageKey; }
+    protected SchoolImageEntity() {}
+
+    public SchoolImageEntity(SchoolEntity school, String imageKey) {
+        this.school = school;
+        this.imageKey = imageKey;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getSchoolId() {
+        return school.getId();
+    }
+
+    public String getImageKey() {
+        return imageKey;
+    }
 }

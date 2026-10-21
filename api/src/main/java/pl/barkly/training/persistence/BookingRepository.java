@@ -20,7 +20,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     List<BookingEntity> findAllByDogIdInAndDeletedAtIsNull(List<Long> dogIds);
 
     @Modifying
-    @Query("""
+    @Query(
+            """
                 update BookingEntity b
                 set b.deletedAt = :deletedAt
                 where b.trainingId = :trainingId

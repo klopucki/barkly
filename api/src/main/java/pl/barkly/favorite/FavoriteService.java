@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import pl.barkly.favorite.api.FavoriteResponse;
 import pl.barkly.user.UserService;
 
@@ -22,13 +23,20 @@ public class FavoriteService {
     @Transactional(readOnly = true)
     List<FavoriteResponse> mine() {
         return favorites.findAllByUser_IdOrderByCreatedAtDesc(users.currentUser().getId()).stream()
-                .map(item -> new FavoriteResponse(item.getTargetType().name().toLowerCase(), item.getTargetId())).toList();
+                .map(
+                        item ->
+                                new FavoriteResponse(
+                                        item.getTargetType().name().toLowerCase(),
+                                        item.getTargetId()))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<Long> ids(FavoriteType type) {
         return favorites.findAllByUser_IdOrderByCreatedAtDesc(users.currentUser().getId()).stream()
-                .filter(item -> item.getTargetType() == type).map(UserFavoriteEntity::getTargetId).toList();
+                .filter(item -> item.getTargetType() == type)
+                .map(UserFavoriteEntity::getTargetId)
+                .toList();
     }
 
     @Transactional
@@ -41,7 +49,9 @@ public class FavoriteService {
 
     @Transactional
     void remove(FavoriteType type, Long id) {
-        favorites.findByUser_IdAndTargetTypeAndTargetId(users.currentUser().getId(), type, id).ifPresent(favorites::delete);
+        favorites
+                .findByUser_IdAndTargetTypeAndTargetId(users.currentUser().getId(), type, id)
+                .ifPresent(favorites::delete);
     }
 
     FavoriteType type(String value) {

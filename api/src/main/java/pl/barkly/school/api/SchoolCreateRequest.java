@@ -9,6 +9,4 @@ public record SchoolCreateRequest(
         @Size(max = 14) String krs,
         @Size(max = 5000) String description,
         @Size(max = 3000) String activities,
-        @Size(max = 3000) String pricing
-) {
-}
+        @Size(max = 3000) String pricing) {}

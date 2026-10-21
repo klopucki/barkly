@@ -1,8 +1,9 @@
 package pl.barkly.dog.api;
 
+import pl.barkly.dog.PostReactionType;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import pl.barkly.dog.PostReactionType;
 
 public record DogPostResponse(
         Long id,
@@ -14,5 +15,4 @@ public record DogPostResponse(
         LocalDateTime publishedAt,
         List<PostReactionSummary> reactions,
         PostReactionType myReaction,
-        long commentCount
-) { }
+        long commentCount) {}

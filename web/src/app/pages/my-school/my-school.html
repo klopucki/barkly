@@ -1,54 +1,100 @@
-<section>
-  <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+<section class="catalog-page" aria-labelledby="my-schools-title">
+  <header class="catalog-heading">
     <div>
-      <h1 class="text-3xl font-bold">Moje szkoły</h1>
-      <p class="mt-1 text-gray-600">Zarządzaj profilami swoich szkół i ich publikacjami.</p>
+      <p class="catalog-kicker">Panel szkoły</p>
+      <h1 id="my-schools-title">Moje szkoły</h1>
+      <p class="catalog-intro">Zarządzaj profilami szkół, ofertą i publikacjami.</p>
     </div>
     @if (canManageSchools()) {
       <button
         type="button"
-        class="rounded bg-black px-4 py-2 text-white"
+        class="school-action school-action-primary"
         (click)="openCreateDialog()"
       >
-        Dodaj szkołę
+        <span aria-hidden="true">+</span> Dodaj szkołę
       </button>
     }
-  </div>
+  </header>
   @if (!auth.currentUser()) {
-    <p>Zaloguj się, aby zarządzać szkołami.</p>
+    <div class="catalog-empty">
+      <h2>Zaloguj się, aby zarządzać szkołami</h2>
+      <a routerLink="/account" class="catalog-read"
+        >Przejdź do logowania <span aria-hidden="true">↗</span></a
+      >
+    </div>
   } @else if (!canManageSchools()) {
-    <p class="text-gray-600">
+    <p class="catalog-status">
       Konto użytkownika nie ma uprawnień do tworzenia ani zarządzania szkołami.
     </p>
   } @else {
-    <div class="grid gap-4 md:grid-cols-2">
+    <div class="school-list-heading">Profile i publikacje</div>
+    @if (loading()) {
+      <p class="catalog-status" role="status">Ładowanie szkół…</p>
+    }
+    <div class="catalog-list" [attr.aria-busy]="loading()">
       @for (s of mine(); track s.id) {
-        <article class="barkly-card p-5">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 class="text-xl font-semibold">{{ s.name }}</h2>
-              <p class="mt-1 text-sm text-gray-500">{{ s.address }}</p>
-              @if (s.description) {
-                <p class="mt-3 line-clamp-3 text-gray-700">{{ s.description }}</p>
-              }
-            </div>
-            <button
-              type="button"
-              class="rounded border px-3 py-1.5 text-sm"
-              (click)="openEditDialog(s)"
-            >
-              Edytuj
-            </button>
+        <article class="catalog-entry">
+          <div class="catalog-visual">
+            @if (s.images.length) {
+              <img
+                [src]="schoolImageUrl(s.images[0].imageKey)"
+                [alt]="s.name"
+                width="320"
+                height="240"
+                loading="lazy"
+              />
+            } @else {
+              <div class="catalog-no-photo" aria-label="Brak zdjęcia szkoły">
+                <svg
+                  aria-hidden="true"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1"
+                >
+                  <path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8" stroke-linejoin="round" />
+                </svg>
+                <span>Szkoła dla psów</span>
+              </div>
+            }
           </div>
-          <a
-            [routerLink]="['/schools', s.slug]"
-            class="mt-4 inline-block text-sm font-medium underline"
-          >
-            Otwórz szkołę i dodaj artykuł
-          </a>
+          <div class="catalog-story">
+            <p class="catalog-address">{{ s.address }}</p>
+            <h2>
+              <a [routerLink]="['/schools', s.slug]">{{ s.name }}</a>
+            </h2>
+            <p class="catalog-excerpt">
+              {{
+                s.description || s.activities || 'Uzupełnij profil, aby przedstawić swoją szkołę.'
+              }}
+            </p>
+            <div class="school-actions">
+              <a [routerLink]="['/schools', s.slug]" class="catalog-read"
+                >Profil i artykuły <span aria-hidden="true">↗</span></a
+              >
+              <button
+                type="button"
+                class="school-edit"
+                [attr.aria-label]="'Edytuj profil szkoły: ' + s.name"
+                (click)="openEditDialog(s)"
+              >
+                Edytuj profil
+              </button>
+            </div>
+          </div>
         </article>
       } @empty {
-        <p class="text-gray-500">Nie masz jeszcze szkoły. Dodaj pierwszą, aby rozpocząć.</p>
+        @if (!loading() && !error) {
+          <div class="catalog-empty">
+            <h2>Tu zaczyna się Twoja szkoła</h2>
+            <p>Dodaj pierwszy profil, przedstaw ofertę i publikuj artykuły dla opiekunów psów.</p>
+            <button type="button" class="catalog-text-button" (click)="openCreateDialog()">
+              Dodaj pierwszą szkołę <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        }
       }
     </div>
   }
@@ -116,17 +162,19 @@
             rows="3"
           ></textarea>
         </div>
+        @if (error) {
+          <p class="mt-3 text-sm text-red-700" role="alert">{{ error }}</p>
+        }
         <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <button type="button" class="rounded border px-4 py-2" (click)="closeFormDialog()">
-            Anuluj</button
-          ><button class="rounded bg-black px-4 py-2 text-white">
+          <button type="button" class="school-action" (click)="closeFormDialog()">Anuluj</button
+          ><button class="school-action school-action-primary">
             {{ editing ? 'Zapisz zmiany' : 'Utwórz szkołę' }}
           </button>
         </div>
       </form>
     </div>
   }
-  @if (error) {
-    <p class="mt-3 text-red-600">{{ error }}</p>
+  @if (error && !showFormDialog) {
+    <p class="mt-3 text-red-700" role="alert">{{ error }}</p>
   }
 </section>

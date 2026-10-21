@@ -69,3 +69,38 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## In-app notifications
+
+Logged-in users can open `/me/notifications` through the header bell. Booking confirmations,
+training detail changes and cancellations are stored transactionally with the corresponding action.
+The bell refreshes every 15 seconds and after a booking. Notifications can be marked read individually
+or all at once; the centre loads history in pages of 30.
+
+Reminders run every minute and cover active bookings starting within the next 24 hours. The database
+uniqueness constraint prevents repeated reminders for the same user, training and start time, including
+when multiple application instances run. A changed start time can produce a new reminder. After downtime,
+upcoming trainings still inside this window are picked up on the next run; past sessions are skipped.
+Users can disable reminders in the notification centre (enabled by default). No email or push is sent.
+Training times use the existing application/server local-time convention.
+
+Flyway migration V17 adds notification storage and associates existing dog bookings with their owners.
+Older free-form bookings without a dog reference cannot be reliably associated with an account and do
+not receive notifications. New free-form bookings belong to the signed-in account that submits them.
+Cancellation notifications retain the training name/date and link to the personal calendar because
+cancelled training detail pages are no longer available. The scheduler interval can be configured with
+`barkly.notifications.reminder-interval-ms` (default `60000`).
+
+## Code formatting
+
+Java sources and tests use google-java-format 1.28.0 with four-space indentation (`--aosp`).
+The frontend uses the existing Prettier configuration in `web/.prettierrc`.
+
+```bash
+./gradlew -p api formatJava
+./gradlew -p api checkJavaFormat
+npm --prefix web run format
+npm --prefix web run format:check
+```
+
+The `format` commands update files; the check commands only verify formatting.

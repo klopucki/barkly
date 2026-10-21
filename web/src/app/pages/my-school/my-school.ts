@@ -1,18 +1,21 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { School, SchoolPayload } from '../../features/schools/school.model';
+import { School, SchoolPayload, schoolImageUrl } from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
 import { AuthService } from '../../features/auth/auth.service';
 @Component({
   selector: 'app-my-school',
   imports: [FormsModule, RouterLink],
   templateUrl: './my-school.html',
+  styleUrls: ['../schools/schools.css', './my-school.css'],
 })
 export class MySchool {
   private readonly schools = inject(SchoolService);
   protected readonly auth = inject(AuthService);
+  protected readonly schoolImageUrl = schoolImageUrl;
   readonly mine = signal<School[]>([]);
+  readonly loading = signal(false);
   editing: School | null = null;
   error = '';
   showFormDialog = false;
@@ -35,9 +38,17 @@ export class MySchool {
     return role === 'SCHOOL_ADMIN' || role === 'SUPER_ADMIN';
   }
   load() {
+    this.loading.set(true);
+    this.error = '';
     this.schools.mine$().subscribe({
-      next: (s) => this.mine.set(s),
-      error: () => (this.error = 'Zaloguj się, aby zarządzać szkołą.'),
+      next: (s) => {
+        this.mine.set(s);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.error = 'Nie udało się pobrać szkół. Odśwież stronę i spróbuj ponownie.';
+      },
     });
   }
   openCreateDialog() {
