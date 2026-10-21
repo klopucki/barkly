@@ -30,8 +30,7 @@ class DogImageEntity {
     @Column(nullable = false)
     private DogVisibility visibility;
 
-    protected DogImageEntity() {
-    }
+    protected DogImageEntity() {}
 
     DogImageEntity(DogEntity dog, String imageKey, DogVisibility visibility) {
         this.dog = dog;

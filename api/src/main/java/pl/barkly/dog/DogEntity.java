@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 import pl.barkly.user.UserEntity;
 
 import java.time.LocalDate;
@@ -40,11 +41,16 @@ public class DogEntity {
     @Column(nullable = false)
     private DogVisibility visibility;
 
-    protected DogEntity() {
-    }
+    protected DogEntity() {}
 
-    DogEntity(UserEntity owner, String name, String breed, LocalDate birthDate, String sex,
-              String description, DogVisibility visibility) {
+    DogEntity(
+            UserEntity owner,
+            String name,
+            String breed,
+            LocalDate birthDate,
+            String sex,
+            String description,
+            DogVisibility visibility) {
         this.owner = owner;
         this.name = name;
         this.breed = breed;
@@ -54,8 +60,13 @@ public class DogEntity {
         this.visibility = visibility;
     }
 
-    void update(String name, String breed, LocalDate birthDate, String sex, String description,
-                DogVisibility visibility) {
+    void update(
+            String name,
+            String breed,
+            LocalDate birthDate,
+            String sex,
+            String description,
+            DogVisibility visibility) {
         this.name = name;
         this.breed = breed;
         this.birthDate = birthDate;

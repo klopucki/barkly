@@ -1,12 +1,14 @@
 package pl.barkly.training.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.time.LocalDateTime;
 
 class CreateRequestValidationTest {
 
@@ -21,9 +23,10 @@ class CreateRequestValidationTest {
     void rejectsInvalidBooking() {
         var request = new BookingCreateRequest("A", "invalid", "", 31, "x".repeat(1001));
 
-        var invalidFields = validator.validate(request).stream()
-                .map(violation -> violation.getPropertyPath().toString())
-                .collect(java.util.stream.Collectors.toSet());
+        var invalidFields =
+                validator.validate(request).stream()
+                        .map(violation -> violation.getPropertyPath().toString())
+                        .collect(java.util.stream.Collectors.toSet());
 
         assertThat(invalidFields).contains("ownerName", "email", "dogName", "dogAge", "notes");
     }
@@ -37,35 +40,49 @@ class CreateRequestValidationTest {
 
     @Test
     void rejectsInvalidTraining() {
-        var request = new TrainingCreateRequest(
-                0L, "ab", "", null, null, -1L, false,
-                LocalDateTime.now().minusDays(1), 0, null
-        );
+        var request =
+                new TrainingCreateRequest(
+                        0L,
+                        "ab",
+                        "",
+                        null,
+                        null,
+                        -1L,
+                        false,
+                        LocalDateTime.now().minusDays(1),
+                        0,
+                        null);
 
-        var invalidFields = validator.validate(request).stream()
-                .map(violation -> violation.getPropertyPath().toString())
-                .collect(java.util.stream.Collectors.toSet());
+        var invalidFields =
+                validator.validate(request).stream()
+                        .map(violation -> violation.getPropertyPath().toString())
+                        .collect(java.util.stream.Collectors.toSet());
 
-        assertThat(invalidFields).contains(
-                "schoolId", "title", "trainerName", "trainingTypeId",
-                "targetGroupId", "startAt", "capacity"
-        );
+        assertThat(invalidFields)
+                .contains(
+                        "schoolId",
+                        "title",
+                        "trainerName",
+                        "trainingTypeId",
+                        "targetGroupId",
+                        "startAt",
+                        "capacity");
     }
 
     @Test
     void acceptsValidTraining() {
-        var request = new TrainingCreateRequest(
-                1L,
-                "Basic obedience",
-                "Jan Kowalski",
-                1L,
-                null,
-                null,
-                false,
-                LocalDateTime.now().plusDays(1),
-                10,
-                null
-        );
+        var request =
+                new TrainingCreateRequest(
+                        1L,
+                        "Basic obedience",
+                        "Jan Kowalski",
+                        1L,
+                        null,
+                        null,
+                        false,
+                        LocalDateTime.now().plusDays(1),
+                        10,
+                        null);
 
         assertThat(validator.validate(request)).isEmpty();
     }

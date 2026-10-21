@@ -1,44 +1,57 @@
 package pl.barkly.school;
 
 import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import pl.barkly.query.PageResponse;
 import pl.barkly.school.api.SchoolCreateRequest;
 import pl.barkly.school.api.SchoolResponse;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.RequestParam;
-import pl.barkly.query.PageResponse;
 
 @RestController
 class SchoolController {
     private final SchoolService schoolService;
 
-    SchoolController(SchoolService schoolService) { this.schoolService = schoolService; }
+    SchoolController(SchoolService schoolService) {
+        this.schoolService = schoolService;
+    }
 
     @GetMapping("/api/schools")
-    List<SchoolResponse> findAll() { return schoolService.findAll(); }
+    List<SchoolResponse> findAll() {
+        return schoolService.findAll();
+    }
 
     @GetMapping("/api/query/schools")
-    PageResponse<SchoolResponse> search(@RequestParam(defaultValue = "") String query,
-                                        @RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "20") int size,
-                                        @RequestParam(defaultValue = "false") boolean favoritesOnly) {
+    PageResponse<SchoolResponse> search(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean favoritesOnly) {
         return schoolService.search(query, page, size, favoritesOnly);
     }
 
     @GetMapping("/api/my/schools")
-    List<SchoolResponse> findMine() { return schoolService.findMine(); }
+    List<SchoolResponse> findMine() {
+        return schoolService.findMine();
+    }
 
     @GetMapping("/api/schools/{slug}")
-    SchoolResponse findBySlug(@PathVariable String slug) { return schoolService.findBySlug(slug); }
+    SchoolResponse findBySlug(@PathVariable String slug) {
+        return schoolService.findBySlug(slug);
+    }
 
     @PostMapping("/api/schools")
-    SchoolResponse create(@Valid @RequestBody SchoolCreateRequest request) { return schoolService.create(request); }
+    SchoolResponse create(@Valid @RequestBody SchoolCreateRequest request) {
+        return schoolService.create(request);
+    }
 
     @PutMapping("/api/schools/{id}")
     SchoolResponse update(@PathVariable Long id, @Valid @RequestBody SchoolCreateRequest request) {

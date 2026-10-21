@@ -1,84 +1,91 @@
-<article
-  class="training-card barkly-card mb-5 overflow-hidden"
-  [class.training-card-past]="isPast()"
-  role="link"
-  tabindex="0"
-  (click)="openDetails($event)"
-  (keydown.enter)="openDetails($event)"
-  (keydown.space)="openDetails($event)"
->
-  <div
-    class="training-date"
-    [attr.aria-label]="'Termin: ' + (training().startAt | date: 'dd.MM.yyyy')"
-  >
-    <span>{{ training().startAt | date: 'dd' }}</span>
-    <small>{{ training().startAt | date: 'MMM' }}</small>
-  </div>
-  <div class="training-card-content min-w-0 flex-1">
-    <button
-      type="button"
-      class="float-right -mt-1 min-h-11 min-w-11 rounded-full px-2 py-1 text-lg text-stone-400 hover:bg-amber-50 hover:text-amber-500"
-      [attr.aria-label]="favorite() ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'"
-      (click)="favoriteClicked.emit(training())"
-    >
-      {{ favorite() ? '★' : '☆' }}
-    </button>
-    <div class="flex flex-wrap items-center gap-2">
-      <p class="barkly-eyebrow">{{ training().trainingType.name }}</p>
+<article class="training-entry" [class.training-entry-past]="isPast()">
+  <time class="training-date" [attr.datetime]="training().startAt">
+    <span class="training-day">{{ training().startAt | date: 'dd.MM.yyyy' }}</span>
+    <span class="training-hour">{{ training().startAt | date: 'HH:mm' }}</span>
+  </time>
+
+  <div class="training-content">
+    <div class="training-heading">
+      <p class="training-type">{{ training().trainingType.name }}</p>
       @if (isPast()) {
-        <span class="training-past-status">Zakończony</span>
+        <span class="training-status"><span aria-hidden="true">✓</span> Zakończony</span>
       }
     </div>
-    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-stone-950">
-      {{ training().title }}
+    <h2>
+      <a [routerLink]="['/trainings', training().id]">{{ training().title }}</a>
     </h2>
-    <p class="mt-2 text-sm text-stone-600">z {{ training().trainerName }}</p>
-    <div class="training-tags mt-4">
+    <p class="training-trainer">Prowadzący: {{ training().trainerName }}</p>
+    <ul class="training-tags" aria-label="Informacje o zajęciach">
       @if (training().trainingLevel) {
-        <span>{{ training().trainingLevel!.name }}</span>
+        <li>{{ training().trainingLevel!.name }}</li>
       }
       @if (training().targetGroup) {
-        <span>{{ training().targetGroup!.name }}</span>
+        <li>{{ training().targetGroup!.name }}</li>
       }
       @if (training().homeVisit) {
-        <span>🏠 konsultacja domowa</span>
+        <li>Konsultacja domowa</li>
       }
-    </div>
-    <div class="training-details mt-5">
-      <span>◷ {{ training().startAt | date: 'EEEE, dd MMMM · HH:mm' }}</span>
-      @if (isPast()) {
-        <span class="training-past-label">✓ Termin minął</span>
-      } @else {
-        <span [class.training-capacity-low]="isCapacityLow()"> ◉ {{ capacityLabel() }} </span>
-      }
-    </div>
-    <div class="mt-5 flex flex-wrap gap-2">
+    </ul>
+    <div class="training-actions">
+      <a
+        [routerLink]="['/trainings', training().id]"
+        class="training-link"
+        [attr.aria-label]="'Szczegóły treningu: ' + training().title"
+      >
+        {{ isPast() ? 'Szczegóły treningu' : 'Szczegóły i zapisy' }}
+        <span aria-hidden="true">↗</span>
+      </a>
       @if (auth.currentUser()?.role !== 'USER' && auth.currentUser()) {
-        <button
-          class="barkly-button-secondary"
-          type="button"
-          (click)="editClicked.emit(training())"
-        >
-          Edytuj
-        </button>
-
-        <button
-          class="rounded-xl bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800"
-          (click)="deleteClicked.emit(training().id)"
-        >
+        <button type="button" (click)="editClicked.emit(training())">Edytuj</button>
+        <button type="button" class="training-delete" (click)="deleteClicked.emit(training().id)">
           Usuń
         </button>
       }
     </div>
   </div>
 
-  @if (training().imageKey) {
-    <div class="training-image">
+  <div class="training-summary">
+    @if (isPast()) {
+      <p class="training-availability">Zapisy zakończone</p>
+    } @else {
+      <p class="training-availability" [class.training-capacity-low]="isCapacityLow()">
+        {{ capacityLabel() }}
+      </p>
+    }
+    @if (training().imageKey) {
       <img
-        class="h-full w-full object-cover"
+        class="training-image"
         [src]="trainingImageUrl(training().imageKey!)"
-        [alt]="'Training: ' + training().title"
+        [alt]="training().title"
+        width="240"
+        height="160"
+        loading="lazy"
       />
-    </div>
-  }
+    }
+    @if (auth.currentUser()) {
+      <button
+        type="button"
+        class="training-favorite"
+        [class.is-saved]="favorite()"
+        [attr.aria-pressed]="favorite()"
+        [attr.aria-label]="
+          (favorite() ? 'Usuń z ulubionych: ' : 'Dodaj do ulubionych: ') + training().title
+        "
+        (click)="favoriteClicked.emit(training())"
+      >
+        <svg
+          aria-hidden="true"
+          width="16"
+          height="18"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+          [attr.fill]="favorite() ? 'currentColor' : 'none'"
+        >
+          <path d="M6 3h12v18l-6-4-6 4V3Z" stroke-linejoin="round" />
+        </svg>
+        {{ favorite() ? 'W ulubionych' : 'Do ulubionych' }}
+      </button>
+    }
+  </div>
 </article>

@@ -35,3 +35,40 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+val javaFormatter by configurations.creating
+
+dependencies {
+    javaFormatter("com.google.googlejavaformat:google-java-format:1.28.0")
+}
+
+val javaFormatterExports = listOf("api", "code", "file", "parser", "tree", "util").map {
+    "--add-exports=jdk.compiler/com.sun.tools.javac.$it=ALL-UNNAMED"
+}
+
+val javaSourcePaths = fileTree("src") {
+    include("**/*.java")
+}.files.sortedBy { it.path }.map { it.absolutePath }
+
+val formatJava = tasks.register<JavaExec>("formatJava") {
+    group = "formatting"
+    description = "Formats Java sources and tests with four-space indentation."
+    classpath = javaFormatter
+    jvmArgs(javaFormatterExports)
+    mainClass.set("com.google.googlejavaformat.java.Main")
+    args(listOf("--aosp", "--replace") + javaSourcePaths)
+}
+
+tasks.register<JavaExec>("checkJavaFormat") {
+    mustRunAfter(formatJava)
+    group = "verification"
+    description = "Checks Java formatting without changing files."
+    classpath = javaFormatter
+    jvmArgs(javaFormatterExports)
+    mainClass.set("com.google.googlejavaformat.java.Main")
+    args(listOf("--aosp", "--dry-run", "--set-exit-if-changed") + javaSourcePaths)
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    mustRunAfter(formatJava)
+}

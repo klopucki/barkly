@@ -1,6 +1,7 @@
 package pl.barkly.dog;
 
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import pl.barkly.dog.api.DogImageResponse;
 import pl.barkly.dog.api.DogRequest;
 import pl.barkly.dog.api.DogResponse;
@@ -62,8 +64,7 @@ class DogController {
     DogImageResponse image(
             @PathVariable Long id,
             @RequestParam("image") MultipartFile image,
-            @RequestParam("visibility") DogVisibility visibility
-    ) {
+            @RequestParam("visibility") DogVisibility visibility) {
         return dogs.addImage(id, image, visibility);
     }
 

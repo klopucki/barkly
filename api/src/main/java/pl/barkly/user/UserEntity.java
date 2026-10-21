@@ -29,8 +29,7 @@ public class UserEntity {
     @Column(nullable = false)
     private UserRole role;
 
-    protected UserEntity() {
-    }
+    protected UserEntity() {}
 
     public UserEntity(String email, String passwordHash, String displayName, UserRole role) {
         this.email = email;
@@ -39,11 +38,25 @@ public class UserEntity {
         this.role = role;
     }
 
-    public Long getId() { return id; }
-    public String getEmail() { return email; }
-    public String getPasswordHash() { return passwordHash; }
-    public String getDisplayName() { return displayName; }
-    public UserRole getRole() { return role; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
 
     public void promoteToSchoolAdmin() {
         if (role == UserRole.USER) {

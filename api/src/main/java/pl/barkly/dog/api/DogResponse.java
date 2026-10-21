@@ -14,6 +14,4 @@ public record DogResponse(
         String description,
         DogVisibility visibility,
         boolean owner,
-        List<DogImageResponse> images
-) {
-}
+        List<DogImageResponse> images) {}

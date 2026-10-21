@@ -1,6 +1,7 @@
 package pl.barkly.school.api;
 
 import pl.barkly.school.SchoolEntity;
+
 import java.util.List;
 
 public record SchoolResponse(
@@ -12,10 +13,17 @@ public record SchoolResponse(
         String description,
         String activities,
         String pricing,
-        List<SchoolImageResponse> images
-) {
+        List<SchoolImageResponse> images) {
     public static SchoolResponse from(SchoolEntity school) {
-        return new SchoolResponse(school.getId(), school.getName(), school.getSlug(), school.getAddress(),
-                school.getKrs(), school.getDescription(), school.getActivities(), school.getPricing(), List.of());
+        return new SchoolResponse(
+                school.getId(),
+                school.getName(),
+                school.getSlug(),
+                school.getAddress(),
+                school.getKrs(),
+                school.getDescription(),
+                school.getActivities(),
+                school.getPricing(),
+                List.of());
     }
 }

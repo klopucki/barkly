@@ -7,11 +7,7 @@ public abstract class BarklyException extends RuntimeException {
     private final HttpStatus status;
     private final ErrorCode errorCode;
 
-    protected BarklyException(
-            HttpStatus status,
-            ErrorCode errorCode,
-            String message
-    ) {
+    protected BarklyException(HttpStatus status, ErrorCode errorCode, String message) {
         super(message);
         this.status = status;
         this.errorCode = errorCode;

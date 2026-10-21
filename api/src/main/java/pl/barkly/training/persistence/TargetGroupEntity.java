@@ -13,15 +13,26 @@ public class TargetGroupEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String code;
     private String name;
     private boolean active;
 
-    protected TargetGroupEntity() {
+    protected TargetGroupEntity() {}
+
+    public Long getId() {
+        return id;
     }
 
-    public Long getId() { return id; }
-    public String getCode() { return code; }
-    public String getName() { return name; }
-    public boolean isActive() { return active; }
+    public String getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
 }

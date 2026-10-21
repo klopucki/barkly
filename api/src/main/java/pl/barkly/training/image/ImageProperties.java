@@ -13,6 +13,4 @@ public record ImageProperties(
         int minWidth,
         int minHeight,
         int maxWidth,
-        int maxHeight
-) {
-}
+        int maxHeight) {}

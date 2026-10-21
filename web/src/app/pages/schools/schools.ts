@@ -22,6 +22,7 @@ export class Schools implements OnInit {
   readonly page = signal(0);
   readonly totalPages = signal(0);
   readonly loading = signal(false);
+  readonly error = signal('');
   private searchTimer?: ReturnType<typeof setTimeout>;
   readonly filteredItems = computed(() => {
     const query = this.query().trim().toLowerCase();
@@ -45,6 +46,7 @@ export class Schools implements OnInit {
   }
 
   loadMore(): void {
+    if (this.loading()) return;
     this.load(this.page() + 1, true);
   }
 
@@ -54,8 +56,13 @@ export class Schools implements OnInit {
     this.load(0);
   }
 
+  retry(): void {
+    this.load(0);
+  }
+
   private load(page: number, append = false): void {
     this.loading.set(true);
+    this.error.set('');
     this.schools.search$(this.query(), page, 20, this.favoritesOnly()).subscribe({
       next: (result) => {
         this.items.set(append ? [...this.items(), ...result.items] : result.items);
@@ -63,7 +70,10 @@ export class Schools implements OnInit {
         this.totalPages.set(result.totalPages);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.loading.set(false);
+        this.error.set('Nie udało się pobrać szkół.');
+      },
     });
   }
 }

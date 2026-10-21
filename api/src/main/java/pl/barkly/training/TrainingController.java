@@ -1,6 +1,7 @@
 package pl.barkly.training;
 
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,14 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import pl.barkly.query.PageResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.RequestParam;
-import pl.barkly.query.PageResponse;
 
 @RestController
 class TrainingController {
@@ -32,11 +34,12 @@ class TrainingController {
     }
 
     @GetMapping("/api/query/trainings")
-    PageResponse<TrainingResponse> search(@RequestParam(defaultValue = "") String query,
-                                          @RequestParam(defaultValue = "") String type,
-                                          @RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "20") int size,
-                                          @RequestParam(defaultValue = "false") boolean favoritesOnly) {
+    PageResponse<TrainingResponse> search(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(defaultValue = "") String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean favoritesOnly) {
         return trainingFacade.searchTrainings(query, type, page, size, favoritesOnly);
     }
 
@@ -51,7 +54,8 @@ class TrainingController {
     }
 
     @PutMapping("/api/trainings/{id}")
-    TrainingResponse update(@PathVariable Long id, @Valid @RequestBody TrainingCreateRequest request) {
+    TrainingResponse update(
+            @PathVariable Long id, @Valid @RequestBody TrainingCreateRequest request) {
         return trainingFacade.updateTraining(id, request);
     }
 
@@ -62,5 +66,7 @@ class TrainingController {
     }
 
     @PutMapping("/api/trainings/{id}/paw")
-    TrainingResponse togglePaw(@PathVariable Long id) { return trainingFacade.togglePaw(id); }
+    TrainingResponse togglePaw(@PathVariable Long id) {
+        return trainingFacade.togglePaw(id);
+    }
 }

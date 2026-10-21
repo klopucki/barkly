@@ -16,6 +16,4 @@ public record TrainingResponse(
         int bookedCount,
         String imageKey,
         long pawCount,
-        boolean pawedByCurrentUser
-) {
-}
+        boolean pawedByCurrentUser) {}

@@ -19,8 +19,7 @@ class SuperAdminBootstrap implements ApplicationRunner {
             UserRepository users,
             PasswordEncoder passwordEncoder,
             @Value("${barkly.admin.email:}") String email,
-            @Value("${barkly.admin.password:}") String password
-    ) {
+            @Value("${barkly.admin.password:}") String password) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.email = email;
@@ -33,8 +32,15 @@ class SuperAdminBootstrap implements ApplicationRunner {
             return;
         }
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        UserEntity user = users.findByEmailIgnoreCase(normalizedEmail)
-                .orElseGet(() -> new UserEntity(normalizedEmail, passwordEncoder.encode(password), "Super admin", UserRole.SUPER_ADMIN));
+        UserEntity user =
+                users.findByEmailIgnoreCase(normalizedEmail)
+                        .orElseGet(
+                                () ->
+                                        new UserEntity(
+                                                normalizedEmail,
+                                                passwordEncoder.encode(password),
+                                                "Super admin",
+                                                UserRole.SUPER_ADMIN));
         user.makeSuperAdmin();
         users.save(user);
     }

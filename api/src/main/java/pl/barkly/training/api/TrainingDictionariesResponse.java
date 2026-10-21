@@ -5,6 +5,4 @@ import java.util.List;
 public record TrainingDictionariesResponse(
         List<DictionaryValueResponse> trainingTypes,
         List<TrainingLevelDictionaryResponse> trainingLevels,
-        List<DictionaryValueResponse> targetGroups
-) {
-}
+        List<DictionaryValueResponse> targetGroups) {}

@@ -12,10 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+
 import pl.barkly.user.UserEntity;
 
 @Entity
-@Table(name = "dog_post_reaction", uniqueConstraints = @UniqueConstraint(columnNames = {"post_id", "user_id"}))
+@Table(
+        name = "dog_post_reaction",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"post_id", "user_id"}))
 class DogPostReactionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,8 +36,7 @@ class DogPostReactionEntity {
     @Column(name = "reaction_type", nullable = false)
     private PostReactionType reactionType;
 
-    protected DogPostReactionEntity() {
-    }
+    protected DogPostReactionEntity() {}
 
     DogPostReactionEntity(DogPostEntity post, UserEntity user, PostReactionType reactionType) {
         this.post = post;

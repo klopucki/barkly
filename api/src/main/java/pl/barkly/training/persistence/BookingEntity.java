@@ -1,6 +1,7 @@
 package pl.barkly.training.persistence;
 
 import jakarta.persistence.*;
+
 import pl.barkly.training.api.BookingCreateRequest;
 import pl.barkly.training.api.BookingResponse;
 
@@ -28,6 +29,12 @@ public class BookingEntity {
     @Column(name = "dog_id")
     private Long dogId;
 
+    private Long userId;
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     @Column(name = "dog_age")
     private int dogAge;
 
@@ -38,8 +45,7 @@ public class BookingEntity {
 
     private LocalDateTime deletedAt;
 
-    protected BookingEntity() {
-    }
+    protected BookingEntity() {}
 
     public BookingEntity(Long trainingId, BookingCreateRequest request) {
         this.trainingId = trainingId;
@@ -59,7 +65,13 @@ public class BookingEntity {
         return deletedAt != null;
     }
 
-    public BookingEntity(Long trainingId, Long dogId, String ownerName, String email, String dogName, int dogAge) {
+    public BookingEntity(
+            Long trainingId,
+            Long dogId,
+            String ownerName,
+            String email,
+            String dogName,
+            int dogAge) {
         this.trainingId = trainingId;
         this.dogId = dogId;
         this.ownerName = ownerName;
@@ -88,15 +100,6 @@ public class BookingEntity {
 
     public BookingResponse toResponse() {
         return new BookingResponse(
-                id,
-                trainingId,
-                dogId,
-                ownerName,
-                email,
-                dogName,
-                dogAge,
-                notes,
-                createdAt
-        );
+                id, trainingId, dogId, ownerName, email, dogName, dogAge, notes, createdAt);
     }
 }

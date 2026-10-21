@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
 import pl.barkly.dog.api.DogImageResponse;
 import pl.barkly.dog.api.DogRequest;
 import pl.barkly.dog.api.DogResponse;
@@ -24,8 +25,11 @@ class DogService {
     private final UserService users;
     private final TrainingImageStorage storage;
 
-    DogService(DogRepository dogs, DogImageRepository images, UserService users,
-               TrainingImageStorage storage) {
+    DogService(
+            DogRepository dogs,
+            DogImageRepository images,
+            UserService users,
+            TrainingImageStorage storage) {
         this.dogs = dogs;
         this.images = images;
         this.users = users;
@@ -60,10 +64,16 @@ class DogService {
     @Transactional
     DogResponse create(DogRequest request) {
         UserEntity owner = users.currentUser();
-        DogEntity dog = dogs.save(new DogEntity(
-                owner, request.name().trim(), trim(request.breed()), request.birthDate(),
-                trim(request.sex()), text(request.description()), request.visibility()
-        ));
+        DogEntity dog =
+                dogs.save(
+                        new DogEntity(
+                                owner,
+                                request.name().trim(),
+                                trim(request.breed()),
+                                request.birthDate(),
+                                trim(request.sex()),
+                                text(request.description()),
+                                request.visibility()));
         return response(dog, owner);
     }
 
@@ -73,9 +83,12 @@ class DogService {
         UserEntity user = users.currentUser();
         requireOwner(dog, user);
         dog.update(
-                request.name().trim(), trim(request.breed()), request.birthDate(),
-                trim(request.sex()), text(request.description()), request.visibility()
-        );
+                request.name().trim(),
+                trim(request.breed()),
+                request.birthDate(),
+                trim(request.sex()),
+                text(request.description()),
+                request.visibility());
         return response(dog, user);
     }
 
@@ -83,7 +96,8 @@ class DogService {
     void delete(Long id) {
         DogEntity dog = find(id);
         requireOwner(dog, users.currentUser());
-        images.findAllByDog_IdOrderByIdAsc(id).forEach(image -> storage.delete(image.getImageKey()));
+        images.findAllByDog_IdOrderByIdAsc(id)
+                .forEach(image -> storage.delete(image.getImageKey()));
         dogs.delete(dog);
     }
 
@@ -103,8 +117,12 @@ class DogService {
 
     @Transactional
     void deleteImage(Long id) {
-        DogImageEntity image = images.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dog image not found"));
+        DogImageEntity image =
+                images.findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Dog image not found"));
         requireOwner(image.getDog(), users.currentUser());
         images.delete(image);
         storage.delete(image.getImageKey());
@@ -113,14 +131,16 @@ class DogService {
     @Transactional(readOnly = true)
     org.springframework.core.io.Resource loadImage(Long id) {
         DogImageEntity image = findImage(id);
-        requireVisible(image.getVisibility(), image.getDog(), users.optionalCurrentUser().orElse(null));
+        requireVisible(
+                image.getVisibility(), image.getDog(), users.optionalCurrentUser().orElse(null));
         return storage.load(image.getImageKey());
     }
 
     @Transactional(readOnly = true)
     MediaType imageContentType(Long id) {
         DogImageEntity image = findImage(id);
-        requireVisible(image.getVisibility(), image.getDog(), users.optionalCurrentUser().orElse(null));
+        requireVisible(
+                image.getVisibility(), image.getDog(), users.optionalCurrentUser().orElse(null));
         if (image.getImageKey().endsWith(".png")) {
             return MediaType.IMAGE_PNG;
         }
@@ -132,12 +152,16 @@ class DogService {
 
     private DogEntity find(Long id) {
         return dogs.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dog not found"));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dog not found"));
     }
 
     private DogImageEntity findImage(Long id) {
         return images.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dog image not found"));
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "Dog image not found"));
     }
 
     private boolean canView(DogVisibility visibility, DogEntity dog, UserEntity user) {
@@ -160,14 +184,21 @@ class DogService {
 
     private DogResponse response(DogEntity dog, UserEntity user) {
         boolean owner = user != null && dog.getOwner().getId().equals(user.getId());
-        List<DogImageResponse> visibleImages = images.findAllByDog_IdOrderByIdAsc(dog.getId()).stream()
-                .filter(image -> canView(image.getVisibility(), dog, user))
-                .map(image -> new DogImageResponse(image.getId(), image.getVisibility()))
-                .toList();
+        List<DogImageResponse> visibleImages =
+                images.findAllByDog_IdOrderByIdAsc(dog.getId()).stream()
+                        .filter(image -> canView(image.getVisibility(), dog, user))
+                        .map(image -> new DogImageResponse(image.getId(), image.getVisibility()))
+                        .toList();
         return new DogResponse(
-                dog.getId(), dog.getName(), dog.getBreed(), dog.getBirthDate(), dog.getSex(),
-                dog.getDescription(), dog.getVisibility(), owner, visibleImages
-        );
+                dog.getId(),
+                dog.getName(),
+                dog.getBreed(),
+                dog.getBirthDate(),
+                dog.getSex(),
+                dog.getDescription(),
+                dog.getVisibility(),
+                owner,
+                visibleImages);
     }
 
     private String trim(String value) {

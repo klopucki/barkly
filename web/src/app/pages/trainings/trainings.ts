@@ -14,7 +14,7 @@ import { FavoritesService } from '../../shared/favorites.service';
   selector: 'app-trainings',
   imports: [TrainingCard, TrainingForm, Modal],
   templateUrl: './trainings.html',
-  styleUrl: './trainings.css',
+  styleUrls: ['../schools/schools.css', './trainings.css'],
 })
 export class Trainings implements OnInit {
   private readonly trainingService = inject(TrainingService);
@@ -28,6 +28,7 @@ export class Trainings implements OnInit {
   page = signal(0);
   totalPages = signal(0);
   isLoading = signal(true);
+  loadError = signal('');
   isAddTrainingOpen = signal(false);
   addTrainingError = signal<string | null>(null);
   editingTraining = signal<Training | null>(null);
@@ -81,6 +82,7 @@ export class Trainings implements OnInit {
   }
 
   loadMore(): void {
+    if (this.isLoading()) return;
     this.loadPage(this.page() + 1, true);
   }
 
@@ -92,6 +94,7 @@ export class Trainings implements OnInit {
 
   private loadPage(page: number, append = false): void {
     this.isLoading.set(true);
+    this.loadError.set('');
 
     this.trainingService
       .search$(this.searchText(), this.typeFilter(), page, 20, this.favoritesOnly())
@@ -106,6 +109,7 @@ export class Trainings implements OnInit {
         },
         error: () => {
           this.isLoading.set(false);
+          this.loadError.set('Nie udało się pobrać treningów.');
         },
       });
   }

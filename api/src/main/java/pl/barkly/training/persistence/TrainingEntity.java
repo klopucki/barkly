@@ -2,12 +2,13 @@ package pl.barkly.training.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 import pl.barkly.training.api.DictionaryValueResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
@@ -54,14 +55,13 @@ public class TrainingEntity {
 
     private LocalDateTime deletedAt;
 
-    public TrainingEntity(){}
+    public TrainingEntity() {}
 
     public TrainingEntity(
             TrainingCreateRequest request,
             TrainingTypeEntity trainingType,
             TrainingLevelEntity trainingLevel,
-            TargetGroupEntity targetGroup
-    ) {
+            TargetGroupEntity targetGroup) {
         this.schoolId = request.schoolId();
         this.title = request.title();
         this.description = request.description() == null ? "" : request.description();
@@ -125,8 +125,7 @@ public class TrainingEntity {
                 bookedCount,
                 imageKey,
                 pawCount,
-                pawedByCurrentUser
-        );
+                pawedByCurrentUser);
     }
 
     private DictionaryValueResponse dictionaryValue(TrainingTypeEntity value) {
@@ -149,12 +148,27 @@ public class TrainingEntity {
         this.imageKey = imageKey;
     }
 
+    public boolean notificationDetailsChanged(TrainingCreateRequest request) {
+        return !java.util.Objects.equals(schoolId, request.schoolId())
+                || !java.util.Objects.equals(title, request.title())
+                || !java.util.Objects.equals(trainerName, request.trainerName())
+                || !java.util.Objects.equals(startAt, request.startAt())
+                || !java.util.Objects.equals(
+                        description, request.description() == null ? "" : request.description())
+                || !java.util.Objects.equals(trainingType.getId(), request.trainingTypeId())
+                || !java.util.Objects.equals(
+                        trainingLevel == null ? null : trainingLevel.getId(),
+                        request.trainingLevelId())
+                || !java.util.Objects.equals(
+                        targetGroup == null ? null : targetGroup.getId(), request.targetGroupId())
+                || homeVisit != request.homeVisit();
+    }
+
     public void update(
             TrainingCreateRequest request,
             TrainingTypeEntity trainingType,
             TrainingLevelEntity trainingLevel,
-            TargetGroupEntity targetGroup
-    ) {
+            TargetGroupEntity targetGroup) {
         this.schoolId = request.schoolId();
         this.title = request.title();
         this.trainerName = request.trainerName();

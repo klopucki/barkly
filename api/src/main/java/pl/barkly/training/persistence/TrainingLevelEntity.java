@@ -16,6 +16,7 @@ public class TrainingLevelEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String code;
     private String name;
     private boolean active;
@@ -24,12 +25,25 @@ public class TrainingLevelEntity {
     @JoinColumn(name = "training_type_id")
     private TrainingTypeEntity trainingType;
 
-    protected TrainingLevelEntity() {
+    protected TrainingLevelEntity() {}
+
+    public Long getId() {
+        return id;
     }
 
-    public Long getId() { return id; }
-    public String getCode() { return code; }
-    public String getName() { return name; }
-    public boolean isActive() { return active; }
-    public TrainingTypeEntity getTrainingType() { return trainingType; }
+    public String getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public TrainingTypeEntity getTrainingType() {
+        return trainingType;
+    }
 }

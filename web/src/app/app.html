@@ -61,6 +61,7 @@
         >Społeczność</a
       >
       @if (auth.currentUser()) {
+        <app-notification-bell (click)="closeMenus()" />
         <div class="relative">
           <button
             type="button"

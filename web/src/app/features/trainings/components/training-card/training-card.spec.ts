@@ -45,6 +45,6 @@ describe('TrainingCard', () => {
   });
 
   it('shows the remaining capacity on the card', () => {
-    expect(fixture.nativeElement.textContent).toContain('7 wolnych z 10');
+    expect(fixture.nativeElement.textContent).toContain('Wolne miejsca: 7 z 10');
   });
 });

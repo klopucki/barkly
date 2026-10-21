@@ -1,20 +1,20 @@
 package pl.barkly.training.image;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.unit.DataSize;
+
 import pl.barkly.training.exceptions.InvalidImageException;
 
 import java.nio.file.Path;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 class LocalTrainingImageStorageTest {
 
-    @TempDir
-    Path directory;
+    @TempDir Path directory;
 
     @Test
     void storesLoadsAndDeletesSupportedImage() throws Exception {
@@ -34,7 +34,8 @@ class LocalTrainingImageStorageTest {
     @Test
     void rejectsUnsupportedContentEvenWhenMimeTypeClaimsImage() {
         var storage = storageWithLimit(DataSize.ofKilobytes(10));
-        var file = new MockMultipartFile("image", "fake.png", "image/png", "not an image".getBytes());
+        var file =
+                new MockMultipartFile("image", "fake.png", "image/png", "not an image".getBytes());
 
         assertThatThrownBy(() -> storage.store(file))
                 .isInstanceOf(InvalidImageException.class)
@@ -64,11 +65,14 @@ class LocalTrainingImageStorageTest {
     }
 
     private LocalTrainingImageStorage storageWithLimit(DataSize limit) {
-        return new LocalTrainingImageStorage(new ImageProperties(directory, limit, limit, 640, 480, 1600, 1600));
+        return new LocalTrainingImageStorage(
+                new ImageProperties(directory, limit, limit, 640, 480, 1600, 1600));
     }
 
     private byte[] png(int width, int height) throws Exception {
-        var image = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        var image =
+                new java.awt.image.BufferedImage(
+                        width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
         var output = new java.io.ByteArrayOutputStream();
         javax.imageio.ImageIO.write(image, "png", output);
         return output.toByteArray();

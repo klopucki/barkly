@@ -11,6 +11,4 @@ public record BookingResponse(
         String dogName,
         int dogAge,
         String notes,
-        LocalDateTime createdAt
-) {
-}
+        LocalDateTime createdAt) {}

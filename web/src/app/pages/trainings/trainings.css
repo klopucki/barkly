@@ -1,58 +1,60 @@
-:host {
-  display: block;
-}
-.training-filters {
+.training-search-tools {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding-bottom: 1rem;
+}
+.training-search-tools .catalog-search {
+  width: min(100%, 24rem);
+  border-bottom: 1px solid #d6d3d1;
+}
+.training-type-filter {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
-  align-items: center;
-  padding: 0.75rem;
-  border: 1px solid rgb(231 229 228 / 0.9);
-  border-radius: 1.15rem;
-  background: rgb(255 255 255 / 0.64);
-  box-shadow: 0 12px 30px rgb(28 25 23 / 0.035);
+  color: #57534e;
+  font-size: 0.8125rem;
 }
-.training-search {
-  display: flex;
-  min-width: min(100%, 20rem);
-  flex: 1;
-  align-items: center;
-  gap: 0.65rem;
-  color: #78716c;
-}
-.training-search span {
-  padding-left: 0.2rem;
-  font-size: 1.5rem;
-  line-height: 1;
-}
-.training-search input {
-  width: 100%;
-  border: 0;
+.training-type-filter select {
+  max-width: 16rem;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #d6d3d1;
   background: transparent;
-  padding: 0.55rem 0.25rem;
-  outline: 0;
-  color: #1c1917;
-}
-.training-search:focus-within {
-  color: #047857;
-}
-.training-select {
-  min-width: 11rem;
-  border: 1px solid #e7e5e4;
-  border-radius: 0.7rem;
-  background: white;
-  padding: 0.65rem 0.75rem;
-  color: #44403c;
+  color: #292524;
   font-size: 0.875rem;
-  outline: none;
 }
-.training-select:focus {
-  border-color: #059669;
-  box-shadow: 0 0 0 3px #d1fae5;
+.training-type-filter select:focus-visible {
+  outline: 2px solid #175c48;
+  outline-offset: 4px;
+}
+.training-add {
+  flex-shrink: 0;
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border-radius: 3px;
+  background: #175c48;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.training-add:hover {
+  background: #124a3a;
 }
 @media (max-width: 640px) {
-  .training-filters > button,
-  .training-select {
+  .training-search-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .training-search-tools .catalog-search {
     width: 100%;
+  }
+  .training-type-filter {
+    justify-content: space-between;
+  }
+  .training-type-filter select {
+    min-width: 0;
+    max-width: 65%;
   }
 }
