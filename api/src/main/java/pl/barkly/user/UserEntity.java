@@ -29,6 +29,28 @@ public class UserEntity {
     @Column(nullable = false)
     private UserRole role;
 
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(nullable = false)
+    private long securityVersion;
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public long getSecurityVersion() {
+        return securityVersion;
+    }
+
+    public void updateAccess(UserRole role, boolean active) {
+        if (this.role != role || this.active != active) {
+            securityVersion++;
+        }
+        this.role = role;
+        this.active = active;
+    }
+
     protected UserEntity() {}
 
     public UserEntity(String email, String passwordHash, String displayName, UserRole role) {

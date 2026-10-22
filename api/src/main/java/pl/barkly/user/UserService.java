@@ -50,6 +50,7 @@ public class UserService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository
                 .findByEmailIgnoreCase(email)
+                .filter(UserEntity::isActive)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     }
 
@@ -61,7 +62,9 @@ public class UserService {
                 || "anonymousUser".equals(authentication.getName())) {
             return Optional.empty();
         }
-        return userRepository.findByEmailIgnoreCase(authentication.getName());
+        return userRepository
+                .findByEmailIgnoreCase(authentication.getName())
+                .filter(UserEntity::isActive);
     }
 
     @Transactional(readOnly = true)

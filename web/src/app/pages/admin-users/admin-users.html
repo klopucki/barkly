@@ -1,0 +1,164 @@
+<section class="space-y-6">
+  <header>
+    <p class="barkly-eyebrow">Administracja</p>
+    <h1 class="barkly-page-title mt-2">Użytkownicy</h1>
+    <p class="mt-3 text-stone-600">Wyszukuj konta, zarządzaj rolami i dostępem do Barkly.</p>
+  </header>
+  <form class="flex flex-col gap-3 sm:flex-row" (ngSubmit)="search()">
+    <label class="flex-1">
+      <span class="mb-1 block text-sm font-medium">Imię lub adres e-mail</span>
+      <input
+        class="barkly-input w-full"
+        name="query"
+        [(ngModel)]="query"
+        maxlength="200"
+        placeholder="Szukaj użytkownika"
+      />
+    </label>
+    <button class="barkly-button self-end disabled:opacity-50" [disabled]="loading() || saving()">
+      Szukaj
+    </button>
+  </form>
+  @if (error() && !selected()) {
+    <p role="alert" class="text-red-700">{{ error() }}</p>
+  }
+  @if (success()) {
+    <p role="status" class="text-emerald-800">{{ success() }}</p>
+  }
+  @if (loading()) {
+    <p role="status">Ładowanie użytkowników…</p>
+  }
+  @if (result(); as data) {
+    <p class="text-sm text-stone-600">Liczba kont: {{ data.totalItems }}</p>
+    <div
+      class="overflow-x-auto rounded-2xl border border-stone-200 bg-white"
+      [attr.aria-busy]="loading()"
+    >
+      <table class="w-full text-left text-sm">
+        <thead class="bg-stone-50">
+          <tr>
+            <th scope="col" class="p-4">Użytkownik</th>
+            <th scope="col" class="p-4">Rola</th>
+            <th scope="col" class="p-4">Status</th>
+            <th scope="col" class="p-4">Działania</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of data.items; track user.id) {
+            <tr class="border-t border-stone-100">
+              <td class="p-4">
+                <span class="font-semibold">{{ user.displayName }}</span
+                ><span class="block text-stone-500">{{ user.email }}</span>
+              </td>
+              <td class="p-4">{{ roleLabel(user.role) }}</td>
+              <td class="p-4">
+                <span
+                  class="rounded-full px-2 py-1"
+                  [class]="
+                    user.active ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800'
+                  "
+                  >{{ user.active ? 'Aktywne' : 'Nieaktywne' }}</span
+                >
+              </td>
+              <td class="p-4">
+                @if (user.id === auth.currentUser()?.id) {
+                  <span class="text-stone-500">Twoje konto</span>
+                } @else {
+                  <button
+                    type="button"
+                    class="barkly-button-secondary"
+                    [disabled]="loading()"
+                    (click)="edit(user)"
+                    [attr.aria-label]="'Zarządzaj kontem ' + user.email"
+                  >
+                    Zarządzaj
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="p-8 text-center text-stone-500">
+                Nie znaleziono użytkowników.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (data.totalPages > 1) {
+      <nav aria-label="Strony użytkowników" class="flex items-center justify-between gap-3">
+        <button
+          class="barkly-button-secondary disabled:opacity-50"
+          [disabled]="loading() || data.page === 0"
+          (click)="load(data.page - 1)"
+        >
+          Poprzednia
+        </button>
+        <span class="text-sm">Strona {{ data.page + 1 }} z {{ data.totalPages }}</span>
+        <button
+          class="barkly-button-secondary disabled:opacity-50"
+          [disabled]="loading() || data.page + 1 >= data.totalPages"
+          (click)="load(data.page + 1)"
+        >
+          Następna
+        </button>
+      </nav>
+    }
+  }
+</section>
+@if (selected(); as user) {
+  <app-modal title="Zarządzaj kontem" (closed)="close()">
+    <form class="space-y-5" (ngSubmit)="save()">
+      <p>
+        <strong>{{ user.displayName }}</strong
+        ><span class="block text-sm text-stone-500">{{ user.email }}</span>
+      </p>
+      <label class="block"
+        ><span class="mb-1 block text-sm font-medium">Rola</span>
+        <select class="barkly-input w-full" name="role" [(ngModel)]="role" [disabled]="saving()">
+          @for (option of roles; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex items-center gap-2"
+        ><input type="checkbox" name="active" [(ngModel)]="active" [disabled]="saving()" /> Konto
+        aktywne</label
+      >
+      @if (!active) {
+        <p class="rounded-xl bg-red-50 p-3 text-sm text-red-800">
+          Dezaktywacja zablokuje logowanie i odbierze dostęp do konta. Dane użytkownika pozostaną
+          zachowane. Konto można później aktywować.
+        </p>
+      }
+      @if (role === 'SUPER_ADMIN' && user.role !== role) {
+        <p class="text-sm text-amber-800">
+          Administrator serwisu może zarządzać dostępem innych użytkowników.
+        </p>
+      }
+      <p class="text-sm text-stone-500">
+        Zmiana roli lub statusu zakończy dotychczasowe sesje tego użytkownika.
+      </p>
+      @if (error()) {
+        <p role="alert" class="text-red-700">{{ error() }}</p>
+      }
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          class="barkly-button-secondary"
+          (click)="close()"
+          [disabled]="saving()"
+        >
+          Anuluj
+        </button>
+        <button
+          class="barkly-button disabled:opacity-50"
+          [disabled]="saving() || (role === user.role && active === user.active)"
+        >
+          {{ saving() ? 'Zapisywanie…' : 'Zapisz zmiany' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}
