@@ -1,7 +1,12 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './features/auth/auth.guard';
+import { adminGuard, authGuard } from './features/auth/auth.guard';
 
 export const routes: Routes = [
+  {
+    path: 'admin/users',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-users/admin-users').then((m) => m.AdminUsers),
+  },
   {
     path: 'me/notifications',
     canActivate: [authGuard],

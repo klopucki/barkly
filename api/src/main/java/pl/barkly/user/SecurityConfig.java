@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +27,9 @@ import java.util.function.Supplier;
 @Configuration
 @EnableWebSecurity
 class SecurityConfig {
+
+    private static final String SUPER_ADMIN = "SUPER_ADMIN";
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -37,12 +39,7 @@ class SecurityConfig {
     UserDetailsService userDetailsService(UserRepository users) {
         return email ->
                 users.findByEmailIgnoreCase(email)
-                        .map(
-                                user ->
-                                        User.withUsername(user.getEmail())
-                                                .password(user.getPasswordHash())
-                                                .roles(user.getRole().name())
-                                                .build())
+                        .map(user -> new AccountPrincipal(user))
                         .orElseThrow(
                                 () ->
                                         new org.springframework.security.core.userdetails
@@ -56,8 +53,12 @@ class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(
+    SecurityFilterChain securityFilterChain(HttpSecurity http, UserRepository users)
+            throws Exception {
+        return http.addFilterBefore(
+                        new AccountAccessFilter(users),
+                        org.springframework.security.web.access.intercept.AuthorizationFilter.class)
+                .csrf(
                         csrf ->
                                 csrf.csrfTokenRepository(
                                                 CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -83,6 +84,8 @@ class SecurityConfig {
                                                 "/api/auth/login",
                                                 "/api/auth/csrf")
                                         .permitAll()
+                                        .requestMatchers("/api/admin/**")
+                                        .hasRole(SUPER_ADMIN)
                                         .requestMatchers("/api/auth/me", "/api/my/**")
                                         .authenticated()
                                         .requestMatchers(
