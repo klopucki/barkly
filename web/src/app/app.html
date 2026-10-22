@@ -146,6 +146,14 @@
                   >Moje szkoły</a
                 >
               }
+              @if (auth.currentUser()?.role === 'SUPER_ADMIN') {
+                <a
+                  routerLink="/admin/users"
+                  class="block rounded-lg px-3 py-2 hover:bg-stone-100"
+                  (click)="closeMenus()"
+                  >Użytkownicy</a
+                >
+              }
               <button
                 type="button"
                 class="mt-1 w-full rounded-lg px-3 py-2 text-left text-red-700 hover:bg-red-50"
