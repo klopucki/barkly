@@ -23,10 +23,10 @@ function training(id: number, day: string): Training {
 }
 
 export async function trainingListFixture(action: 'add' | 'edit', day: string) {
-  const existing = [training(1, '03'), training(2, '06')];
+  const existing = [training(2, '06'), training(1, '03')];
   const saved = training(action === 'add' ? 3 : 2, day);
   const ordered = [...existing.filter((item) => item.id !== saved.id), saved].sort((a, b) =>
-    a.startAt.localeCompare(b.startAt),
+    b.startAt.localeCompare(a.startAt),
   );
   const api = {
     addTraining$: vi.fn(() => of(saved)),
@@ -46,7 +46,7 @@ export async function trainingListFixture(action: 'add' | 'edit', day: string) {
   const component = TestBed.createComponent(Trainings).componentInstance;
   component.trainingsFromApi.set(existing);
   component.page.set(2);
-  if (action === 'edit') component.openEditTraining(existing[1]);
+  if (action === 'edit') component.openEditTraining(existing[0]);
   else component.openAddTraining();
   return { component, api, submission: { training: saved, image: null } };
 }

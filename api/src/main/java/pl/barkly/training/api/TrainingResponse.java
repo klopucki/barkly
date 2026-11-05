@@ -17,4 +17,7 @@ public record TrainingResponse(
         String description,
         String eventKind,
         String priceMode,
-        BigDecimal price) {}
+        BigDecimal price,
+        String locationAddress,
+        Double latitude,
+        Double longitude) {}

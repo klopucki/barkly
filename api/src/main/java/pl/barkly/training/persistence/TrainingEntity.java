@@ -36,6 +36,9 @@ public class TrainingEntity {
     private String eventKind = "TRAINING";
     private String priceMode = "TO_BE_AGREED";
     private BigDecimal price;
+    private String locationAddress;
+    private Double latitude;
+    private Double longitude;
 
     private String imageKey;
 
@@ -50,6 +53,12 @@ public class TrainingEntity {
         this.eventKind = "TRAINING";
         this.priceMode = request.priceMode() == null ? "TO_BE_AGREED" : request.priceMode();
         this.price = request.price();
+        this.locationAddress =
+                request.locationAddress() == null || request.locationAddress().isBlank()
+                        ? null
+                        : request.locationAddress().trim();
+        this.latitude = request.latitude();
+        this.longitude = request.longitude();
         this.startAt = request.startAt();
         this.capacity = request.capacity();
         this.trainerName = request.trainerName();
@@ -106,7 +115,10 @@ public class TrainingEntity {
                 description,
                 eventKind,
                 priceMode,
-                price);
+                price,
+                locationAddress,
+                latitude,
+                longitude);
     }
 
     public String getImageKey() {
@@ -127,6 +139,13 @@ public class TrainingEntity {
                 || !java.util.Objects.equals(
                         priceMode,
                         request.priceMode() == null ? "TO_BE_AGREED" : request.priceMode())
+                || !java.util.Objects.equals(
+                        locationAddress,
+                        request.locationAddress() == null || request.locationAddress().isBlank()
+                                ? null
+                                : request.locationAddress().trim())
+                || !java.util.Objects.equals(latitude, request.latitude())
+                || !java.util.Objects.equals(longitude, request.longitude())
                 || (price == null
                         ? request.price() != null
                         : request.price() == null || price.compareTo(request.price()) != 0);
@@ -142,6 +161,12 @@ public class TrainingEntity {
         this.eventKind = "TRAINING";
         this.priceMode = request.priceMode() == null ? "TO_BE_AGREED" : request.priceMode();
         this.price = request.price();
+        this.locationAddress =
+                request.locationAddress() == null || request.locationAddress().isBlank()
+                        ? null
+                        : request.locationAddress().trim();
+        this.latitude = request.latitude();
+        this.longitude = request.longitude();
     }
 
     public void validateBooking(int bookedCount) {

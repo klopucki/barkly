@@ -43,6 +43,8 @@ class TrainingCommandService {
         schoolService.requireManagementAccess(
                 schoolService.findEntityWithOwner(request.schoolId()));
         TrainingEntity saved = trainingRepository.save(new TrainingEntity(request));
+        if (Boolean.TRUE.equals(request.notifySchool()))
+            notifications.announceTraining(request.schoolId(), saved);
         return saved.toResponse(0);
     }
 

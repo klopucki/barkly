@@ -7,6 +7,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { TrainingCreatePayload, Training } from '../../training.model';
+import { LocationMap } from '../../../../shared/components/location-map/location-map';
+import { Modal } from '../../../../shared/components/modal/modal';
 import { AuthService } from '../../../auth/auth.service';
 import { SchoolService } from '../../../schools/school.service';
 import { School } from '../../../schools/school.model';
@@ -20,7 +22,7 @@ export interface TrainingFormSubmission {
 
 @Component({
   selector: 'app-training-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LocationMap, Modal],
   templateUrl: './training-form.html',
 })
 export class TrainingForm implements OnInit {
@@ -35,8 +37,14 @@ export class TrainingForm implements OnInit {
   selectedImage: File | null = null;
   imageError: string | null = null;
   schools: School[] = [];
+  showMap = false;
+  confirmNotification = false;
 
   form = this.fb.nonNullable.group({
+    notifySchool: [true],
+    locationAddress: ['', Validators.maxLength(500)],
+    latitude: [null as number | null],
+    longitude: [null as number | null],
     schoolId: [0, [Validators.required, Validators.min(1)]],
     title: [
       '',
@@ -79,6 +87,7 @@ export class TrainingForm implements OnInit {
     const training = this.training();
     if (training) {
       this.form.patchValue({
+        notifySchool: false,
         schoolId: training.schoolId,
         title: training.title,
         trainerName: training.trainerName,
@@ -87,6 +96,9 @@ export class TrainingForm implements OnInit {
         description: training.description ?? '',
         priceMode: training.priceMode ?? 'TO_BE_AGREED',
         price: training.price ?? null,
+        locationAddress: training.locationAddress ?? '',
+        latitude: training.latitude ?? null,
+        longitude: training.longitude ?? null,
       });
     } else {
       this.form.controls.trainerName.setValue(this.auth.currentUser()?.displayName ?? '');
@@ -121,10 +133,28 @@ export class TrainingForm implements OnInit {
       return;
     }
 
+    if (!this.editing && this.form.controls.notifySchool.value) {
+      this.confirmNotification = true;
+      return;
+    }
+    this.emitTraining();
+  }
+
+  emitTraining(): void {
+    this.confirmNotification = false;
     this.trainingSubmitted.emit({
       training: this.form.getRawValue(),
       image: this.selectedImage,
     });
+  }
+
+  selectLocation(point: { latitude: number; longitude: number }): void {
+    this.form.patchValue(point);
+  }
+
+  clearLocation(): void {
+    this.form.patchValue({ latitude: null, longitude: null });
+    this.showMap = false;
   }
 
   cancel(): void {

@@ -1,4 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
+import { ProfileEditor } from '../../shared/components/profile-editor/profile-editor';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { School, SchoolPayload, schoolImageUrl } from '../../features/schools/school.model';
@@ -6,7 +7,7 @@ import { SchoolService } from '../../features/schools/school.service';
 import { AuthService } from '../../features/auth/auth.service';
 @Component({
   selector: 'app-my-school',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ProfileEditor],
   templateUrl: './my-school.html',
   styleUrls: ['../schools/schools.css', './my-school.css'],
 })
@@ -26,6 +27,7 @@ export class MySchool {
     description: '',
     activities: '',
     pricing: '',
+    history: '',
   };
   constructor() {
     effect(() => {
@@ -88,6 +90,7 @@ export class MySchool {
       description: this.form.description.trim(),
       activities: this.form.activities.trim(),
       pricing: this.form.pricing.trim(),
+      history: this.form.history?.trim() ?? '',
     };
     const editingId = this.editing?.id;
     const request = editingId ? this.schools.update$(editingId, body) : this.schools.create$(body);
@@ -102,6 +105,14 @@ export class MySchool {
     });
   }
   private emptyForm(): SchoolPayload {
-    return { name: '', address: '', krs: null, description: '', activities: '', pricing: '' };
+    return {
+      name: '',
+      address: '',
+      krs: null,
+      description: '',
+      activities: '',
+      pricing: '',
+      history: '',
+    };
   }
 }

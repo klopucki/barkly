@@ -1,8 +1,12 @@
 export interface TrainingCreatePayload {
+  notifySchool?: boolean;
   description?: string;
   eventKind?: 'TRAINING';
   priceMode?: 'PAID' | 'FREE' | 'TO_BE_AGREED';
   price?: number | null;
+  locationAddress?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   schoolId: number;
   title: string;
   trainerName: string;
@@ -16,6 +20,9 @@ export interface Training {
   eventKind?: 'TRAINING';
   priceMode?: 'PAID' | 'FREE' | 'TO_BE_AGREED';
   price?: number | null;
+  locationAddress?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   schoolId: number;
   title: string;
   trainerName: string;

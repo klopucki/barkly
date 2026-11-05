@@ -50,4 +50,21 @@ class RequestFixtures {
                 "FREE",
                 null);
     }
+
+    static TrainingCreateRequest location(String address, Double latitude, Double longitude) {
+        return new TrainingCreateRequest(
+                1L,
+                "Trening",
+                "Anna",
+                LocalDateTime.now().plusDays(1),
+                null,
+                null,
+                "TRAINING",
+                "FREE",
+                null,
+                false,
+                address,
+                latitude,
+                longitude);
+    }
 }

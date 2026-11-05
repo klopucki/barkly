@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
@@ -13,6 +14,9 @@ import {
   trainingImageUrl,
   trainingPriceLabel,
 } from '../../features/trainings/training.model';
+import { LocationMap } from '../../shared/components/location-map/location-map';
+import { MessageForm } from '../../features/notifications/message-form/message-form';
+import { SchoolService } from '../../features/schools/school.service';
 import { AuthService } from '../../features/auth/auth.service';
 import { DogService } from '../../features/dogs/dog.service';
 import { Dog } from '../../features/dogs/dog.model';
@@ -23,7 +27,7 @@ import {
 
 @Component({
   selector: 'app-training-details',
-  imports: [BookingForm, TrainingForm, Modal, DatePipe],
+  imports: [BookingForm, TrainingForm, Modal, DatePipe, MessageForm, LocationMap],
   templateUrl: './training-details.html',
   styleUrl: './training-details.css',
 })
@@ -31,9 +35,15 @@ export class TrainingDetails implements OnInit {
   protected readonly trainingImageUrl = trainingImageUrl;
   protected readonly trainingPriceLabel = trainingPriceLabel;
 
+  private readonly http = inject(HttpClient);
+  readonly messages = signal<{ id: number; message: string; createdAt: string }[]>([]);
+  readonly messagesVisible = signal(false);
+  readonly messagesError = signal(false);
   private readonly route = inject(ActivatedRoute);
   private readonly trainingService = inject(TrainingService);
   protected readonly auth = inject(AuthService);
+  private readonly schoolService = inject(SchoolService);
+  readonly canManage = signal(false);
   private readonly dogsApi = inject(DogService);
 
   trainingId = signal(Number(this.route.snapshot.paramMap.get('id')));
@@ -51,13 +61,52 @@ export class TrainingDetails implements OnInit {
   ngOnInit(): void {
     this.loadTraining();
     this.loadBookings();
+    if (this.auth.currentUser()) this.loadMessages();
     if (this.auth.currentUser()) this.dogsApi.mine$().subscribe((dogs) => this.dogs.set(dogs));
   }
 
   loadTraining(): void {
-    this.trainingService
-      .getTrainingById$(this.trainingId())
-      .subscribe((training) => this.training.set(training));
+    this.trainingService.getTrainingById$(this.trainingId()).subscribe((training) => {
+      this.training.set(training);
+      if (this.auth.currentUser())
+        this.schoolService.mine$().subscribe({
+          next: (schools) =>
+            this.canManage.set(
+              schools.some((school) => school.id === training.schoolId) ||
+                this.auth.currentUser()?.role === 'SUPER_ADMIN',
+            ),
+          error: () => this.canManage.set(false),
+        });
+    });
+  }
+
+  readonly messagePage = signal(0);
+  readonly moreMessages = signal(false);
+  readonly loadingMessages = signal(false);
+
+  loadMessages(append = false): void {
+    if (this.loadingMessages()) return;
+    const page = append ? this.messagePage() + 1 : 0;
+    this.loadingMessages.set(true);
+    this.http
+      .get<
+        { id: number; message: string; createdAt: string }[]
+      >(`/api/trainings/${this.trainingId()}/messages`, { params: { page } })
+      .subscribe({
+        next: (messages) => {
+          this.messages.set(append ? [...this.messages(), ...messages] : messages);
+          this.messagePage.set(page);
+          this.moreMessages.set(messages.length === 30);
+          this.messagesVisible.set(true);
+          this.messagesError.set(false);
+          this.loadingMessages.set(false);
+        },
+        error: (error) => {
+          if (error.status === 403 || error.status === 401) this.messagesVisible.set(false);
+          else this.messagesError.set(true);
+          this.loadingMessages.set(false);
+        },
+      });
   }
 
   loadBookings(): void {

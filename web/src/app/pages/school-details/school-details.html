@@ -17,6 +17,98 @@
         }
       </div>
     </header>
+    <div class="school-profile-actions">
+      @if (canManage()) {
+        <div>
+          <strong>Twój profil szkoły</strong>
+          <p>Aktualizuj informacje widoczne dla opiekunów.</p>
+        </div>
+        <button type="button" class="barkly-button" (click)="openSchoolEdit()">
+          Edytuj profil szkoły
+        </button>
+      } @else if (managementResolved() && auth.currentUser()) {
+        <div>
+          <strong>Bądź na bieżąco</strong>
+          <p>Otrzymuj informacje o nowych treningach i wiadomości szkoły.</p>
+        </div>
+        <button
+          type="button"
+          class="barkly-button"
+          [disabled]="subscriptionLoading()"
+          [attr.aria-pressed]="subscribed()"
+          (click)="toggleSubscription()"
+        >
+          {{ subscribed() ? 'Wypisz się z powiadomień' : 'Subskrybuj szkołę' }}
+        </button>
+        @if (subscriptionError()) {
+          <p role="alert" class="text-red-700">{{ subscriptionError() }}</p>
+        }
+      }
+    </div>
+    @if (showSchoolEdit) {
+      <app-modal title="Edytuj profil szkoły" (closed)="showSchoolEdit = false">
+        <form class="space-y-4" #schoolEditForm="ngForm" (ngSubmit)="saveSchool()">
+          <label class="block"
+            >Nazwa szkoły
+            <input
+              class="mt-1 w-full rounded-lg border p-3"
+              name="name"
+              [(ngModel)]="schoolForm.name"
+              required
+              minlength="2"
+              maxlength="200"
+          /></label>
+          <label class="block"
+            >Adres
+            <input
+              class="mt-1 w-full rounded-lg border p-3"
+              name="address"
+              [(ngModel)]="schoolForm.address"
+              required
+              maxlength="300"
+          /></label>
+          <label class="block"
+            >KRS (opcjonalnie)
+            <input
+              class="mt-1 w-full rounded-lg border p-3"
+              name="krs"
+              [(ngModel)]="schoolForm.krs"
+              maxlength="14"
+          /></label>
+          <app-profile-editor
+            name="description"
+            [(ngModel)]="schoolForm.description"
+            label="Profil szkoły"
+            placeholder="Przedstaw swoją szkołę i sposób pracy"
+          />
+          <app-profile-editor
+            name="history"
+            [(ngModel)]="schoolForm.history"
+            label="Historia szkoły (opcjonalnie)"
+            placeholder="Jak powstała Twoja szkoła?"
+          />
+          @if (schoolEditError) {
+            <p role="alert" class="text-red-700">{{ schoolEditError }}</p>
+          }
+          <div class="flex gap-3">
+            <button
+              class="barkly-button"
+              type="submit"
+              [disabled]="savingSchool || schoolEditForm.invalid"
+            >
+              {{ savingSchool ? 'Zapisywanie…' : 'Zapisz zmiany' }}</button
+            ><button
+              type="button"
+              class="rounded-full border px-4 py-2"
+              (click)="showSchoolEdit = false"
+              [disabled]="savingSchool"
+            >
+              Anuluj
+            </button>
+          </div>
+        </form>
+      </app-modal>
+    }
     <div
       class="flex gap-1 overflow-x-auto border-b border-stone-200"
       role="tablist"
@@ -52,39 +144,93 @@
       >
         Artykuły
       </button>
+      @if (canManage()) {
+        <button
+          type="button"
+          class="border-b-2 px-3 py-3 text-sm font-semibold"
+          [class.border-emerald-700]="activeTab() === 'notifications'"
+          [class.text-emerald-800]="activeTab() === 'notifications'"
+          [class.border-transparent]="activeTab() !== 'notifications'"
+          (click)="setTab('notifications')"
+        >
+          Powiadomienia
+        </button>
+      }
     </div>
     @if (activeTab() === 'about') {
       @if (galleryImages().length) {
         <app-image-gallery [images]="galleryImages()" />
       }
-      <div class="school-about-grid">
-        @if (s.description) {
-          <div class="school-about-card">
-            <p class="barkly-eyebrow">Podejście</p>
-            <h2>O szkole</h2>
-            <p class="whitespace-pre-line">{{ s.description }}</p>
-          </div>
-        }
-        @if (s.activities) {
-          <div class="school-about-card">
-            <p class="barkly-eyebrow">Oferta</p>
-            <h2>Czym się zajmujemy</h2>
-            <p class="whitespace-pre-line">{{ s.activities }}</p>
-          </div>
-        }
-        @if (s.pricing) {
-          <div class="school-about-card school-pricing-card">
-            <p class="barkly-eyebrow">Informacje</p>
-            <h2>Cennik</h2>
-            <p class="whitespace-pre-line">{{ s.pricing }}</p>
-          </div>
+      <div class="school-story-layout">
+        <section class="school-profile-copy">
+          <p class="barkly-eyebrow">Poznaj nas</p>
+          <h2>Profil szkoły</h2>
+          @if (s.description) {
+            <p [innerHTML]="s.description | profileText"></p>
+          }
+          @if (s.activities) {
+            <p [innerHTML]="s.activities | profileText"></p>
+          }
+          @if (!s.description && !s.activities) {
+            <p>Szkoła nie dodała jeszcze opisu.</p>
+          }
+        </section>
+        @if (s.history || s.historyImageKey || canManage()) {
+          <section class="school-history-card">
+            @if (s.historyImageKey) {
+              <img
+                class="school-history-image"
+                [src]="imageUrl(s.historyImageKey)"
+                alt="Zdjęcie przedstawiające historię szkoły"
+              />
+            }
+            <div class="school-history-content">
+              <p class="barkly-eyebrow">Nasza droga</p>
+              <h2>Historia szkoły</h2>
+              @if (s.history) {
+                <p [innerHTML]="s.history | profileText"></p>
+              } @else if (canManage()) {
+                <p>Opowiedz, jak powstała Twoja szkoła.</p>
+              }
+              @if (canManage()) {
+                <label class="school-photo-action"
+                  >{{
+                    historyImageLoading()
+                      ? 'Dodawanie zdjęcia…'
+                      : s.historyImageKey
+                        ? 'Zmień zdjęcie'
+                        : 'Dodaj zdjęcie do historii'
+                  }}<input
+                    type="file"
+                    class="sr-only"
+                    accept="image/jpeg,image/png"
+                    [disabled]="historyImageLoading()"
+                    (change)="uploadHistoryImage($event)"
+                /></label>
+                @if (s.historyImageKey) {
+                  <button
+                    type="button"
+                    class="school-photo-action"
+                    [disabled]="historyImageLoading()"
+                    (click)="removeHistoryImage()"
+                  >
+                    Usuń zdjęcie z historii
+                  </button>
+                }
+                <p class="school-photo-hint">JPG lub PNG · maks. 10 MB · minimum 640 × 480 px</p>
+                @if (historyImageError()) {
+                  <p role="alert" class="text-red-700">{{ historyImageError() }}</p>
+                }
+              }
+            </div>
+          </section>
         }
       </div>
     } @else if (activeTab() === 'trainings') {
       <div class="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p class="barkly-eyebrow">Oferta szkoły</p>
-          <h2 class="mt-1 text-xl font-semibold">Nadchodzące treningi</h2>
+          <p class="barkly-eyebrow">Zajęcia</p>
+          <h2 class="mt-1 text-xl font-semibold">Treningi szkoły</h2>
         </div>
         @if (canManage()) {
           <button type="button" class="barkly-button" (click)="openAddTraining()">
@@ -97,29 +243,51 @@
           {{ addTrainingError() }}
         </p>
       }
-      <div class="grid gap-4 md:grid-cols-2">
+      <div>
         @for (training of trainings(); track training.id) {
-          <a
-            [routerLink]="['/trainings', training.id]"
-            class="school-training-card barkly-card block p-5"
-            ><p class="text-sm font-semibold text-emerald-800">
-              {{ training.startAt | date: 'dd.MM.yyyy, HH:mm' }}
-            </p>
-            <h2 class="mt-2 text-xl font-semibold">{{ training.title }}</h2>
-            <p class="mt-2 text-stone-600">
-              Trener: {{ training.trainerName }} · {{ trainingPriceLabel(training) }}
-            </p>
-            <span class="mt-4 inline-block text-sm font-semibold text-emerald-800"
-              >Zobacz trening →</span
-            ></a
-          >
+          <app-training-card
+            [training]="training"
+            [favorite]="favorites.has('training', training.id)"
+            [showManagementActions]="false"
+            (favoriteClicked)="favorites.toggle('training', $event.id)"
+          />
         } @empty {
           <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-stone-500">
             Ta szkoła nie ma jeszcze opublikowanych treningów.
           </p>
         }
       </div>
-    } @else {
+    } @else if (activeTab() === 'notifications' && canManage()) {
+      <section class="school-message-panel">
+        <h2 class="school-message-title">Powiadomienia dla subskrybentów</h2>
+        <p>Wyślij wiadomość do osób, które subskrybują tę szkołę.</p>
+        <app-message-form
+          audience="schools"
+          [id]="s.id"
+          label="Wiadomość do subskrybentów szkoły"
+          (sent)="loadSentMessages()"
+        />
+        <h2>Wysłane powiadomienia</h2>
+        @if (sentMessagesError()) {
+          <p role="alert">{{ sentMessagesError() }}</p>
+        }
+        @if (!loadingSentMessages() && sentMessages().length === 0 && !sentMessagesError()) {
+          <p>Nie wysłano jeszcze powiadomień.</p>
+        }
+        @for (message of sentMessages(); track message.id) {
+          <article>
+            <time>{{ message.createdAt | date: 'dd.MM.yyyy HH:mm' }}</time>
+            <p class="whitespace-pre-wrap break-words">{{ message.message }}</p>
+            <a [routerLink]="message.link">Zobacz szczegóły</a>
+          </article>
+        }
+        @if (hasMoreSentMessages()) {
+          <button type="button" [disabled]="loadingSentMessages()" (click)="loadSentMessages(true)">
+            Pokaż starsze
+          </button>
+        }
+      </section>
+    } @else if (activeTab() === 'news') {
       <div>
         <div
           class="mb-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center"

@@ -2,6 +2,17 @@ import { expect } from 'vitest';
 import { FormFixture } from './form-fixtures';
 
 export const Assertions = {
+  notificationConfirmationRequired(s: FormFixture) {
+    expect(s.component.form.controls.notifySchool.value).toBe(true);
+    expect(s.component.confirmNotification).toBe(true);
+    expect(s.submitted).not.toHaveBeenCalled();
+  },
+  notificationConfirmed(s: FormFixture) {
+    expect(s.submitted).toHaveBeenCalledWith({
+      training: expect.objectContaining({ notifySchool: true }),
+      image: null,
+    });
+  },
   created(s: FormFixture) {
     expect(s.component).toBeTruthy();
   },

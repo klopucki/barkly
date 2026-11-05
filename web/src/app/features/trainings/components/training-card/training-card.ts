@@ -17,6 +17,7 @@ export class TrainingCard {
 
   training = input.required<Training>();
   favorite = input(false);
+  showManagementActions = input(true);
 
   deleteClicked = output<number>();
   editClicked = output<Training>();

@@ -26,9 +26,10 @@ function create(training?: Training, schoolId?: number) {
 }
 export type FormFixture = ReturnType<typeof create>;
 
-function valid() {
+function valid(notifySchool = false) {
   const scenario = create();
   scenario.component.form.patchValue({
+    notifySchool,
     schoolId: 1,
     title: 'Trening grupy',
     trainerName: 'Anna',
@@ -51,6 +52,16 @@ export const Fixtures = {
   },
   emptyForm: () => create(),
   validForm: valid,
+  validFormWithDefaultNotification() {
+    const scenario = create();
+    scenario.component.form.patchValue({
+      schoolId: 1,
+      title: 'Trening grupy',
+      trainerName: 'Anna',
+      startAt: '2099-01-01T10:00',
+    });
+    return scenario;
+  },
   paidForm: paid,
   capacity(capacity: number) {
     const scenario = valid();

@@ -152,6 +152,19 @@ public class SchoolService {
         storage.delete(image.getImageKey());
     }
 
+    @Transactional
+    public SchoolResponse setHistoryImage(Long schoolId, Long imageId) {
+        var school = findEntityWithOwner(schoolId);
+        requireManagementAccess(school);
+        if (imageId != null
+                && images.findById(imageId)
+                        .filter(image -> image.getSchoolId().equals(schoolId))
+                        .isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "School image not found");
+        school.setHistoryImageId(imageId);
+        return response(school);
+    }
+
     private SchoolResponse response(SchoolEntity school) {
         var gallery =
                 images.findAllBySchool_IdOrderByIdAsc(school.getId()).stream()
@@ -166,6 +179,12 @@ public class SchoolService {
                 school.getDescription(),
                 school.getActivities(),
                 school.getPricing(),
+                school.getHistory(),
+                gallery.stream()
+                        .filter(image -> image.id().equals(school.getHistoryImageId()))
+                        .map(SchoolImageResponse::imageKey)
+                        .findFirst()
+                        .orElse(null),
                 gallery);
     }
 
