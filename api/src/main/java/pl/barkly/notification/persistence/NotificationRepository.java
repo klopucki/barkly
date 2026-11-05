@@ -98,4 +98,24 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
                     """,
             nativeQuery = true)
     int insertDueReminders(LocalDateTime now, LocalDateTime remindBefore);
+
+    @Modifying
+    @Query(
+            value =
+                    """
+                    INSERT INTO notification(user_id, training_id, event_key, type, message, link, created_at)
+                    SELECT s.user_id, CAST(:trainingId AS bigint), :eventKey, :type, :message, :link, CAST(:createdAt AS timestamp)
+                    FROM school_subscription s
+                    WHERE s.school_id = :schoolId
+                    ON CONFLICT (user_id, event_key) DO NOTHING
+                    """,
+            nativeQuery = true)
+    int insertForSchoolParticipants(
+            Long schoolId,
+            Long trainingId,
+            String eventKey,
+            String type,
+            String message,
+            String link,
+            LocalDateTime createdAt);
 }

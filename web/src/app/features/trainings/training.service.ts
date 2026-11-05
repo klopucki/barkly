@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Training, TrainingCreatePayload, TrainingDictionaries } from './training.model';
+import { Training, TrainingCreatePayload } from './training.model';
 import { Booking, MyTrainingBooking } from '../bookings/components/booking-form/booking.model';
 import { Observable, tap } from 'rxjs';
 import { NotificationService } from '../notifications/notification.service';
@@ -21,13 +21,12 @@ export class TrainingService {
 
   search$(
     query: string,
-    type: string,
     page = 0,
     size = 20,
     favoritesOnly = false,
   ): Observable<PageResult<Training>> {
     return this.http.get<PageResult<Training>>('/api/query/trainings', {
-      params: { query, type, page, size, favoritesOnly },
+      params: { query, page, size, favoritesOnly },
     });
   }
 
@@ -41,10 +40,6 @@ export class TrainingService {
 
   updateTraining$(id: number, training: TrainingCreatePayload): Observable<Training> {
     return this.http.put<Training>(`${this.apiUrl}/${id}`, training);
-  }
-
-  getTrainingDictionaries$(): Observable<TrainingDictionaries> {
-    return this.http.get<TrainingDictionaries>('/api/training-dictionaries');
   }
 
   uploadTrainingImage$(trainingId: number, image: File): Observable<Training> {

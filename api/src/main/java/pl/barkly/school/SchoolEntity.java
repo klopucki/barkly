@@ -40,6 +40,11 @@ public class SchoolEntity {
     @Column(nullable = false)
     private String pricing;
 
+    @Column(nullable = false)
+    private String history = "";
+
+    private Long historyImageId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_user_id")
     private UserEntity owner;
@@ -54,6 +59,7 @@ public class SchoolEntity {
         this.description = empty(request.description());
         this.activities = empty(request.activities());
         this.pricing = empty(request.pricing());
+        if (request.history() != null) this.history = empty(request.history());
         this.owner = owner;
     }
 
@@ -85,6 +91,18 @@ public class SchoolEntity {
         return activities;
     }
 
+    public Long getHistoryImageId() {
+        return historyImageId;
+    }
+
+    public void setHistoryImageId(Long imageId) {
+        this.historyImageId = imageId;
+    }
+
+    public String getHistory() {
+        return history;
+    }
+
     public String getPricing() {
         return pricing;
     }
@@ -104,6 +122,7 @@ public class SchoolEntity {
         this.description = empty(request.description());
         this.activities = empty(request.activities());
         this.pricing = empty(request.pricing());
+        if (request.history() != null) this.history = empty(request.history());
     }
 
     private static String empty(String value) {

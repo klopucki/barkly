@@ -1,70 +1,108 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { TrainingForm } from './training-form';
-import { TrainingService } from '../../training.service';
-import { SchoolService } from '../../../schools/school.service';
-import { of } from 'rxjs';
+import { configureFormTests, Fixtures } from './testing/form-fixtures';
+import { Assertions } from './testing/form-assertions';
 
 describe('TrainingForm', () => {
-  let component: TrainingForm;
-  let fixture: ComponentFixture<TrainingForm>;
+  beforeEach(configureFormTests);
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [TrainingForm],
-      providers: [
-        {
-          provide: TrainingService,
-          useValue: {
-            getTrainingDictionaries$: () =>
-              of({
-                trainingTypes: [{ id: 1, code: 'GROUP_TRAINING', name: 'Group training' }],
-                trainingLevels: [{ id: 1, code: 'BASIC', name: 'Basic', trainingTypeId: null }],
-                targetGroups: [{ id: 1, code: 'PUPPIES', name: 'Puppies' }],
-              }),
-          },
-        },
-        { provide: SchoolService, useValue: { mine$: () => of([]) } },
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(TrainingForm);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+  it('creates the form', () => {
+    const fixture = Fixtures.emptyForm();
+    fixture.fixture.detectChanges();
+    Assertions.created(fixture);
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('selects notification by default and asks for confirmation', () => {
+    const fixture = Fixtures.validFormWithDefaultNotification();
+    fixture.component.submit();
+    Assertions.notificationConfirmationRequired(fixture);
+  });
+
+  it('sends the selected notification only after confirmation', () => {
+    const fixture = Fixtures.validFormWithDefaultNotification();
+    fixture.component.submit();
+    fixture.component.emitTraining();
+    Assertions.notificationConfirmed(fixture);
   });
 
   it('rejects a past date and non-positive capacity', () => {
-    component.form.patchValue({
-      title: 'Obedience',
-      trainerName: 'Jan',
-      startAt: '2020-01-01T10:00',
-      capacity: 0,
-    });
-
-    expect(component.form.controls.startAt.hasError('futureDate')).toBe(true);
-    expect(component.form.controls.capacity.hasError('min')).toBe(true);
+    const fixture = Fixtures.pastTraining();
+    fixture.component.submit();
+    Assertions.dateAndCapacityRejected(fixture);
   });
 
-  it('submits valid training data', () => {
-    const emit = vi.spyOn(component.trainingSubmitted, 'emit');
-    component.form.setValue({
-      schoolId: 1,
-      title: 'Basic obedience',
-      trainerName: 'Jan Kowalski',
-      trainingTypeId: 1,
-      trainingLevelId: 1,
-      targetGroupId: 1,
-      homeVisit: false,
-      startAt: '2099-01-01T10:00',
-      capacity: 10,
-    });
+  it.each([null, 0, -1, 10.001, 100000000])('blocks invalid paid amount %s', (price) => {
+    const fixture = Fixtures.paidForm(price);
+    fixture.component.submit();
+    Assertions.invalidPriceRejected(fixture);
+  });
 
-    component.submit();
+  it('accepts a valid paid amount', () => {
+    const fixture = Fixtures.paidForm(80.5);
+    fixture.component.submit();
+    Assertions.validPriceSubmitted(fixture, 80.5);
+  });
 
-    expect(emit).toHaveBeenCalledOnce();
+  it.each(['FREE', 'TO_BE_AGREED'] as const)('clears the amount when switching to %s', (mode) => {
+    const fixture = Fixtures.paidForm(80);
+    fixture.component.form.controls.priceMode.setValue(mode);
+
+    fixture.component.priceModeChanged();
+    fixture.component.submit();
+    Assertions.priceCleared(fixture, mode);
+  });
+
+  it('disables exams and prefills the trainer', () => {
+    const fixture = Fixtures.emptyForm();
+    fixture.fixture.detectChanges();
+    Assertions.examDisabledAndTrainerPrefilled(fixture);
+  });
+
+  it('preserves price and description when editing', () => {
+    const fixture = Fixtures.editingPaidTraining();
+    fixture.component.submit();
+    Assertions.editedDetailsPreserved(fixture);
+  });
+
+  it('submits training without dictionaries', () => {
+    const fixture = Fixtures.validForm();
+    fixture.component.submit();
+    Assertions.submittedWithoutDictionaries(fixture);
+  });
+
+  it('allows omitting description, image and capacity', () => {
+    const fixture = Fixtures.validForm();
+    fixture.component.submit();
+    Assertions.optionalDetailsOmitted(fixture);
+  });
+
+  it.each([0, -1, 1.5])('blocks invalid capacity %s', (capacity) => {
+    const fixture = Fixtures.capacity(capacity);
+    fixture.component.submit();
+    Assertions.submissionBlocked(fixture);
+  });
+
+  it('rejects an oversized description without losing the text', () => {
+    const fixture = Fixtures.description(2001);
+    fixture.component.submit();
+    Assertions.longDescriptionPreserved(fixture, 2001);
+  });
+
+  it('uses the school context without showing a selector', () => {
+    const fixture = Fixtures.school(7);
+    fixture.fixture.detectChanges();
+    Assertions.schoolSelectedWithoutDropdown(fixture, 7);
+  });
+
+  it('rejects unsupported images and recovers after selecting a valid image', () => {
+    const fixture = Fixtures.validForm();
+    const invalidImage = Fixtures.imageSelection('image/svg+xml');
+
+    fixture.component.selectImage(invalidImage.event);
+    fixture.component.submit();
+    Assertions.invalidImageRejected(fixture);
+
+    const validImage = Fixtures.imageSelection('image/png');
+    fixture.component.selectImage(validImage.event);
+    fixture.component.submit();
+    Assertions.validImageSubmitted(fixture, validImage.file);
   });
 });

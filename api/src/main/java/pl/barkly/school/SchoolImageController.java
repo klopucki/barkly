@@ -4,11 +4,13 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import pl.barkly.school.api.SchoolImageResponse;
+import pl.barkly.school.api.SchoolResponse;
 import pl.barkly.training.image.TrainingImageStorage;
 
 @RestController
@@ -32,5 +34,15 @@ class SchoolImageController {
     @DeleteMapping("/api/school-images/{imageId}")
     void delete(@PathVariable Long imageId) {
         schools.deleteImage(imageId, storage);
+    }
+
+    @PutMapping("/api/schools/{schoolId}/history-image/{imageId}")
+    SchoolResponse setHistoryImage(@PathVariable Long schoolId, @PathVariable Long imageId) {
+        return schools.setHistoryImage(schoolId, imageId);
+    }
+
+    @DeleteMapping("/api/schools/{schoolId}/history-image")
+    SchoolResponse removeHistoryImage(@PathVariable Long schoolId) {
+        return schools.setHistoryImage(schoolId, null);
     }
 }

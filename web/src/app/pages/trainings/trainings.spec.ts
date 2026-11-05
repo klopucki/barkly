@@ -1,22 +1,24 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { trainingListFixture } from './testing/trainings-fixtures';
+import { expectChronologicalList } from './testing/trainings-assertions';
 
-import { Trainings } from './trainings';
+describe('Trainings ordering', () => {
+  it.each([
+    ['01', [2, 1, 3]],
+    ['04', [2, 3, 1]],
+    ['09', [3, 2, 1]],
+  ] as const)('places a newly added training on day %s by its date', async (day, ids) => {
+    const fixture = await trainingListFixture('add', day);
 
-describe('Trainings', () => {
-  let component: Trainings;
-  let fixture: ComponentFixture<Trainings>;
+    fixture.component.saveTraining(fixture.submission);
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Trainings],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Trainings);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+    expectChronologicalList(fixture, [...ids]);
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('moves an edited training to its chronological position', async () => {
+    const fixture = await trainingListFixture('edit', '01');
+
+    fixture.component.saveTraining(fixture.submission);
+
+    expectChronologicalList(fixture, [1, 2]);
   });
 });

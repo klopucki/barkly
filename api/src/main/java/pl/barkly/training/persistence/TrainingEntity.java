@@ -1,20 +1,17 @@
 package pl.barkly.training.persistence;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import pl.barkly.training.api.DictionaryValueResponse;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
 import pl.barkly.training.exceptions.TrainingCapacityExceededException;
 import pl.barkly.training.exceptions.TrainingRegistrationClosedException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,25 +28,17 @@ public class TrainingEntity {
 
     private String trainerName;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "training_type_id")
-    private TrainingTypeEntity trainingType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "training_level_id")
-    private TrainingLevelEntity trainingLevel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_group_id")
-    private TargetGroupEntity targetGroup;
-
-    private boolean homeVisit;
-
     private LocalDateTime startAt;
 
     private Integer capacity;
 
     private String description;
+    private String eventKind = "TRAINING";
+    private String priceMode = "TO_BE_AGREED";
+    private BigDecimal price;
+    private String locationAddress;
+    private Double latitude;
+    private Double longitude;
 
     private String imageKey;
 
@@ -57,18 +46,19 @@ public class TrainingEntity {
 
     public TrainingEntity() {}
 
-    public TrainingEntity(
-            TrainingCreateRequest request,
-            TrainingTypeEntity trainingType,
-            TrainingLevelEntity trainingLevel,
-            TargetGroupEntity targetGroup) {
+    public TrainingEntity(TrainingCreateRequest request) {
         this.schoolId = request.schoolId();
         this.title = request.title();
         this.description = request.description() == null ? "" : request.description();
-        this.trainingType = trainingType;
-        this.trainingLevel = trainingLevel;
-        this.targetGroup = targetGroup;
-        this.homeVisit = request.homeVisit();
+        this.eventKind = "TRAINING";
+        this.priceMode = request.priceMode() == null ? "TO_BE_AGREED" : request.priceMode();
+        this.price = request.price();
+        this.locationAddress =
+                request.locationAddress() == null || request.locationAddress().isBlank()
+                        ? null
+                        : request.locationAddress().trim();
+        this.latitude = request.latitude();
+        this.longitude = request.longitude();
         this.startAt = request.startAt();
         this.capacity = request.capacity();
         this.trainerName = request.trainerName();
@@ -87,7 +77,7 @@ public class TrainingEntity {
     }
 
     public String getTrainingTypeName() {
-        return trainingType.getName();
+        return "Trening";
     }
 
     public LocalDateTime getStartAt() {
@@ -116,28 +106,19 @@ public class TrainingEntity {
                 schoolId,
                 title,
                 trainerName,
-                dictionaryValue(trainingType),
-                trainingLevel == null ? null : dictionaryValue(trainingLevel),
-                targetGroup == null ? null : dictionaryValue(targetGroup),
-                homeVisit,
                 startAt,
                 capacity,
                 bookedCount,
                 imageKey,
                 pawCount,
-                pawedByCurrentUser);
-    }
-
-    private DictionaryValueResponse dictionaryValue(TrainingTypeEntity value) {
-        return new DictionaryValueResponse(value.getId(), value.getCode(), value.getName());
-    }
-
-    private DictionaryValueResponse dictionaryValue(TrainingLevelEntity value) {
-        return new DictionaryValueResponse(value.getId(), value.getCode(), value.getName());
-    }
-
-    private DictionaryValueResponse dictionaryValue(TargetGroupEntity value) {
-        return new DictionaryValueResponse(value.getId(), value.getCode(), value.getName());
+                pawedByCurrentUser,
+                description,
+                eventKind,
+                priceMode,
+                price,
+                locationAddress,
+                latitude,
+                longitude);
     }
 
     public String getImageKey() {
@@ -155,30 +136,37 @@ public class TrainingEntity {
                 || !java.util.Objects.equals(startAt, request.startAt())
                 || !java.util.Objects.equals(
                         description, request.description() == null ? "" : request.description())
-                || !java.util.Objects.equals(trainingType.getId(), request.trainingTypeId())
                 || !java.util.Objects.equals(
-                        trainingLevel == null ? null : trainingLevel.getId(),
-                        request.trainingLevelId())
+                        priceMode,
+                        request.priceMode() == null ? "TO_BE_AGREED" : request.priceMode())
                 || !java.util.Objects.equals(
-                        targetGroup == null ? null : targetGroup.getId(), request.targetGroupId())
-                || homeVisit != request.homeVisit();
+                        locationAddress,
+                        request.locationAddress() == null || request.locationAddress().isBlank()
+                                ? null
+                                : request.locationAddress().trim())
+                || !java.util.Objects.equals(latitude, request.latitude())
+                || !java.util.Objects.equals(longitude, request.longitude())
+                || (price == null
+                        ? request.price() != null
+                        : request.price() == null || price.compareTo(request.price()) != 0);
     }
 
-    public void update(
-            TrainingCreateRequest request,
-            TrainingTypeEntity trainingType,
-            TrainingLevelEntity trainingLevel,
-            TargetGroupEntity targetGroup) {
+    public void update(TrainingCreateRequest request) {
         this.schoolId = request.schoolId();
         this.title = request.title();
         this.trainerName = request.trainerName();
-        this.trainingType = trainingType;
-        this.trainingLevel = trainingLevel;
-        this.targetGroup = targetGroup;
-        this.homeVisit = request.homeVisit();
         this.startAt = request.startAt();
         this.capacity = request.capacity();
         this.description = request.description() == null ? "" : request.description();
+        this.eventKind = "TRAINING";
+        this.priceMode = request.priceMode() == null ? "TO_BE_AGREED" : request.priceMode();
+        this.price = request.price();
+        this.locationAddress =
+                request.locationAddress() == null || request.locationAddress().isBlank()
+                        ? null
+                        : request.locationAddress().trim();
+        this.latitude = request.latitude();
+        this.longitude = request.longitude();
     }
 
     public void validateBooking(int bookedCount) {

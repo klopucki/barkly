@@ -35,9 +35,6 @@ public class BookingEntity {
         this.userId = userId;
     }
 
-    @Column(name = "dog_age")
-    private int dogAge;
-
     private String notes;
 
     @Column(name = "created_at")
@@ -52,7 +49,6 @@ public class BookingEntity {
         this.ownerName = request.ownerName();
         this.email = request.email();
         this.dogName = request.dogName();
-        this.dogAge = request.dogAge();
         this.notes = request.notes();
         this.createdAt = LocalDateTime.now();
     }
@@ -66,18 +62,12 @@ public class BookingEntity {
     }
 
     public BookingEntity(
-            Long trainingId,
-            Long dogId,
-            String ownerName,
-            String email,
-            String dogName,
-            int dogAge) {
+            Long trainingId, Long dogId, String ownerName, String email, String dogName) {
         this.trainingId = trainingId;
         this.dogId = dogId;
         this.ownerName = ownerName;
         this.email = email;
         this.dogName = dogName;
-        this.dogAge = dogAge;
         this.notes = "";
         this.createdAt = LocalDateTime.now();
     }
@@ -100,6 +90,6 @@ public class BookingEntity {
 
     public BookingResponse toResponse() {
         return new BookingResponse(
-                id, trainingId, dogId, ownerName, email, dogName, dogAge, notes, createdAt);
+                id, trainingId, dogId, ownerName, email, dogName, notes, createdAt);
     }
 }

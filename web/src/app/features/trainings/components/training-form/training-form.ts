@@ -6,14 +6,10 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {
-  DictionaryValue,
-  TrainingCreatePayload,
-  TrainingDictionaries,
-  TrainingLevelDictionary,
-  Training,
-} from '../../training.model';
-import { TrainingService } from '../../training.service';
+import { TrainingCreatePayload, Training } from '../../training.model';
+import { LocationMap } from '../../../../shared/components/location-map/location-map';
+import { Modal } from '../../../../shared/components/modal/modal';
+import { AuthService } from '../../../auth/auth.service';
 import { SchoolService } from '../../../schools/school.service';
 import { School } from '../../../schools/school.model';
 
@@ -26,7 +22,7 @@ export interface TrainingFormSubmission {
 
 @Component({
   selector: 'app-training-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LocationMap, Modal],
   templateUrl: './training-form.html',
 })
 export class TrainingForm implements OnInit {
@@ -36,19 +32,19 @@ export class TrainingForm implements OnInit {
   schoolId = input<number | null>(null);
 
   private readonly fb = new FormBuilder();
-  private readonly trainingService = inject(TrainingService);
+  private readonly auth = inject(AuthService);
   private readonly schoolService = inject(SchoolService);
-
-  dictionaries: TrainingDictionaries = {
-    trainingTypes: [],
-    trainingLevels: [],
-    targetGroups: [],
-  };
   selectedImage: File | null = null;
   imageError: string | null = null;
   schools: School[] = [];
+  showMap = false;
+  confirmNotification = false;
 
   form = this.fb.nonNullable.group({
+    notifySchool: [true],
+    locationAddress: ['', Validators.maxLength(500)],
+    latitude: [null as number | null],
+    longitude: [null as number | null],
     schoolId: [0, [Validators.required, Validators.min(1)]],
     title: [
       '',
@@ -68,12 +64,12 @@ export class TrainingForm implements OnInit {
         Validators.maxLength(200),
       ],
     ],
-    trainingTypeId: [0, [Validators.required, Validators.min(1)]],
-    trainingLevelId: [null as number | null],
-    targetGroupId: [null as number | null],
-    homeVisit: [false],
     startAt: ['', [Validators.required, futureDateValidator]],
-    capacity: [null as number | null, [Validators.min(1)]],
+    capacity: [null as number | null, [Validators.min(1), Validators.pattern(/^\d+$/)]],
+    description: ['', Validators.maxLength(2000)],
+    eventKind: ['TRAINING' as const],
+    priceMode: ['TO_BE_AGREED' as 'PAID' | 'FREE' | 'TO_BE_AGREED'],
+    price: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -88,70 +84,77 @@ export class TrainingForm implements OnInit {
         }
       },
     });
-    this.trainingService.getTrainingDictionaries$().subscribe((dictionaries) => {
-      this.dictionaries = dictionaries;
-      if (dictionaries.trainingTypes.length > 0) {
-        const training = this.training();
-        if (training) {
-          this.form.patchValue({
-            schoolId: training.schoolId,
-            title: training.title,
-            trainerName: training.trainerName,
-            trainingTypeId: training.trainingType.id,
-            trainingLevelId: training.trainingLevel?.id ?? null,
-            targetGroupId: training.targetGroup?.id ?? null,
-            homeVisit: training.homeVisit,
-            startAt: training.startAt.slice(0, 16),
-            capacity: training.capacity,
-          });
-        } else {
-          this.form.controls.trainingTypeId.setValue(dictionaries.trainingTypes[0].id);
-        }
-      }
-    });
+    const training = this.training();
+    if (training) {
+      this.form.patchValue({
+        notifySchool: false,
+        schoolId: training.schoolId,
+        title: training.title,
+        trainerName: training.trainerName,
+        startAt: training.startAt.slice(0, 16),
+        capacity: training.capacity,
+        description: training.description ?? '',
+        priceMode: training.priceMode ?? 'TO_BE_AGREED',
+        price: training.price ?? null,
+        locationAddress: training.locationAddress ?? '',
+        latitude: training.latitude ?? null,
+        longitude: training.longitude ?? null,
+      });
+    } else {
+      this.form.controls.trainerName.setValue(this.auth.currentUser()?.displayName ?? '');
+      if (this.schoolId() !== null) this.form.controls.schoolId.setValue(this.schoolId()!);
+    }
+    this.priceModeChanged();
   }
 
-  get availableLevels(): TrainingLevelDictionary[] {
-    const typeId = this.form.controls.trainingTypeId.value;
-    return this.dictionaries.trainingLevels.filter(
-      (level) => level.trainingTypeId === null || level.trainingTypeId === typeId,
-    );
-  }
-
-  get consultationSelected(): boolean {
-    return this.selectedType()?.code === 'CONSULTATION';
+  priceModeChanged(): void {
+    const price = this.form.controls.price;
+    if (this.form.controls.priceMode.value === 'PAID') {
+      price.setValidators([
+        Validators.required,
+        Validators.min(0.01),
+        Validators.max(99999999.99),
+        Validators.pattern(/^\d+(\.\d{1,2})?$/),
+      ]);
+    } else {
+      price.clearValidators();
+      price.setValue(null);
+    }
+    price.updateValueAndValidity();
   }
 
   get editing(): boolean {
     return this.training() !== null;
   }
 
-  typeChanged(): void {
-    const selectedLevel = this.form.controls.trainingLevelId.value;
-    if (selectedLevel && !this.availableLevels.some((level) => level.id === selectedLevel)) {
-      this.form.controls.trainingLevelId.setValue(null);
-    }
-    if (!this.consultationSelected) {
-      this.form.controls.homeVisit.setValue(false);
-    }
-  }
-
-  private selectedType(): DictionaryValue | undefined {
-    return this.dictionaries.trainingTypes.find(
-      (type) => type.id === this.form.controls.trainingTypeId.value,
-    );
-  }
-
   submit(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.imageError) {
       this.form.markAllAsTouched();
       return;
     }
 
+    if (!this.editing && this.form.controls.notifySchool.value) {
+      this.confirmNotification = true;
+      return;
+    }
+    this.emitTraining();
+  }
+
+  emitTraining(): void {
+    this.confirmNotification = false;
     this.trainingSubmitted.emit({
       training: this.form.getRawValue(),
       image: this.selectedImage,
     });
+  }
+
+  selectLocation(point: { latitude: number; longitude: number }): void {
+    this.form.patchValue(point);
+  }
+
+  clearLocation(): void {
+    this.form.patchValue({ latitude: null, longitude: null });
+    this.showMap = false;
   }
 
   cancel(): void {
@@ -166,7 +169,7 @@ export class TrainingForm implements OnInit {
   selectImage(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png'];
 
     if (file && !allowedTypes.includes(file.type)) {
       this.selectedImage = null;
@@ -175,6 +178,12 @@ export class TrainingForm implements OnInit {
       return;
     }
 
+    if (file && file.size > 10 * 1024 * 1024) {
+      this.selectedImage = null;
+      this.imageError = 'Zdjęcie może mieć maksymalnie 10 MB.';
+      input.value = '';
+      return;
+    }
     this.selectedImage = file;
     this.imageError = null;
   }

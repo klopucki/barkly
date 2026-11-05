@@ -1,22 +1,14 @@
 @if (training()) {
   <section class="training-detail-hero barkly-card overflow-hidden">
     <div class="training-detail-main min-w-0 flex-1">
-      <p class="barkly-eyebrow">{{ training()!.trainingType.name }}</p>
+      <p class="barkly-eyebrow">Trening</p>
       <h1>{{ training()!.title }}</h1>
       <p class="training-detail-trainer">
         Prowadzi <strong>{{ training()!.trainerName }}</strong>
       </p>
-      <div class="training-detail-tags">
-        @if (training()!.trainingLevel) {
-          <span>{{ training()!.trainingLevel!.name }}</span>
-        }
-        @if (training()!.targetGroup) {
-          <span>{{ training()!.targetGroup!.name }}</span>
-        }
-        @if (training()!.homeVisit) {
-          <span>🏠 konsultacja domowa</span>
-        }
-      </div>
+      <p class="mt-4 text-xl font-semibold text-emerald-900">
+        {{ trainingPriceLabel(training()!) }}
+      </p>
       <div class="training-detail-facts">
         <span>◷ {{ training()!.startAt | date: 'EEEE, dd MMMM · HH:mm' }}</span>
         <span
@@ -79,6 +71,43 @@
       </div>
     }
   </section>
+
+  @if (training()!.description) {
+    <section class="barkly-card mt-6 p-6">
+      <h2 class="mb-3 text-xl font-semibold">O treningu</h2>
+      <p class="whitespace-pre-wrap break-words text-stone-700">{{ training()!.description }}</p>
+    </section>
+  }
+
+  @if (
+    training()!.locationAddress || (training()!.latitude != null && training()!.longitude != null)
+  ) {
+    <section class="barkly-card mt-6 p-6">
+      <h2 class="mb-3 text-xl font-semibold">Miejsce treningu</h2>
+      @if (training()!.locationAddress) {
+        <p class="mb-4 whitespace-pre-wrap">{{ training()!.locationAddress }}</p>
+      }
+      @if (training()!.latitude != null && training()!.longitude != null) {
+        <app-location-map [latitude]="training()!.latitude!" [longitude]="training()!.longitude!" />
+        <a
+          class="mt-3 inline-block font-medium text-emerald-800 underline"
+          [href]="
+            'https://www.openstreetmap.org/?mlat=' +
+            training()!.latitude +
+            '&mlon=' +
+            training()!.longitude +
+            '#map=16/' +
+            training()!.latitude +
+            '/' +
+            training()!.longitude
+          "
+          target="_blank"
+          rel="noopener noreferrer"
+          >Otwórz w OpenStreetMap ↗</a
+        >
+      }
+    </section>
+  }
 
   @if (isEditModalOpen()) {
     <app-modal title="Edytuj trening" (closed)="closeEditModal()">
@@ -170,6 +199,45 @@
     </app-modal>
   }
 
+  @if (canManage()) {
+    <div class="mt-6">
+      <app-message-form
+        audience="trainings"
+        [id]="training()!.id"
+        label="Wiadomość do uczestników tego treningu"
+        (sent)="loadMessages()"
+      />
+    </div>
+  }
+  @if (messagesVisible()) {
+    <section class="mt-8 rounded-xl border border-stone-200 p-5">
+      <h2 class="text-xl font-semibold">Wiadomości od szkoły</h2>
+      @if (messages().length === 0) {
+        <p class="mt-3 text-stone-600">Nie ma jeszcze wiadomości.</p>
+      }
+      @for (message of messages(); track message.id) {
+        <article class="mt-4 border-t border-stone-200 pt-4">
+          <time class="text-sm text-stone-500">{{
+            message.createdAt | date: 'dd.MM.yyyy HH:mm'
+          }}</time>
+          <p class="mt-1 whitespace-pre-wrap break-words">{{ message.message }}</p>
+        </article>
+      }
+      @if (moreMessages()) {
+        <button
+          type="button"
+          class="mt-4 font-medium text-emerald-800"
+          [disabled]="loadingMessages()"
+          (click)="loadMessages(true)"
+        >
+          Pokaż starsze wiadomości
+        </button>
+      }
+    </section>
+  }
+  @if (messagesError()) {
+    <p role="alert" class="mt-4 text-red-700">Nie udało się pobrać wiadomości treningu.</p>
+  }
   <section class="training-bookings mt-8">
     <div class="mb-4 flex items-end justify-between gap-3">
       <div>
@@ -189,7 +257,6 @@
               <div class="min-w-0">
                 <p class="font-medium">{{ booking.ownerName }} & {{ booking.dogName }}</p>
                 <p class="text-sm text-gray-600">{{ booking.email }}</p>
-                <p class="text-sm text-gray-600">Wiek psa: {{ booking.dogAge }}</p>
 
                 @if (booking.notes) {
                   <p class="mt-2 text-sm">{{ booking.notes }}</p>

@@ -9,6 +9,5 @@ public record BookingResponse(
         String ownerName,
         String email,
         String dogName,
-        int dogAge,
         String notes,
         LocalDateTime createdAt) {}

@@ -10,12 +10,18 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { ProfileEditor } from '../../shared/components/profile-editor/profile-editor';
+import { ProfileTextPipe } from '../../shared/components/profile-editor/profile-text.pipe';
 import { FormsModule } from '@angular/forms';
 import { School, SchoolNews, schoolImageUrl } from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
+import { MessageForm } from '../../features/notifications/message-form/message-form';
 import { AuthService } from '../../features/auth/auth.service';
 import { Training } from '../../features/trainings/training.model';
 import { TrainingService } from '../../features/trainings/training.service';
+import { TrainingCard } from '../../features/trainings/components/training-card/training-card';
+import { FavoritesService } from '../../shared/favorites.service';
 import { GalleryImage, ImageGallery } from '../../shared/components/image-gallery/image-gallery';
 import { Modal } from '../../shared/components/modal/modal';
 import {
@@ -24,20 +30,46 @@ import {
 } from '../../features/trainings/components/training-form/training-form';
 @Component({
   selector: 'app-school-details',
-  imports: [DatePipe, FormsModule, RouterLink, ImageGallery, Modal, TrainingForm],
+  imports: [
+    DatePipe,
+    FormsModule,
+    RouterLink,
+    ImageGallery,
+    Modal,
+    TrainingForm,
+    MessageForm,
+    TrainingCard,
+    ProfileEditor,
+    ProfileTextPipe,
+  ],
   templateUrl: './school-details.html',
   styleUrl: './school-details.css',
 })
 export class SchoolDetails implements OnInit {
+  protected readonly favorites = inject(FavoritesService);
+  private readonly http = inject(HttpClient);
+  readonly subscribed = signal(false);
+  readonly subscriptionLoading = signal(false);
+  readonly subscriptionError = signal('');
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(SchoolService);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
   private readonly trainingsService = inject(TrainingService);
   readonly school = signal<School | null>(null);
   readonly news = signal<SchoolNews[]>([]);
   readonly canManage = signal(false);
+  readonly managementResolved = signal(false);
+  readonly historyImageLoading = signal(false);
+  readonly historyImageError = signal('');
+  readonly sentMessages = signal<
+    { id: number; message: string; link: string; createdAt: string }[]
+  >([]);
+  readonly sentMessagesError = signal('');
+  readonly sentMessagesPage = signal(0);
+  readonly hasMoreSentMessages = signal(false);
+  readonly loadingSentMessages = signal(false);
   readonly trainings = signal<Training[]>([]);
-  readonly activeTab = signal<'about' | 'trainings' | 'news'>('about');
+  readonly activeTab = signal<'about' | 'trainings' | 'news' | 'notifications'>('about');
   protected readonly imageUrl = schoolImageUrl;
   readonly galleryImages = computed<GalleryImage[]>(
     () =>
@@ -52,6 +84,19 @@ export class SchoolDetails implements OnInit {
   editingArticle: SchoolNews | null = null;
   error = '';
   showArticleDialog = false;
+  showSchoolEdit = false;
+  savingSchool = false;
+  schoolEditError = '';
+  schoolForm = {
+    name: '',
+    address: '',
+    krs: '',
+    description: '',
+    activities: '',
+    history: '',
+    pricing: '',
+  };
+
   readonly isAddTrainingOpen = signal(false);
   readonly addTrainingError = signal<string | null>(null);
   @ViewChild('editor') private editor?: ElementRef<HTMLElement>;
@@ -61,15 +106,24 @@ export class SchoolDetails implements OnInit {
       const school = this.school();
       if (!user || !school) {
         this.canManage.set(false);
+        this.managementResolved.set(true);
         return;
       }
+      this.managementResolved.set(false);
       this.service.mine$().subscribe({
         next: (mine) => {
           const manages = mine.some((item) => item.id === school.id);
           this.canManage.set(manages);
-          if (manages) this.loadNews(true);
+          this.managementResolved.set(true);
+          if (manages) {
+            this.loadNews(true);
+            this.loadSentMessages();
+          }
         },
-        error: () => this.canManage.set(false),
+        error: () => {
+          this.canManage.set(false);
+          this.managementResolved.set(true);
+        },
       });
     });
   }
@@ -80,6 +134,11 @@ export class SchoolDetails implements OnInit {
         this.school.set(s);
         this.loadNews();
         this.loadTrainings(s.id);
+        if (this.auth.currentUser())
+          this.http.get<boolean>(`/api/my/school-subscriptions/${s.id}`).subscribe({
+            next: (value) => this.subscribed.set(value),
+            error: () => this.subscriptionError.set('Nie udało się pobrać subskrypcji.'),
+          });
       },
     });
   }
@@ -98,7 +157,148 @@ export class SchoolDetails implements OnInit {
       error: () => this.trainings.set([]),
     });
   }
-  setTab(tab: 'about' | 'trainings' | 'news') {
+  loadSentMessages(append = false): void {
+    const school = this.school();
+    if (!school || this.loadingSentMessages()) return;
+    const page = append ? this.sentMessagesPage() + 1 : 0;
+    this.loadingSentMessages.set(true);
+    this.http
+      .get<
+        { id: number; message: string; link: string; createdAt: string }[]
+      >(`/api/schools/${school.id}/messages`, { params: { page } })
+      .subscribe({
+        next: (messages) => {
+          this.sentMessages.set(append ? [...this.sentMessages(), ...messages] : messages);
+          this.sentMessagesPage.set(page);
+          this.hasMoreSentMessages.set(messages.length === 30);
+          this.loadingSentMessages.set(false);
+          this.sentMessagesError.set('');
+        },
+        error: () => {
+          this.loadingSentMessages.set(false);
+          this.sentMessagesError.set('Nie udało się pobrać historii powiadomień.');
+        },
+      });
+  }
+
+  uploadHistoryImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const school = this.school();
+    if (!file || !school || this.historyImageLoading()) return;
+    this.historyImageLoading.set(true);
+    this.historyImageError.set('');
+    this.service.uploadImage$(school.id, file).subscribe({
+      next: (result) => {
+        const imageId = (result as { id: number }).id;
+        this.http.put<School>(`/api/schools/${school.id}/history-image/${imageId}`, {}).subscribe({
+          next: (updated) => {
+            this.school.set(updated);
+            this.historyImageLoading.set(false);
+            input.value = '';
+          },
+          error: () => {
+            this.historyImageLoading.set(false);
+            this.historyImageError.set(
+              'Zdjęcie dodano do galerii, ale nie udało się przypisać go do historii.',
+            );
+            input.value = '';
+          },
+        });
+      },
+      error: () => {
+        this.historyImageLoading.set(false);
+        this.historyImageError.set(
+          'Nie udało się dodać zdjęcia. Wybierz JPG lub PNG zgodny z wymaganiami.',
+        );
+        input.value = '';
+      },
+    });
+  }
+
+  removeHistoryImage(): void {
+    const school = this.school();
+    if (!school || this.historyImageLoading()) return;
+    this.historyImageLoading.set(true);
+    this.http.delete<School>(`/api/schools/${school.id}/history-image`).subscribe({
+      next: (updated) => {
+        this.school.set(updated);
+        this.historyImageLoading.set(false);
+        this.historyImageError.set('');
+      },
+      error: () => {
+        this.historyImageLoading.set(false);
+        this.historyImageError.set('Nie udało się usunąć zdjęcia z historii.');
+      },
+    });
+  }
+
+  openSchoolEdit(): void {
+    const school = this.school();
+    if (!school || !this.canManage()) return;
+    this.schoolForm = {
+      name: school.name,
+      address: school.address,
+      krs: school.krs ?? '',
+      description: [school.description, school.activities]
+        .filter((value) => value.trim())
+        .join('\n\n'),
+      activities: '',
+      history: school.history ?? '',
+      pricing: school.pricing,
+    };
+    this.schoolEditError = '';
+    this.showSchoolEdit = true;
+  }
+
+  saveSchool(): void {
+    const school = this.school();
+    if (!school || this.savingSchool) return;
+    this.savingSchool = true;
+    this.schoolEditError = '';
+    const form = this.schoolForm;
+    this.service
+      .update$(school.id, {
+        name: form.name.trim(),
+        address: form.address.trim(),
+        krs: form.krs.trim() || null,
+        description: form.description.trim(),
+        activities: form.activities.trim(),
+        history: form.history.trim(),
+        pricing: form.pricing,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.school.set(updated);
+          this.savingSchool = false;
+          this.showSchoolEdit = false;
+        },
+        error: () => {
+          this.savingSchool = false;
+          this.schoolEditError = 'Nie udało się zapisać profilu. Sprawdź dane i spróbuj ponownie.';
+        },
+      });
+  }
+
+  toggleSubscription(): void {
+    const school = this.school();
+    if (!school || this.subscriptionLoading()) return;
+    this.subscriptionLoading.set(true);
+    this.subscriptionError.set('');
+    const subscribed = this.subscribed();
+    const url = `/api/my/school-subscriptions/${school.id}`;
+    (subscribed ? this.http.delete<void>(url) : this.http.put<void>(url, {})).subscribe({
+      next: () => {
+        this.subscribed.set(!subscribed);
+        this.subscriptionLoading.set(false);
+      },
+      error: () => {
+        this.subscriptionLoading.set(false);
+        this.subscriptionError.set('Nie udało się zmienić subskrypcji. Spróbuj ponownie.');
+      },
+    });
+  }
+  setTab(tab: 'about' | 'trainings' | 'news' | 'notifications') {
     this.activeTab.set(tab);
   }
   openAddTraining(): void {
@@ -129,7 +329,7 @@ export class SchoolDetails implements OnInit {
     });
   }
   private finishAddingTraining(training: Training): void {
-    this.trainings.update((items) => [training, ...items]);
+    this.loadTrainings(training.schoolId);
     this.closeAddTraining();
   }
   format(command: string, value?: string) {
