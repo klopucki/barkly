@@ -27,7 +27,6 @@ describe('BookingForm', () => {
       ownerName: 'A',
       email: 'invalid',
       dogName: '',
-      dogAge: 31,
       notes: '',
     });
     component.submitBooking();
@@ -42,7 +41,6 @@ describe('BookingForm', () => {
       ownerName: 'Jan Kowalski',
       email: 'jan@example.com',
       dogName: 'Burek',
-      dogAge: 4,
       notes: '',
     };
 

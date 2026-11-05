@@ -13,7 +13,7 @@ public interface TrainingFacade {
     List<TrainingResponse> findTrainings();
 
     PageResponse<TrainingResponse> searchTrainings(
-            String query, String type, int page, int size, boolean favoritesOnly);
+            String query, int page, int size, boolean favoritesOnly);
 
     TrainingResponse findTraining(Long id);
 

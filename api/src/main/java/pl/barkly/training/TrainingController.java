@@ -36,11 +36,10 @@ class TrainingController {
     @GetMapping("/api/query/trainings")
     PageResponse<TrainingResponse> search(
             @RequestParam(defaultValue = "") String query,
-            @RequestParam(defaultValue = "") String type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "false") boolean favoritesOnly) {
-        return trainingFacade.searchTrainings(query, type, page, size, favoritesOnly);
+        return trainingFacade.searchTrainings(query, page, size, favoritesOnly);
     }
 
     @GetMapping("/api/trainings/{id}")

@@ -8,7 +8,11 @@ import {
   BookingFormValue,
 } from '../../features/bookings/components/booking-form/booking-form';
 import { Booking } from '../../features/bookings/components/booking-form/booking.model';
-import { Training, trainingImageUrl } from '../../features/trainings/training.model';
+import {
+  Training,
+  trainingImageUrl,
+  trainingPriceLabel,
+} from '../../features/trainings/training.model';
 import { AuthService } from '../../features/auth/auth.service';
 import { DogService } from '../../features/dogs/dog.service';
 import { Dog } from '../../features/dogs/dog.model';
@@ -25,6 +29,7 @@ import {
 })
 export class TrainingDetails implements OnInit {
   protected readonly trainingImageUrl = trainingImageUrl;
+  protected readonly trainingPriceLabel = trainingPriceLabel;
 
   private readonly route = inject(ActivatedRoute);
   private readonly trainingService = inject(TrainingService);

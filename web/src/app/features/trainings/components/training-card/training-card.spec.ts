@@ -1,50 +1,40 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { signal } from '@angular/core';
-
-import { TrainingCard } from './training-card';
-import { AuthService } from '../../../auth/auth.service';
+import { configureCardTests, Fixtures } from './testing/card-fixtures';
+import { Assertions } from './testing/card-assertions';
 
 describe('TrainingCard', () => {
-  let component: TrainingCard;
-  let fixture: ComponentFixture<TrainingCard>;
+  beforeEach(configureCardTests);
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [TrainingCard],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: { currentUser: signal(null) } },
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(TrainingCard);
-    fixture.componentRef.setInput('training', {
-      id: 1,
-      schoolId: 1,
-      title: 'Posłuszeństwo dla początkujących',
-      trainerName: 'Jan Kowalski',
-      trainingType: { id: 1, code: 'GROUP', name: 'Grupowy' },
-      trainingLevel: null,
-      targetGroup: null,
-      homeVisit: false,
-      startAt: '2099-01-01T10:00:00',
-      capacity: 10,
-      bookedCount: 3,
-      imageKey: null,
-      pawCount: 0,
-      pawedByCurrentUser: false,
-    });
-    component = fixture.componentInstance;
+  it('creates the card', () => {
+    const fixture = Fixtures.trainingCard();
     fixture.detectChanges();
-    await fixture.whenStable();
+    Assertions.created(fixture);
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('shows all price modes without an image or description', () => {
+    const fixture = Fixtures.trainingCard();
+    fixture.detectChanges();
+    Assertions.priceToBeAgreed(fixture);
+
+    fixture.componentRef.setInput('training', {
+      ...fixture.componentInstance.training(),
+      priceMode: 'PAID',
+      price: 80.5,
+    });
+    fixture.detectChanges();
+    Assertions.paidPrice(fixture);
+
+    fixture.componentRef.setInput('training', {
+      ...fixture.componentInstance.training(),
+      priceMode: 'FREE',
+      price: null,
+    });
+    fixture.detectChanges();
+    Assertions.freePrice(fixture);
   });
 
-  it('shows the remaining capacity on the card', () => {
-    expect(fixture.nativeElement.textContent).toContain('Wolne miejsca: 7 z 10');
+  it('shows remaining capacity', () => {
+    const fixture = Fixtures.trainingCard();
+    fixture.detectChanges();
+    Assertions.remainingCapacity(fixture);
   });
 });

@@ -48,20 +48,11 @@
       </svg>
       <input
         type="search"
-        placeholder="Trening, trener lub poziom"
+        placeholder="Nazwa treningu lub prowadzący"
         aria-label="Szukaj treningu"
         #searchInput
         (input)="search(searchInput.value)"
       />
-    </label>
-    <label class="training-type-filter">
-      <span>Rodzaj zajęć</span>
-      <select [value]="typeFilter()" #type (change)="setType(type.value)">
-        <option value="">Wszystkie rodzaje</option>
-        @for (trainingType of trainingTypes(); track trainingType) {
-          <option [value]="trainingType">{{ trainingType }}</option>
-        }
-      </select>
     </label>
   </div>
   <div class="catalog-tools">
@@ -114,7 +105,7 @@
             {{
               favoritesOnly()
                 ? 'Zapisz interesujące Cię zajęcia, aby łatwo do nich wrócić.'
-                : 'Spróbuj innego tematu lub zmień rodzaj zajęć.'
+                : 'Spróbuj innej nazwy treningu lub prowadzącego.'
             }}
           </p>
         </div>

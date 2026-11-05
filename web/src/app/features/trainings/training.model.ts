@@ -1,40 +1,24 @@
-export interface DictionaryValue {
-  id: number;
-  code: string;
-  name: string;
-}
-
-export interface TrainingLevelDictionary extends DictionaryValue {
-  trainingTypeId: number | null;
-}
-
-export interface TrainingDictionaries {
-  trainingTypes: DictionaryValue[];
-  trainingLevels: TrainingLevelDictionary[];
-  targetGroups: DictionaryValue[];
-}
-
 export interface TrainingCreatePayload {
+  description?: string;
+  eventKind?: 'TRAINING';
+  priceMode?: 'PAID' | 'FREE' | 'TO_BE_AGREED';
+  price?: number | null;
   schoolId: number;
   title: string;
   trainerName: string;
-  trainingTypeId: number;
-  trainingLevelId: number | null;
-  targetGroupId: number | null;
-  homeVisit: boolean;
   startAt: string;
   capacity: number | null;
 }
 
 export interface Training {
   id: number;
+  description?: string;
+  eventKind?: 'TRAINING';
+  priceMode?: 'PAID' | 'FREE' | 'TO_BE_AGREED';
+  price?: number | null;
   schoolId: number;
   title: string;
   trainerName: string;
-  trainingType: DictionaryValue;
-  trainingLevel: DictionaryValue | null;
-  targetGroup: DictionaryValue | null;
-  homeVisit: boolean;
   startAt: string;
   capacity: number | null;
   bookedCount: number;
@@ -45,4 +29,16 @@ export interface Training {
 
 export function trainingImageUrl(imageKey: string): string {
   return `/api/training-images/${encodeURIComponent(imageKey)}`;
+}
+
+export function trainingPriceLabel(training: Training): string {
+  if (training.priceMode === 'FREE') return 'Bezpłatnie';
+  if (training.priceMode === 'PAID' && training.price != null) {
+    return (
+      new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(
+        training.price,
+      ) + ' / pies'
+    );
+  }
+  return 'Cena do ustalenia';
 }

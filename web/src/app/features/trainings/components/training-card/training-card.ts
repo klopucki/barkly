@@ -1,5 +1,5 @@
 import { Component, inject, input, output } from '@angular/core';
-import { Training, trainingImageUrl } from '../../training.model';
+import { Training, trainingImageUrl, trainingPriceLabel } from '../../training.model';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../auth/auth.service';
@@ -13,6 +13,7 @@ import { AuthService } from '../../../auth/auth.service';
 export class TrainingCard {
   protected readonly auth = inject(AuthService);
   protected readonly trainingImageUrl = trainingImageUrl;
+  protected readonly trainingPriceLabel = trainingPriceLabel;
 
   training = input.required<Training>();
   favorite = input(false);

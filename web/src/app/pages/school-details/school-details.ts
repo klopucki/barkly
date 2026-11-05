@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { School, SchoolNews, schoolImageUrl } from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
 import { AuthService } from '../../features/auth/auth.service';
-import { Training } from '../../features/trainings/training.model';
+import { Training, trainingPriceLabel } from '../../features/trainings/training.model';
 import { TrainingService } from '../../features/trainings/training.service';
 import { GalleryImage, ImageGallery } from '../../shared/components/image-gallery/image-gallery';
 import { Modal } from '../../shared/components/modal/modal';
@@ -29,6 +29,7 @@ import {
   styleUrl: './school-details.css',
 })
 export class SchoolDetails implements OnInit {
+  protected readonly trainingPriceLabel = trainingPriceLabel;
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(SchoolService);
   private readonly auth = inject(AuthService);
@@ -129,7 +130,7 @@ export class SchoolDetails implements OnInit {
     });
   }
   private finishAddingTraining(training: Training): void {
-    this.trainings.update((items) => [training, ...items]);
+    this.loadTrainings(training.schoolId);
     this.closeAddTraining();
   }
   format(command: string, value?: string) {
