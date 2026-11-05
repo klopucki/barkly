@@ -6,7 +6,7 @@
 
   <div class="training-content">
     <div class="training-heading">
-      <p class="training-type">{{ training().trainingType.name }}</p>
+      <p class="training-type">Trening</p>
       @if (isPast()) {
         <span class="training-status"><span aria-hidden="true">✓</span> Zakończony</span>
       }
@@ -15,17 +15,6 @@
       <a [routerLink]="['/trainings', training().id]">{{ training().title }}</a>
     </h2>
     <p class="training-trainer">Prowadzący: {{ training().trainerName }}</p>
-    <ul class="training-tags" aria-label="Informacje o zajęciach">
-      @if (training().trainingLevel) {
-        <li>{{ training().trainingLevel!.name }}</li>
-      }
-      @if (training().targetGroup) {
-        <li>{{ training().targetGroup!.name }}</li>
-      }
-      @if (training().homeVisit) {
-        <li>Konsultacja domowa</li>
-      }
-    </ul>
     <div class="training-actions">
       <a
         [routerLink]="['/trainings', training().id]"
@@ -45,6 +34,7 @@
   </div>
 
   <div class="training-summary">
+    <p class="text-lg font-semibold text-emerald-900">{{ trainingPriceLabel(training()) }}</p>
     @if (isPast()) {
       <p class="training-availability">Zapisy zakończone</p>
     } @else {

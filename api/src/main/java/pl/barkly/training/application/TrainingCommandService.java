@@ -9,17 +9,10 @@ import org.springframework.web.server.ResponseStatusException;
 import pl.barkly.school.SchoolService;
 import pl.barkly.training.api.TrainingCreateRequest;
 import pl.barkly.training.api.TrainingResponse;
-import pl.barkly.training.exceptions.InvalidTrainingConfigurationException;
 import pl.barkly.training.image.TrainingImageStorage;
 import pl.barkly.training.persistence.BookingRepository;
-import pl.barkly.training.persistence.TargetGroupEntity;
-import pl.barkly.training.persistence.TargetGroupRepository;
 import pl.barkly.training.persistence.TrainingEntity;
-import pl.barkly.training.persistence.TrainingLevelEntity;
-import pl.barkly.training.persistence.TrainingLevelRepository;
 import pl.barkly.training.persistence.TrainingRepository;
-import pl.barkly.training.persistence.TrainingTypeEntity;
-import pl.barkly.training.persistence.TrainingTypeRepository;
 
 import java.time.LocalDateTime;
 
@@ -29,9 +22,6 @@ class TrainingCommandService {
     private final TrainingRepository trainingRepository;
     private final BookingRepository bookingRepository;
     private final TrainingImageStorage imageStorage;
-    private final TrainingTypeRepository typeRepository;
-    private final TrainingLevelRepository levelRepository;
-    private final TargetGroupRepository targetGroupRepository;
     private final SchoolService schoolService;
     private final pl.barkly.notification.NotificationService notifications;
 
@@ -39,17 +29,11 @@ class TrainingCommandService {
             TrainingRepository trainingRepository,
             BookingRepository bookingRepository,
             TrainingImageStorage imageStorage,
-            TrainingTypeRepository typeRepository,
-            TrainingLevelRepository levelRepository,
-            TargetGroupRepository targetGroupRepository,
             SchoolService schoolService,
             pl.barkly.notification.NotificationService notifications) {
         this.trainingRepository = trainingRepository;
         this.bookingRepository = bookingRepository;
         this.imageStorage = imageStorage;
-        this.typeRepository = typeRepository;
-        this.levelRepository = levelRepository;
-        this.targetGroupRepository = targetGroupRepository;
         this.schoolService = schoolService;
         this.notifications = notifications;
     }
@@ -58,43 +42,8 @@ class TrainingCommandService {
     TrainingResponse create(TrainingCreateRequest request) {
         schoolService.requireManagementAccess(
                 schoolService.findEntityWithOwner(request.schoolId()));
-        TrainingConfiguration configuration = resolveConfiguration(request);
-        TrainingEntity saved =
-                trainingRepository.save(
-                        new TrainingEntity(
-                                request,
-                                configuration.type(),
-                                configuration.level(),
-                                configuration.targetGroup()));
+        TrainingEntity saved = trainingRepository.save(new TrainingEntity(request));
         return saved.toResponse(0);
-    }
-
-    private TrainingConfiguration resolveConfiguration(TrainingCreateRequest request) {
-        TrainingTypeEntity type =
-                typeRepository
-                        .findById(request.trainingTypeId())
-                        .filter(TrainingTypeEntity::isActive)
-                        .orElseThrow(() -> invalid("Selected training type is unavailable"));
-
-        TrainingLevelEntity level =
-                request.trainingLevelId() == null
-                        ? null
-                        : levelRepository
-                                .findById(request.trainingLevelId())
-                                .filter(TrainingLevelEntity::isActive)
-                                .orElseThrow(
-                                        () -> invalid("Selected training level is unavailable"));
-
-        if (level != null
-                && level.getTrainingType() != null
-                && !level.getTrainingType().getId().equals(type.getId())) {
-            throw invalid("Selected level does not belong to this training type");
-        }
-        if (request.homeVisit() && !"CONSULTATION".equals(type.getCode())) {
-            throw invalid("Home visit is available only for individual consultations");
-        }
-        TargetGroupEntity targetGroup = resolveTargetGroup(request.targetGroupId());
-        return new TrainingConfiguration(type, level, targetGroup);
     }
 
     @Transactional
@@ -109,32 +58,13 @@ class TrainingCommandService {
             schoolService.requireManagementAccess(
                     schoolService.findEntityWithOwner(request.schoolId()));
         }
-        TrainingConfiguration configuration = resolveConfiguration(request);
         boolean changed = training.notificationDetailsChanged(request);
         boolean dateChanged = !training.getStartAt().equals(request.startAt());
-        training.update(
-                request, configuration.type(), configuration.level(), configuration.targetGroup());
+        training.update(request);
         if (changed) notifications.trainingChanged(training, false, dateChanged);
         int bookedCount = bookingRepository.countByTrainingIdAndDeletedAtIsNull(id);
         return training.toResponse(bookedCount);
     }
-
-    private TargetGroupEntity resolveTargetGroup(Long targetGroupId) {
-        if (targetGroupId == null) {
-            return null;
-        }
-        return targetGroupRepository
-                .findById(targetGroupId)
-                .filter(TargetGroupEntity::isActive)
-                .orElseThrow(() -> invalid("Selected target group is unavailable"));
-    }
-
-    private InvalidTrainingConfigurationException invalid(String message) {
-        return new InvalidTrainingConfigurationException(message);
-    }
-
-    private record TrainingConfiguration(
-            TrainingTypeEntity type, TrainingLevelEntity level, TargetGroupEntity targetGroup) {}
 
     @Transactional
     public void deleteTraining(Long id) {

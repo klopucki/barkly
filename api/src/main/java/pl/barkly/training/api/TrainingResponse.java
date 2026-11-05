@@ -1,5 +1,6 @@
 package pl.barkly.training.api;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record TrainingResponse(
@@ -7,13 +8,13 @@ public record TrainingResponse(
         Long schoolId,
         String title,
         String trainerName,
-        DictionaryValueResponse trainingType,
-        DictionaryValueResponse trainingLevel,
-        DictionaryValueResponse targetGroup,
-        boolean homeVisit,
         LocalDateTime startAt,
         Integer capacity,
         int bookedCount,
         String imageKey,
         long pawCount,
-        boolean pawedByCurrentUser) {}
+        boolean pawedByCurrentUser,
+        String description,
+        String eventKind,
+        String priceMode,
+        BigDecimal price) {}

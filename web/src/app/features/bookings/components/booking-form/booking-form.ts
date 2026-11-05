@@ -5,7 +5,6 @@ export interface BookingFormValue {
   ownerName: string;
   email: string;
   dogName: string;
-  dogAge: number;
   notes: string;
 }
 
@@ -40,7 +39,6 @@ export class BookingForm {
         Validators.maxLength(200),
       ],
     ],
-    dogAge: [1, [Validators.required, Validators.min(0), Validators.max(30)]],
     notes: ['', [Validators.maxLength(1000)]],
   });
 
@@ -56,7 +54,6 @@ export class BookingForm {
       ownerName: '',
       email: '',
       dogName: '',
-      dogAge: 1,
       notes: '',
     });
   }

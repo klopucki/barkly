@@ -51,8 +51,8 @@ class TrainingFacadeImpl implements TrainingFacade {
 
     @Override
     public PageResponse<TrainingResponse> searchTrainings(
-            String query, String type, int page, int size, boolean favoritesOnly) {
-        return trainingQueryService.search(query, type, page, size, favoritesOnly);
+            String query, int page, int size, boolean favoritesOnly) {
+        return trainingQueryService.search(query, page, size, favoritesOnly);
     }
 
     @Override

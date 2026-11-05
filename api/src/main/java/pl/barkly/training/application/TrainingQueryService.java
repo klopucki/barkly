@@ -41,8 +41,7 @@ class TrainingQueryService {
         return trainingRepository.findAllActiveOrdered().stream().map(this::toResponse).toList();
     }
 
-    PageResponse<TrainingResponse> search(
-            String query, String type, int page, int size, boolean favoritesOnly) {
+    PageResponse<TrainingResponse> search(String query, int page, int size, boolean favoritesOnly) {
         var pageable = PageRequest.of(Math.max(0, page), Math.clamp(size, 1, 50));
         var ids = favoritesOnly ? favorites.ids(FavoriteType.TRAINING) : List.<Long>of();
         if (favoritesOnly && ids.isEmpty())
@@ -50,9 +49,8 @@ class TrainingQueryService {
                     List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0, 0);
         var result =
                 favoritesOnly
-                        ? trainingRepository.searchFavorites(
-                                normalize(query), normalize(type), ids, pageable)
-                        : trainingRepository.search(normalize(query), normalize(type), pageable);
+                        ? trainingRepository.searchFavorites(normalize(query), ids, pageable)
+                        : trainingRepository.search(normalize(query), pageable);
         return PageResponse.from(result, this::toResponse);
     }
 

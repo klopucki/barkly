@@ -22,7 +22,6 @@ export class Trainings implements OnInit {
   protected readonly favorites = inject(FavoritesService);
 
   searchText = signal('');
-  typeFilter = signal('');
   favoritesOnly = signal(false);
   trainingsFromApi = signal<Training[]>([]);
   page = signal(0);
@@ -36,25 +35,14 @@ export class Trainings implements OnInit {
 
   trainings = computed(() => {
     const search = this.searchText().trim().toLowerCase();
-    const type = this.typeFilter();
-    const trainings = this.trainingsFromApi();
-
-    return trainings.filter(
+    return this.trainingsFromApi().filter(
       (training) =>
         (!search ||
           training.title.toLowerCase().includes(search) ||
-          training.trainerName.toLowerCase().includes(search) ||
-          training.trainingType.name.toLowerCase().includes(search) ||
-          training.trainingLevel?.name.toLowerCase().includes(search) ||
-          training.targetGroup?.name.toLowerCase().includes(search)) &&
-        (!type || training.trainingType.name === type) &&
+          training.trainerName.toLowerCase().includes(search)) &&
         (!this.favoritesOnly() || this.favorites.has('training', training.id)),
     );
   });
-
-  trainingTypes = computed(() => [
-    ...new Set(this.trainingsFromApi().map((training) => training.trainingType.name)),
-  ]);
 
   constructor() {
     effect(() => {
@@ -76,11 +64,6 @@ export class Trainings implements OnInit {
     this.searchTimer = setTimeout(() => this.loadPage(0), 250);
   }
 
-  setType(type: string): void {
-    this.typeFilter.set(type);
-    this.loadPage(0);
-  }
-
   loadMore(): void {
     if (this.isLoading()) return;
     this.loadPage(this.page() + 1, true);
@@ -96,22 +79,20 @@ export class Trainings implements OnInit {
     this.isLoading.set(true);
     this.loadError.set('');
 
-    this.trainingService
-      .search$(this.searchText(), this.typeFilter(), page, 20, this.favoritesOnly())
-      .subscribe({
-        next: (result) => {
-          this.trainingsFromApi.set(
-            append ? [...this.trainingsFromApi(), ...result.items] : result.items,
-          );
-          this.page.set(result.page);
-          this.totalPages.set(result.totalPages);
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.isLoading.set(false);
-          this.loadError.set('Nie udało się pobrać treningów.');
-        },
-      });
+    this.trainingService.search$(this.searchText(), page, 20, this.favoritesOnly()).subscribe({
+      next: (result) => {
+        this.trainingsFromApi.set(
+          append ? [...this.trainingsFromApi(), ...result.items] : result.items,
+        );
+        this.page.set(result.page);
+        this.totalPages.set(result.totalPages);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.loadError.set('Nie udało się pobrać treningów.');
+      },
+    });
   }
 
   openAddTraining(): void {
@@ -143,15 +124,15 @@ export class Trainings implements OnInit {
   private updateTraining(id: number, submission: TrainingFormSubmission): void {
     this.addTrainingError.set(null);
     this.trainingService.updateTraining$(id, submission.training).subscribe({
-      next: (updated) => {
+      next: () => {
         if (!submission.image) {
-          this.finishUpdatingTraining(updated);
+          this.finishUpdatingTraining();
           return;
         }
         this.trainingService.uploadTrainingImage$(id, submission.image).subscribe({
-          next: (withImage) => this.finishUpdatingTraining(withImage),
+          next: () => this.finishUpdatingTraining(),
           error: (error) => {
-            this.finishUpdatingTraining(updated);
+            this.finishUpdatingTraining();
             const message = error.error?.image ?? error.error?.message;
             this.addTrainingError.set(
               message
@@ -167,11 +148,9 @@ export class Trainings implements OnInit {
     });
   }
 
-  private finishUpdatingTraining(updated: Training): void {
-    this.trainingsFromApi.update((trainings) =>
-      trainings.map((training) => (training.id === updated.id ? updated : training)),
-    );
+  private finishUpdatingTraining(): void {
     this.closeAddTraining();
+    this.loadTrainings();
   }
 
   addTraining(submission: TrainingFormSubmission): void {
@@ -179,15 +158,15 @@ export class Trainings implements OnInit {
     this.trainingService.addTraining$(submission.training).subscribe({
       next: (savedTraining) => {
         if (!submission.image) {
-          this.finishAddingTraining(savedTraining);
+          this.finishAddingTraining();
           return;
         }
 
         this.trainingService.uploadTrainingImage$(savedTraining.id, submission.image).subscribe({
-          next: (trainingWithImage) => this.finishAddingTraining(trainingWithImage),
+          next: () => this.finishAddingTraining(),
           error: (error) => {
             const message = error.error?.image ?? error.error?.message;
-            this.finishAddingTraining(savedTraining);
+            this.finishAddingTraining();
             this.addTrainingError.set(
               message
                 ? `Training was saved without an image: ${message}`
@@ -203,9 +182,9 @@ export class Trainings implements OnInit {
     });
   }
 
-  private finishAddingTraining(savedTraining: Training): void {
-    this.trainingsFromApi.update((trainings) => [...trainings, savedTraining]);
+  private finishAddingTraining(): void {
     this.closeAddTraining();
+    this.loadTrainings();
   }
 
   deleteTraining(id: number): void {

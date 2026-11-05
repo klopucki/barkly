@@ -15,8 +15,6 @@ import pl.barkly.training.persistence.TrainingEntity;
 import pl.barkly.training.persistence.TrainingRepository;
 import pl.barkly.user.UserService;
 
-import java.time.Period;
-
 @Service
 class BookingCommandService {
 
@@ -78,21 +76,9 @@ class BookingCommandService {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "This dog is already registered for this training");
         training.validateBooking(bookingRepository.countByTrainingIdAndDeletedAtIsNull(trainingId));
-        int age =
-                dog.getBirthDate() == null
-                        ? 0
-                        : Math.max(
-                                0,
-                                Period.between(dog.getBirthDate(), java.time.LocalDate.now())
-                                        .getYears());
         var booking =
                 new BookingEntity(
-                        trainingId,
-                        dogId,
-                        user.getDisplayName(),
-                        user.getEmail(),
-                        dog.getName(),
-                        age);
+                        trainingId, dogId, user.getDisplayName(), user.getEmail(), dog.getName());
         booking.setUserId(user.getId());
         var saved = bookingRepository.save(booking);
         notifications.bookingConfirmed(user.getId(), saved, training);

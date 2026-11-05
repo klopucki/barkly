@@ -1,138 +1,162 @@
-<form
-  class="mt-6 space-y-4 rounded-xl border border-gray-200 p-4"
-  [formGroup]="form"
-  (ngSubmit)="submit()"
->
-  <h2 class="text-xl font-semibold">{{ editing ? 'Edit training' : 'Add training' }}</h2>
+<form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
+  <fieldset>
+    <legend class="mb-2 text-sm font-medium">Rodzaj wydarzenia</legend>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        aria-pressed="true"
+        class="rounded-full border border-emerald-700 bg-emerald-50 px-4 py-2 text-emerald-900"
+      >
+        Trening
+      </button>
+      <button
+        type="button"
+        disabled
+        class="cursor-not-allowed rounded-full border border-stone-200 bg-stone-50 px-4 py-2 text-stone-400"
+      >
+        Egzamin · wkrótce
+      </button>
+    </div>
+  </fieldset>
 
-  @if (schoolId() === null) {
+  @if (schoolId() === null && schools.length > 1) {
     <label class="block"
-      ><span class="mb-1 block text-sm font-medium">School</span
-      ><select class="w-full rounded border p-2" formControlName="schoolId">
-        <option [ngValue]="0">Select your school</option>
+      ><span class="mb-1 block text-sm font-medium">Szkoła</span>
+      <select class="w-full rounded-lg border p-3" formControlName="schoolId">
+        <option [ngValue]="0">Wybierz szkołę</option>
         @for (school of schools; track school.id) {
           <option [ngValue]="school.id">{{ school.name }}</option>
         }
-      </select></label
-    >
-  } @else {
-    <p class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-      Trening zostanie dodany do tej szkoły.
+      </select>
+    </label>
+  }
+  @if (hasError('schoolId', 'min')) {
+    <p role="alert" class="text-sm text-red-700">Wybierz szkołę, którą zarządzasz.</p>
+  }
+
+  <label class="block"
+    ><span class="mb-1 block text-sm font-medium">Nazwa treningu</span>
+    <input
+      class="w-full rounded-lg border p-3"
+      placeholder="Np. Sobotni trening z Anią"
+      formControlName="title"
+      maxlength="200"
+    />
+  </label>
+  @if (form.controls.title.touched && form.controls.title.invalid) {
+    <p role="alert" class="text-sm text-red-700">Podaj nazwę treningu (3–200 znaków).</p>
+  }
+
+  <label class="block"
+    ><span class="mb-1 block text-sm font-medium">Termin</span>
+    <input class="w-full rounded-lg border p-3" type="datetime-local" formControlName="startAt" />
+  </label>
+  @if (form.controls.startAt.touched && form.controls.startAt.invalid) {
+    <p role="alert" class="text-sm text-red-700">Wybierz przyszłą datę i godzinę treningu.</p>
+  }
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <label class="block"
+      ><span class="mb-1 block text-sm font-medium">Cena za udział jednego psa</span>
+      <select
+        class="w-full rounded-lg border p-3"
+        formControlName="priceMode"
+        (change)="priceModeChanged()"
+      >
+        <option value="TO_BE_AGREED">Do ustalenia</option>
+        <option value="PAID">Podaj kwotę</option>
+        <option value="FREE">Bezpłatnie</option>
+      </select>
+    </label>
+    @if (form.controls.priceMode.value === 'PAID') {
+      <label class="block"
+        ><span class="mb-1 block text-sm font-medium">Kwota (zł)</span>
+        <input
+          class="w-full rounded-lg border p-3"
+          type="number"
+          min="0.01"
+          max="99999999.99"
+          step="0.01"
+          placeholder="80"
+          formControlName="price"
+        />
+      </label>
+    }
+  </div>
+  @if (form.controls.price.touched && form.controls.price.invalid) {
+    <p role="alert" class="text-sm text-red-700">
+      Podaj dodatnią kwotę, z maksymalnie dwoma miejscami po przecinku.
     </p>
   }
 
-  <input
-    class="w-full rounded border p-2"
-    placeholder="Title"
-    formControlName="title"
-    maxlength="200"
-  />
-  @if (hasError('title', 'required')) {
-    <p class="text-sm text-red-600">Title is required.</p>
-  }
-  @if (hasError('title', 'pattern')) {
-    <p class="text-sm text-red-600">Title cannot contain only spaces.</p>
-  }
-  @if (hasError('title', 'minlength')) {
-    <p class="text-sm text-red-600">Title must have at least 3 characters.</p>
-  }
-
-  <input
-    class="w-full rounded border p-2"
-    placeholder="Trainer name"
-    formControlName="trainerName"
-    maxlength="200"
-  />
-  @if (hasError('trainerName', 'required')) {
-    <p class="text-sm text-red-600">Trainer name is required.</p>
-  }
-  @if (hasError('trainerName', 'pattern')) {
-    <p class="text-sm text-red-600">Trainer name cannot contain only spaces.</p>
-  }
-  @if (hasError('trainerName', 'minlength')) {
-    <p class="text-sm text-red-600">Trainer name must have at least 2 characters.</p>
-  }
-
-  <label class="block">
-    <span class="mb-1 block text-sm font-medium">Training type</span>
-    <select
-      class="w-full rounded border p-2"
-      formControlName="trainingTypeId"
-      (change)="typeChanged()"
-    >
-      @for (type of dictionaries.trainingTypes; track type.id) {
-        <option [ngValue]="type.id">{{ type.name }}</option>
-      }
-    </select>
-  </label>
-
-  <label class="block">
-    <span class="mb-1 block text-sm font-medium">Level (optional)</span>
-    <select class="w-full rounded border p-2" formControlName="trainingLevelId">
-      <option [ngValue]="null">No level</option>
-      @for (level of availableLevels; track level.id) {
-        <option [ngValue]="level.id">{{ level.name }}</option>
-      }
-    </select>
-  </label>
-
-  <label class="block">
-    <span class="mb-1 block text-sm font-medium">Target group (optional)</span>
-    <select class="w-full rounded border p-2" formControlName="targetGroupId">
-      <option [ngValue]="null">No target group</option>
-      @for (group of dictionaries.targetGroups; track group.id) {
-        <option [ngValue]="group.id">{{ group.name }}</option>
-      }
-    </select>
-  </label>
-
-  @if (consultationSelected) {
-    <label class="flex items-center gap-2">
-      <input type="checkbox" formControlName="homeVisit" />
-      Home consultation
+  <div class="grid gap-3 sm:grid-cols-2">
+    <label class="block"
+      ><span class="mb-1 block text-sm font-medium">Prowadzący</span>
+      <input class="w-full rounded-lg border p-3" formControlName="trainerName" maxlength="200" />
     </label>
+    <label class="block"
+      ><span class="mb-1 block text-sm font-medium">Limit miejsc (opcjonalny)</span>
+      <input
+        class="w-full rounded-lg border p-3"
+        type="number"
+        min="1"
+        step="1"
+        placeholder="Bez limitu"
+        formControlName="capacity"
+      />
+    </label>
+  </div>
+  @if (form.controls.trainerName.touched && form.controls.trainerName.invalid) {
+    <p role="alert" class="text-sm text-red-700">Podaj prowadzącego (2–200 znaków).</p>
+  }
+  @if (form.controls.capacity.touched && form.controls.capacity.invalid) {
+    <p role="alert" class="text-sm text-red-700">
+      Limit miejsc musi być dodatnią liczbą całkowitą.
+    </p>
   }
 
-  <input class="w-full rounded border p-2" type="datetime-local" formControlName="startAt" />
-  @if (hasError('startAt', 'required')) {
-    <p class="text-sm text-red-600">Start date is required.</p>
+  <details class="rounded-xl border border-stone-200 p-4" [open]="!!training()?.description">
+    <summary class="cursor-pointer font-medium">
+      Dodaj opis i zdjęcie <span class="text-sm font-normal text-stone-500">(opcjonalnie)</span>
+    </summary>
+    <label class="mt-4 block"
+      ><span class="mb-1 block text-sm font-medium">Opis</span>
+      <textarea
+        class="w-full rounded-lg border p-3"
+        rows="4"
+        maxlength="2000"
+        formControlName="description"
+        placeholder="Możesz opisać plan zajęć, dla kogo są lub co zabrać."
+      ></textarea>
+    </label>
+    <label class="mt-4 block"
+      ><span class="mb-1 block text-sm font-medium">{{
+        training()?.imageKey ? 'Zmień zdjęcie' : 'Zdjęcie'
+      }}</span>
+      <input
+        class="w-full rounded-lg border p-3"
+        type="file"
+        accept="image/jpeg,image/png"
+        (change)="selectImage($event)"
+      />
+    </label>
+    <p class="mt-2 text-sm text-stone-500">JPG lub PNG · maks. 10 MB · minimum 640 × 480 px.</p>
+    @if (imageError) {
+      <p role="alert" class="text-sm text-red-700">{{ imageError }}</p>
+    }
+  </details>
+  @if (editing && training()!.bookedCount > 0) {
+    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+      Na trening zapisano {{ training()!.bookedCount }} psów. Zwróć na to uwagę przy zmianie terminu
+      lub ceny.
+    </p>
   }
-  @if (hasError('startAt', 'futureDate')) {
-    <p class="text-sm text-red-600">Start date must be in the future.</p>
-  }
-
-  <input
-    class="w-full rounded border p-2"
-    type="number"
-    min="1"
-    placeholder="Capacity (optional)"
-    formControlName="capacity"
-  />
-  @if (hasError('capacity', 'min')) {
-    <p class="text-sm text-red-600">Capacity must be greater than zero.</p>
-  }
-
-  <label class="block">
-    <span class="mb-1 block text-sm font-medium">Training image (optional)</span>
-    <input
-      class="w-full rounded border p-2"
-      type="file"
-      accept="image/jpeg,image/png"
-      (change)="selectImage($event)"
-    />
-  </label>
-  @if (imageError) {
-    <p class="text-sm text-red-600">{{ imageError }}</p>
-  }
-  <p class="text-sm text-gray-500">
-    JPG lub PNG, maks. 10 MB i minimum 640 × 480 px. Zdjęcie zostanie automatycznie zoptymalizowane.
-  </p>
-
-  <div class="flex flex-col gap-2 sm:flex-row">
-    <button class="rounded-lg bg-black px-4 py-2 text-white" type="submit">Save</button>
-
-    <button class="rounded-lg border border-gray-300 px-4 py-2" type="button" (click)="cancel()">
-      Cancel
+  <div class="flex gap-3">
+    <button class="rounded-full bg-emerald-900 px-5 py-3 font-medium text-white" type="submit">
+      {{ editing ? 'Zapisz zmiany' : 'Dodaj trening' }}
+    </button>
+    <button class="rounded-full border border-stone-300 px-5 py-3" type="button" (click)="cancel()">
+      Anuluj
     </button>
   </div>
 </form>

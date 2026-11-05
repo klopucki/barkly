@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../features/auth/auth.service';
 import { School, SchoolNews } from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
-import { Training } from '../../features/trainings/training.model';
+import { Training, trainingPriceLabel } from '../../features/trainings/training.model';
 import { TrainingService } from '../../features/trainings/training.service';
 import { FavoritesService } from '../../shared/favorites.service';
 
@@ -13,6 +13,7 @@ import { FavoritesService } from '../../shared/favorites.service';
   templateUrl: './me.html',
 })
 export class Me implements OnInit {
+  protected readonly trainingPriceLabel = trainingPriceLabel;
   protected readonly auth = inject(AuthService);
   private readonly schoolsApi = inject(SchoolService);
   private readonly trainingsApi = inject(TrainingService);
@@ -35,7 +36,7 @@ export class Me implements OnInit {
       .search$('', 0, 20, true)
       .subscribe({ next: (result) => this.schools.set(result.items) });
     this.trainingsApi
-      .search$('', '', 0, 20, true)
+      .search$('', 0, 20, true)
       .subscribe({ next: (result) => this.trainings.set(result.items) });
     this.schoolsApi
       .searchNews$('', 0, 20, true)

@@ -1,22 +1,14 @@
 @if (training()) {
   <section class="training-detail-hero barkly-card overflow-hidden">
     <div class="training-detail-main min-w-0 flex-1">
-      <p class="barkly-eyebrow">{{ training()!.trainingType.name }}</p>
+      <p class="barkly-eyebrow">Trening</p>
       <h1>{{ training()!.title }}</h1>
       <p class="training-detail-trainer">
         Prowadzi <strong>{{ training()!.trainerName }}</strong>
       </p>
-      <div class="training-detail-tags">
-        @if (training()!.trainingLevel) {
-          <span>{{ training()!.trainingLevel!.name }}</span>
-        }
-        @if (training()!.targetGroup) {
-          <span>{{ training()!.targetGroup!.name }}</span>
-        }
-        @if (training()!.homeVisit) {
-          <span>🏠 konsultacja domowa</span>
-        }
-      </div>
+      <p class="mt-4 text-xl font-semibold text-emerald-900">
+        {{ trainingPriceLabel(training()!) }}
+      </p>
       <div class="training-detail-facts">
         <span>◷ {{ training()!.startAt | date: 'EEEE, dd MMMM · HH:mm' }}</span>
         <span
@@ -79,6 +71,13 @@
       </div>
     }
   </section>
+
+  @if (training()!.description) {
+    <section class="barkly-card mt-6 p-6">
+      <h2 class="mb-3 text-xl font-semibold">O treningu</h2>
+      <p class="whitespace-pre-wrap break-words text-stone-700">{{ training()!.description }}</p>
+    </section>
+  }
 
   @if (isEditModalOpen()) {
     <app-modal title="Edytuj trening" (closed)="closeEditModal()">
@@ -189,7 +188,6 @@
               <div class="min-w-0">
                 <p class="font-medium">{{ booking.ownerName }} & {{ booking.dogName }}</p>
                 <p class="text-sm text-gray-600">{{ booking.email }}</p>
-                <p class="text-sm text-gray-600">Wiek psa: {{ booking.dogAge }}</p>
 
                 @if (booking.notes) {
                   <p class="mt-2 text-sm">{{ booking.notes }}</p>
