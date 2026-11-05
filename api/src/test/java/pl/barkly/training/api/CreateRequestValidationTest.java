@@ -83,4 +83,23 @@ class CreateRequestValidationTest {
         var errors = validator.validate(request);
         RequestAssertions.rejectedFor(errors, "description");
     }
+
+    @Test
+    void acceptsOptionalLocationAndCoordinates() {
+        RequestAssertions.accepted(validator.validate(RequestFixtures.location(null, null, null)));
+        RequestAssertions.accepted(
+                validator.validate(RequestFixtures.location("Park", null, null)));
+        RequestAssertions.accepted(
+                validator.validate(RequestFixtures.location(null, 52.23, 21.01)));
+    }
+
+    @Test
+    void rejectsIncompleteOrOutOfRangeCoordinates() {
+        RequestAssertions.rejectedFor(
+                validator.validate(RequestFixtures.location(null, 52.0, null)), "locationValid");
+        RequestAssertions.rejectedFor(
+                validator.validate(RequestFixtures.location(null, 91.0, 21.0)), "latitude");
+        RequestAssertions.rejectedFor(
+                validator.validate(RequestFixtures.location(null, 52.0, 181.0)), "longitude");
+    }
 }

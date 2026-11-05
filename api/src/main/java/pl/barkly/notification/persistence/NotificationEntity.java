@@ -16,7 +16,7 @@ public class NotificationEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "training_id", nullable = false)
+    @Column(name = "training_id")
     private Long trainingId;
 
     @Column(name = "event_key", nullable = false)

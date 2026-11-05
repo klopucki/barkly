@@ -11,6 +11,8 @@ export interface School {
   description: string;
   activities: string;
   pricing: string;
+  history?: string;
+  historyImageKey?: string | null;
   images: SchoolImage[];
 }
 export interface SchoolPayload {
@@ -20,6 +22,7 @@ export interface SchoolPayload {
   description: string;
   activities: string;
   pricing: string;
+  history?: string;
 }
 export interface SchoolNews {
   id: number;

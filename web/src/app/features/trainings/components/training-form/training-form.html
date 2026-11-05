@@ -115,6 +115,45 @@
     </p>
   }
 
+  <section class="rounded-xl border border-stone-200 p-4">
+    <h3 class="font-medium">
+      Miejsce treningu <span class="text-sm font-normal text-stone-500">(opcjonalnie)</span>
+    </h3>
+    <label class="mt-3 block"
+      ><span class="mb-1 block text-sm font-medium">Adres lub wskazówki</span>
+      <input
+        class="w-full rounded-lg border p-3"
+        formControlName="locationAddress"
+        maxlength="500"
+        placeholder="Np. ul. Leśna 10, przy wejściu do parku"
+      />
+    </label>
+    <button
+      type="button"
+      class="mt-3 font-medium text-emerald-800 underline"
+      (click)="showMap = !showMap"
+    >
+      {{ showMap ? 'Ukryj mapę' : 'Wybierz miejsce na mapie' }}
+    </button>
+    @if (showMap) {
+      <div class="mt-3">
+        <app-location-map
+          [editable]="true"
+          [latitude]="form.controls.latitude.value"
+          [longitude]="form.controls.longitude.value"
+          (selected)="selectLocation($event)"
+        />
+      </div>
+    }
+    @if (form.controls.latitude.value !== null) {
+      <p class="mt-2 text-sm text-stone-600">
+        Zaznaczono punkt na mapie.
+        <button type="button" class="text-emerald-800 underline" (click)="clearLocation()">
+          Usuń punkt
+        </button>
+      </p>
+    }
+  </section>
   <details class="rounded-xl border border-stone-200 p-4" [open]="!!training()?.description">
     <summary class="cursor-pointer font-medium">
       Dodaj opis i zdjęcie <span class="text-sm font-normal text-stone-500">(opcjonalnie)</span>
@@ -151,6 +190,12 @@
       lub ceny.
     </p>
   }
+  @if (!editing) {
+    <label class="flex items-start gap-3 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-950">
+      <input type="checkbox" formControlName="notifySchool" />
+      <span>Powiadom subskrybentów szkoły o nowym treningu</span>
+    </label>
+  }
   <div class="flex gap-3">
     <button class="rounded-full bg-emerald-900 px-5 py-3 font-medium text-white" type="submit">
       {{ editing ? 'Zapisz zmiany' : 'Dodaj trening' }}
@@ -159,4 +204,23 @@
       Anuluj
     </button>
   </div>
+  @if (confirmNotification) {
+    <app-modal title="Powiadomić subskrybentów?" (closed)="confirmNotification = false">
+      <p class="text-stone-700">
+        Po dodaniu treningu osoby subskrybujące szkołę otrzymają o nim powiadomienie. Tej wysyłki
+        nie można cofnąć.
+      </p>
+      <div class="mt-5 flex gap-3">
+        <button type="button" class="barkly-button" (click)="emitTraining()">
+          Dodaj i powiadom</button
+        ><button
+          type="button"
+          class="rounded-full border px-4 py-2"
+          (click)="confirmNotification = false"
+        >
+          Wróć
+        </button>
+      </div>
+    </app-modal>
+  }
 </form>

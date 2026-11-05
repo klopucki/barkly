@@ -7,6 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.barkly.notification.persistence.NotificationPreferenceEntity;
 import pl.barkly.notification.persistence.NotificationPreferenceRepository;
 import pl.barkly.notification.persistence.NotificationRepository;
+import pl.barkly.notification.persistence.SchoolMessageEntity;
+import pl.barkly.notification.persistence.SchoolMessageRepository;
+import pl.barkly.notification.persistence.TrainingMessageEntity;
+import pl.barkly.notification.persistence.TrainingMessageRepository;
 import pl.barkly.training.persistence.BookingEntity;
 import pl.barkly.training.persistence.TrainingEntity;
 
@@ -19,12 +23,19 @@ import java.util.UUID;
 @Transactional
 public class NotificationService {
     private final NotificationRepository notifications;
+    private final TrainingMessageRepository messages;
+    private final SchoolMessageRepository schoolMessages;
     private final NotificationPreferenceRepository preferences;
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     public NotificationService(
-            NotificationRepository notifications, NotificationPreferenceRepository preferences) {
+            NotificationRepository notifications,
+            NotificationPreferenceRepository preferences,
+            TrainingMessageRepository messages,
+            SchoolMessageRepository schoolMessages) {
         this.notifications = notifications;
+        this.messages = messages;
+        this.schoolMessages = schoolMessages;
         this.preferences = preferences;
     }
 
@@ -73,6 +84,88 @@ public class NotificationService {
             notifications.updateTrainingLinks(training.getId(), "/me/calendar");
         }
     }
+
+    public int messageSchool(Long schoolId, String message, String link) {
+        schoolMessages.save(new SchoolMessageEntity(schoolId, message, link, LocalDateTime.now()));
+        return notifications.insertForSchoolParticipants(
+                schoolId,
+                null,
+                "message:" + UUID.randomUUID(),
+                "SCHOOL_MESSAGE",
+                message,
+                link,
+                LocalDateTime.now());
+    }
+
+    public void messageTraining(Long trainingId, String message) {
+        messages.save(new TrainingMessageEntity(trainingId, message, LocalDateTime.now()));
+        notifications.insertForTrainingParticipants(
+                trainingId,
+                "message:" + UUID.randomUUID(),
+                "TRAINING_MESSAGE",
+                message,
+                "/trainings/" + trainingId,
+                LocalDateTime.now());
+    }
+
+    public void announceTraining(Long schoolId, TrainingEntity training) {
+        schoolMessages.save(
+                new SchoolMessageEntity(
+                        schoolId,
+                        "Nowy trening: „"
+                                + training.getTitle()
+                                + "” — "
+                                + DATE.format(training.getStartAt())
+                                + ".",
+                        "/trainings/" + training.getId(),
+                        LocalDateTime.now()));
+        notifications.insertForSchoolParticipants(
+                schoolId,
+                training.getId(),
+                "training-created:" + training.getId(),
+                "TRAINING_CREATED",
+                "Nowy trening: „"
+                        + training.getTitle()
+                        + "” — "
+                        + DATE.format(training.getStartAt())
+                        + ".",
+                "/trainings/" + training.getId(),
+                LocalDateTime.now());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TrainingMessageItem> trainingMessages(Long trainingId, int page) {
+        return messages
+                .findByTrainingIdOrderByCreatedAtDescIdDesc(
+                        trainingId, PageRequest.of(Math.max(0, page), 30))
+                .stream()
+                .map(
+                        item ->
+                                new TrainingMessageItem(
+                                        item.getId(), item.getMessage(), item.getCreatedAt()))
+                .toList();
+    }
+
+    public record TrainingMessageItem(Long id, String message, LocalDateTime createdAt) {}
+
+    @Transactional(readOnly = true)
+    public List<SchoolMessageItem> schoolMessages(Long schoolId, int page) {
+        return schoolMessages
+                .findBySchoolIdOrderByCreatedAtDescIdDesc(
+                        schoolId, PageRequest.of(Math.max(0, page), 30))
+                .stream()
+                .map(
+                        item ->
+                                new SchoolMessageItem(
+                                        item.getId(),
+                                        item.getMessage(),
+                                        item.getLink(),
+                                        item.getCreatedAt()))
+                .toList();
+    }
+
+    public record SchoolMessageItem(
+            Long id, String message, String link, LocalDateTime createdAt) {}
 
     public int createReminders(LocalDateTime now) {
         notifications.lockReminderDelivery();

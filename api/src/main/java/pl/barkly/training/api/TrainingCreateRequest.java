@@ -36,7 +36,42 @@ public record TrainingCreateRequest(
                 String description,
         @Pattern(regexp = "TRAINING") String eventKind,
         @Pattern(regexp = "PAID|FREE|TO_BE_AGREED") String priceMode,
-        @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal price) {
+        @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal price,
+        Boolean notifySchool,
+        @Size(max = 500) String locationAddress,
+        @DecimalMin("-90") @jakarta.validation.constraints.DecimalMax("90") Double latitude,
+        @DecimalMin("-180") @jakarta.validation.constraints.DecimalMax("180") Double longitude) {
+    public TrainingCreateRequest(
+            Long schoolId,
+            String title,
+            String trainerName,
+            LocalDateTime startAt,
+            Integer capacity,
+            String description,
+            String eventKind,
+            String priceMode,
+            BigDecimal price) {
+        this(
+                schoolId,
+                title,
+                trainerName,
+                startAt,
+                capacity,
+                description,
+                eventKind,
+                priceMode,
+                price,
+                false,
+                null,
+                null,
+                null);
+    }
+
+    @AssertTrue(message = "Both coordinates must be provided together")
+    public boolean isLocationValid() {
+        return (latitude == null) == (longitude == null);
+    }
+
     @AssertTrue(message = "Paid training requires a price; other modes must have no price")
     public boolean isPriceValid() {
         return "PAID".equals(priceMode) ? price != null : price == null;

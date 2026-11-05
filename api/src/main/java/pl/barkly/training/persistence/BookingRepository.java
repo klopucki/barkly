@@ -15,6 +15,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     int countByTrainingIdAndDeletedAtIsNull(Long trainingId);
 
+    boolean existsByTrainingIdAndUserIdAndDeletedAtIsNull(Long trainingId, Long userId);
+
     boolean existsByTrainingIdAndDogIdAndDeletedAtIsNull(Long trainingId, Long dogId);
 
     List<BookingEntity> findAllByDogIdInAndDeletedAtIsNull(List<Long> dogIds);

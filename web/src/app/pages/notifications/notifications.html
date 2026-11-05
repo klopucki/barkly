@@ -47,12 +47,14 @@
           }
           <time>{{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</time>
         </div>
-        <p class="text-stone-950">{{ item.message }}</p>
+        <p class="whitespace-pre-wrap break-words text-stone-950">{{ item.message }}</p>
         <div class="mt-3 flex flex-wrap gap-4 text-sm">
           <a [routerLink]="item.link" class="font-semibold text-emerald-800 hover:underline">{{
-            item.type === 'TRAINING_CANCELLED' || item.link === '/me/calendar'
-              ? 'Otwórz kalendarz'
-              : 'Zobacz trening'
+            item.type === 'SCHOOL_MESSAGE'
+              ? 'Zobacz szkołę'
+              : item.type === 'TRAINING_CANCELLED' || item.link === '/me/calendar'
+                ? 'Otwórz kalendarz'
+                : 'Zobacz trening'
           }}</a>
           @if (!item.read) {
             <button type="button" class="text-stone-600 hover:underline" (click)="markRead(item)">

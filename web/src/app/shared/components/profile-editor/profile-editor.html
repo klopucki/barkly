@@ -1,0 +1,66 @@
+<div class="profile-editor">
+  <div class="profile-editor-label">{{ label() }}</div>
+  <div class="profile-editor-toolbar" role="toolbar" [attr.aria-label]="'Formatowanie: ' + label()">
+    <button
+      type="button"
+      (click)="format('**', '**')"
+      [disabled]="disabled || preview"
+      title="Pogrubienie"
+    >
+      <strong>B</strong>
+    </button>
+    <button
+      type="button"
+      (click)="format('*', '*')"
+      [disabled]="disabled || preview"
+      title="Kursywa"
+    >
+      <em>I</em>
+    </button>
+    <button
+      type="button"
+      (click)="format('### ')"
+      [disabled]="disabled || preview"
+      title="Nagłówek"
+    >
+      H
+    </button>
+    <button
+      type="button"
+      (click)="format('- ')"
+      [disabled]="disabled || preview"
+      title="Element listy"
+    >
+      ☰
+    </button>
+    <button
+      type="button"
+      class="profile-editor-preview-button"
+      (click)="preview = !preview"
+      [attr.aria-pressed]="preview"
+    >
+      {{ preview ? 'Edytuj' : 'Podgląd' }}
+    </button>
+  </div>
+  @if (preview) {
+    <div
+      class="profile-editor-preview"
+      [innerHTML]="previewHtml || 'Tu zobaczysz podgląd tekstu.'"
+    ></div>
+  } @else {
+    <textarea
+      #editor
+      [attr.aria-label]="label()"
+      [value]="value"
+      [placeholder]="placeholder()"
+      [attr.maxlength]="maxLength()"
+      [disabled]="disabled"
+      (input)="update($event)"
+      (blur)="touched()"
+      rows="7"
+    ></textarea>
+  }
+  <p class="profile-editor-hint">
+    {{ value.length }} / {{ maxLength() }} · Zaznacz tekst, aby go sformatować.
+  </p>
+</div>

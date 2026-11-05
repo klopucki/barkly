@@ -24,7 +24,7 @@
         {{ isPast() ? 'Szczegóły treningu' : 'Szczegóły i zapisy' }}
         <span aria-hidden="true">↗</span>
       </a>
-      @if (auth.currentUser()?.role !== 'USER' && auth.currentUser()) {
+      @if (showManagementActions() && auth.currentUser()?.role !== 'USER' && auth.currentUser()) {
         <button type="button" (click)="editClicked.emit(training())">Edytuj</button>
         <button type="button" class="training-delete" (click)="deleteClicked.emit(training().id)">
           Usuń

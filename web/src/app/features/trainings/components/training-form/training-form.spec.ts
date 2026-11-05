@@ -10,6 +10,19 @@ describe('TrainingForm', () => {
     Assertions.created(fixture);
   });
 
+  it('selects notification by default and asks for confirmation', () => {
+    const fixture = Fixtures.validFormWithDefaultNotification();
+    fixture.component.submit();
+    Assertions.notificationConfirmationRequired(fixture);
+  });
+
+  it('sends the selected notification only after confirmation', () => {
+    const fixture = Fixtures.validFormWithDefaultNotification();
+    fixture.component.submit();
+    fixture.component.emitTraining();
+    Assertions.notificationConfirmed(fixture);
+  });
+
   it('rejects a past date and non-positive capacity', () => {
     const fixture = Fixtures.pastTraining();
     fixture.component.submit();

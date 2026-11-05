@@ -13,6 +13,8 @@ public record SchoolResponse(
         String description,
         String activities,
         String pricing,
+        String history,
+        String historyImageKey,
         List<SchoolImageResponse> images) {
     public static SchoolResponse from(SchoolEntity school) {
         return new SchoolResponse(
@@ -24,6 +26,8 @@ public record SchoolResponse(
                 school.getDescription(),
                 school.getActivities(),
                 school.getPricing(),
+                school.getHistory(),
+                null,
                 List.of());
     }
 }

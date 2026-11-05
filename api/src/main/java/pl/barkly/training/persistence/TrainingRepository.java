@@ -17,10 +17,7 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
             """
             select training from TrainingEntity training
             where training.deletedAt is null
-            order by
-                case when training.startAt >= CURRENT_TIMESTAMP then 0 else 1 end,
-                case when training.startAt >= CURRENT_TIMESTAMP then training.startAt else null end asc,
-                case when training.startAt < CURRENT_TIMESTAMP then training.startAt else null end desc
+            order by training.startAt desc, training.id desc
             """)
     List<TrainingEntity> findAllActiveOrdered();
 
@@ -34,10 +31,7 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
             where training.deletedAt is null
               and (:query = '' or lower(training.title) like lower(concat('%', :query, '%'))
                    or lower(training.trainerName) like lower(concat('%', :query, '%')))
-            order by
-                case when training.startAt >= CURRENT_TIMESTAMP then 0 else 1 end,
-                case when training.startAt >= CURRENT_TIMESTAMP then training.startAt else null end asc,
-                case when training.startAt < CURRENT_TIMESTAMP then training.startAt else null end desc
+            order by training.startAt desc, training.id desc
             """)
     Page<TrainingEntity> search(@Param("query") String query, Pageable pageable);
 
@@ -46,10 +40,7 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
             select training from TrainingEntity training
             where training.deletedAt is null and training.id in :ids
               and (:query = '' or lower(training.title) like lower(concat('%', :query, '%')) or lower(training.trainerName) like lower(concat('%', :query, '%')))
-            order by
-                case when training.startAt >= CURRENT_TIMESTAMP then 0 else 1 end,
-                case when training.startAt >= CURRENT_TIMESTAMP then training.startAt else null end asc,
-                case when training.startAt < CURRENT_TIMESTAMP then training.startAt else null end desc
+            order by training.startAt desc, training.id desc
             """)
     Page<TrainingEntity> searchFavorites(
             @Param("query") String query, @Param("ids") List<Long> ids, Pageable pageable);

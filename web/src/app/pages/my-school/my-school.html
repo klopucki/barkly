@@ -74,14 +74,6 @@
               <a [routerLink]="['/schools', s.slug]" class="catalog-read"
                 >Profil i artykuły <span aria-hidden="true">↗</span></a
               >
-              <button
-                type="button"
-                class="school-edit"
-                [attr.aria-label]="'Edytuj profil szkoły: ' + s.name"
-                (click)="openEditDialog(s)"
-              >
-                Edytuj profil
-              </button>
             </div>
           </div>
         </article>
@@ -140,27 +132,19 @@
             [(ngModel)]="form.krs"
             name="krs"
             placeholder="KRS (opcjonalnie)"
-          /><textarea
-            class="w-full rounded border p-2"
-            [(ngModel)]="form.description"
+          />
+          <app-profile-editor
             name="description"
-            placeholder="Krótki opis szkoły"
-            rows="3"
-          ></textarea
-          ><textarea
-            class="w-full rounded border p-2"
-            [(ngModel)]="form.activities"
-            name="activities"
-            placeholder="Czym się zajmujecie"
-            rows="3"
-          ></textarea
-          ><textarea
-            class="w-full rounded border p-2"
-            [(ngModel)]="form.pricing"
-            name="pricing"
-            placeholder="Cennik"
-            rows="3"
-          ></textarea>
+            [(ngModel)]="form.description"
+            label="Profil szkoły"
+            placeholder="Przedstaw swoją szkołę i sposób pracy"
+          />
+          <app-profile-editor
+            name="history"
+            [(ngModel)]="form.history"
+            label="Historia szkoły (opcjonalnie)"
+            placeholder="Jak powstała Twoja szkoła?"
+          />
         </div>
         @if (error) {
           <p class="mt-3 text-sm text-red-700" role="alert">{{ error }}</p>
