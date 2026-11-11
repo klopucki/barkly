@@ -76,6 +76,10 @@ public class UserEntity {
         return displayName;
     }
 
+    public void updateDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public UserRole getRole() {
         return role;
     }

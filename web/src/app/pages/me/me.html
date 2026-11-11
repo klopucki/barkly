@@ -13,6 +13,47 @@
           <p class="mt-1 break-words text-stone-300">{{ user.email }}</p>
         </div>
       </div>
+      @if (editingName()) {
+        <form class="mt-6 max-w-md" (ngSubmit)="saveName()">
+          <label for="displayName" class="block text-sm font-semibold">Nazwa wyświetlana</label>
+          <input
+            id="displayName"
+            name="displayName"
+            [(ngModel)]="displayName"
+            maxlength="100"
+            required
+            class="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950"
+          />
+          @if (nameError()) {
+            <p role="alert" class="mt-2 text-sm text-red-200">{{ nameError() }}</p>
+          }
+          <div class="mt-3 flex gap-3">
+            <button
+              type="submit"
+              class="rounded-lg bg-lime-300 px-4 py-2 font-semibold text-stone-950 disabled:opacity-50"
+              [disabled]="savingName()"
+            >
+              Zapisz
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-4 py-2 text-white underline"
+              [disabled]="savingName()"
+              (click)="editingName.set(false)"
+            >
+              Anuluj
+            </button>
+          </div>
+        </form>
+      } @else {
+        <button
+          type="button"
+          class="mt-5 text-sm font-semibold text-lime-300 underline"
+          (click)="editName()"
+        >
+          Zmień nazwę wyświetlaną
+        </button>
+      }
     </div>
     <div class="mt-8 grid gap-5 sm:grid-cols-2">
       <a routerLink="/me/calendar" class="barkly-card group p-6 sm:col-span-2">

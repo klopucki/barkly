@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import pl.barkly.user.api.CurrentUserResponse;
 import pl.barkly.user.api.LoginRequest;
 import pl.barkly.user.api.RegisterRequest;
+import pl.barkly.user.api.UpdateDisplayNameRequest;
 
 @RestController
 class AuthController {
@@ -57,6 +59,11 @@ class AuthController {
     @GetMapping("/api/auth/csrf")
     CsrfToken csrf(CsrfToken token) {
         return token;
+    }
+
+    @PatchMapping("/api/auth/me")
+    CurrentUserResponse updateDisplayName(@Valid @RequestBody UpdateDisplayNameRequest request) {
+        return userService.updateDisplayName(request.displayName());
     }
 
     @GetMapping("/api/auth/me")

@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../features/auth/auth.service';
 import { School, SchoolNews } from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
@@ -9,10 +10,41 @@ import { FavoritesService } from '../../shared/favorites.service';
 
 @Component({
   selector: 'app-me',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './me.html',
 })
 export class Me implements OnInit {
+  protected editingName = signal(false);
+  protected savingName = signal(false);
+  protected nameError = signal('');
+  protected displayName = '';
+
+  protected editName(): void {
+    this.displayName = this.auth.currentUser()?.displayName ?? '';
+    this.nameError.set('');
+    this.editingName.set(true);
+  }
+
+  protected saveName(): void {
+    const name = this.displayName.trim();
+    if (name.length < 2 || name.length > 100) {
+      this.nameError.set('Nazwa musi mieć od 2 do 100 znaków.');
+      return;
+    }
+    this.savingName.set(true);
+    this.nameError.set('');
+    this.auth.updateDisplayName$(name).subscribe({
+      next: () => {
+        this.savingName.set(false);
+        this.editingName.set(false);
+      },
+      error: () => {
+        this.savingName.set(false);
+        this.nameError.set('Nie udało się zapisać nazwy. Spróbuj ponownie.');
+      },
+    });
+  }
+
   protected readonly trainingPriceLabel = trainingPriceLabel;
   protected readonly auth = inject(AuthService);
   private readonly schoolsApi = inject(SchoolService);

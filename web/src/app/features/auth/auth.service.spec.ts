@@ -37,4 +37,21 @@ describe('AuthService', () => {
     expect(service.currentUser()).toEqual(currentUser);
     expect(service.sessionResolved()).toBe(true);
   });
+  it('updates the displayed user after changing the name', () => {
+    const user: CurrentUser = {
+      id: 1,
+      email: 'luna@example.com',
+      displayName: 'Luna',
+      role: 'USER',
+    };
+    http.expectOne('/api/auth/csrf').flush({});
+    http.expectOne('/api/auth/me').flush(user);
+    service.updateDisplayName$('Luna Nowa').subscribe();
+    const request = http.expectOne('/api/auth/me');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ displayName: 'Luna Nowa' });
+    request.flush({ ...user, displayName: 'Luna Nowa' });
+    expect(service.currentUser()?.displayName).toBe('Luna Nowa');
+    expect(service.currentUser()?.email).toBe(user.email);
+  });
 });

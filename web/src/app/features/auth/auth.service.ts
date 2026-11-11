@@ -42,6 +42,11 @@ export class AuthService {
       .get<CurrentUser>('/api/auth/me')
       .pipe(tap((user) => this.currentUser.set(user)));
   }
+  updateDisplayName$(displayName: string): Observable<CurrentUser> {
+    return this.http
+      .patch<CurrentUser>('/api/auth/me', { displayName })
+      .pipe(tap((user) => this.currentUser.set(user)));
+  }
   loadMe(): void {
     this.resolveSession$().subscribe();
   }
