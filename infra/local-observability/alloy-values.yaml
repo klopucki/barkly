@@ -1,0 +1,47 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      loki.write "local" {
+        endpoint {
+          url = "http://barkly-loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          regex         = "barkly"
+          action        = "keep"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          target_label  = "node"
+        }
+      }
+
+      loki.source.kubernetes "pod_logs" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.write.local.receiver]
+      }
+
+controller:
+  type: daemonset

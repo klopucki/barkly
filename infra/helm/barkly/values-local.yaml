@@ -1,0 +1,18 @@
+# Single-node development only; do not use these database credentials in production.
+api:
+  image:
+    tag: monitoring-dev
+  replicas: 1
+  autoscaling:
+    enabled: false
+  metrics:
+    enabled: true
+  imagesStorage:
+    enabled: true
+web:
+  image:
+    tag: monitoring-dev
+  replicas: 1
+
+ingress:
+  host: localhost

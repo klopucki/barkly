@@ -77,7 +77,10 @@ class SecurityConfig {
                                                         response.setStatus(204)))
                 .authorizeHttpRequests(
                         requests ->
-                                requests.requestMatchers("/actuator/health", "/actuator/health/**")
+                                requests.requestMatchers(
+                                                "/actuator/health",
+                                                "/actuator/health/**",
+                                                "/actuator/prometheus")
                                         .permitAll()
                                         .requestMatchers(
                                                 "/api/auth/register",

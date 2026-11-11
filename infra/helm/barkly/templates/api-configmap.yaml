@@ -6,3 +6,9 @@ metadata:
 
 data:
   SPRING_DATASOURCE_URL: {{ .Values.api.datasource.url | quote }}
+{{- if .Values.api.metrics.enabled }}
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,prometheus"
+{{- end }}
+{{- if .Values.api.imagesStorage.enabled }}
+  BARKLY_IMAGE_STORAGE_DIRECTORY: "/app/uploads/training-images"
+{{- end }}
