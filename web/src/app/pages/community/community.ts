@@ -48,7 +48,8 @@ export class Community implements OnInit {
   }
 
   selectImage(event: Event): void {
-    this.image = (event.target as HTMLInputElement).files?.[0] ?? null;
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) this.image = file;
   }
 
   galleryImages(post: DogPost): GalleryImage[] {

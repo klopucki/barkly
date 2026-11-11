@@ -169,6 +169,7 @@ export class TrainingForm implements OnInit {
   selectImage(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
+    if (!file) return;
     const allowedTypes = ['image/jpeg', 'image/png'];
 
     if (file && !allowedTypes.includes(file.type)) {

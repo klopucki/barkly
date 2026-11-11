@@ -36,6 +36,13 @@
               type="file"
               accept="image/jpeg,image/png"
               (change)="selectImage($event)" /></label
+          ><label class="barkly-button-secondary cursor-pointer"
+            >Zrób zdjęcie<input
+              class="sr-only"
+              type="file"
+              accept="image/jpeg,image/png"
+              capture="environment"
+              (change)="selectImage($event)" /></label
           ><span class="mr-auto text-sm text-stone-500">{{
             image?.name || 'Opcjonalne: JPG/PNG, maks. 10 MB, min. 640 × 480 px'
           }}</span

@@ -105,4 +105,12 @@ describe('TrainingForm', () => {
     fixture.component.submit();
     Assertions.validImageSubmitted(fixture, validImage.file);
   });
+  it('keeps the selected image when camera capture is cancelled', () => {
+    const fixture = Fixtures.validForm();
+    const image = Fixtures.imageSelection('image/jpeg');
+    fixture.component.selectImage(image.event);
+    fixture.component.selectImage({ target: { files: [] } } as unknown as Event);
+    fixture.component.submit();
+    Assertions.validImageSubmitted(fixture, image.file);
+  });
 });
