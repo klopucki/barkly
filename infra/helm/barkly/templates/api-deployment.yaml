@@ -17,6 +17,10 @@ spec:
         app: barkly-api
 
     spec:
+{{- if .Values.api.imagesStorage.enabled }}
+      securityContext:
+        fsGroup: {{ .Values.api.imagesStorage.fsGroup }}
+{{- end }}
       containers:
         - name: api
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
@@ -54,3 +58,12 @@ spec:
                 name: barkly-api-config
             - secretRef:
                 name: barkly-api-secret
+{{- if .Values.api.imagesStorage.enabled }}
+          volumeMounts:
+            - name: training-images
+              mountPath: /app/uploads/training-images
+      volumes:
+        - name: training-images
+          persistentVolumeClaim:
+            claimName: barkly-training-images
+{{- end }}

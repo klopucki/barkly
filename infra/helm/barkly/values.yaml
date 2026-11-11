@@ -8,6 +8,14 @@ api:
 
   replicas: 2
 
+  metrics:
+    enabled: false
+
+  imagesStorage:
+    enabled: false
+    size: 2Gi
+    fsGroup: 999
+
   service:
     port: 8080
 

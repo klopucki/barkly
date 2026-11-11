@@ -1,0 +1,10 @@
+service:
+  type: ClusterIP
+tls:
+  force: true
+persistence:
+  enabled: true
+  size: 1Gi
+
+adminPassword:
+  existingSecret: portainer-admin-password
