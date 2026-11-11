@@ -7,8 +7,10 @@ api:
     enabled: false
   metrics:
     enabled: true
-  imagesStorage:
-    enabled: true
+  objectStorage:
+    endpoint: http://barkly-silo:9000
+    pathStyle: true
+    credentialsSecret: barkly-s3-credentials
 web:
   image:
     tag: monitoring-dev

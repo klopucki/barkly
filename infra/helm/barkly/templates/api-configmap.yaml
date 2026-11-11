@@ -9,6 +9,7 @@ data:
 {{- if .Values.api.metrics.enabled }}
   MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,prometheus"
 {{- end }}
-{{- if .Values.api.imagesStorage.enabled }}
-  BARKLY_IMAGE_STORAGE_DIRECTORY: "/app/uploads/training-images"
-{{- end }}
+  BARKLY_S3_ENDPOINT: {{ .Values.api.objectStorage.endpoint | quote }}
+  BARKLY_S3_REGION: {{ .Values.api.objectStorage.region | quote }}
+  BARKLY_S3_BUCKET: {{ .Values.api.objectStorage.bucket | quote }}
+  BARKLY_S3_PATH_STYLE: {{ .Values.api.objectStorage.pathStyle | quote }}

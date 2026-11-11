@@ -5,12 +5,18 @@ import static org.slf4j.LoggerFactory.getLogger;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
+
+import pl.barkly.training.image.ImageNotFoundException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -36,6 +42,14 @@ public class ApiExceptionHandler {
         log.warn("Business exception [{}]: {}", exception.getErrorCode(), exception.getMessage());
 
         return ResponseEntity.status(exception.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<Resource> handleMissingImage() {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.parseMediaType("image/svg+xml"))
+                .body(new ClassPathResource("images/missing-image.svg"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

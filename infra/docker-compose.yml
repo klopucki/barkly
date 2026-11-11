@@ -16,6 +16,31 @@ services:
       timeout: 5s
       retries: 10
 
+  silo:
+    image: docker.io/pgsty/silo:RELEASE.2026-11-09T00-00-00Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: barkly-local
+      MINIO_ROOT_PASSWORD: barkly-local-password
+    volumes:
+      - barkly-silo-data:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  silo-init:
+    image: docker.io/pgsty/silo:RELEASE.2026-11-09T00-00-00Z
+    entrypoint: /bin/sh
+    command: -c 'mcli alias set local http://silo:9000 barkly-local barkly-local-password && mcli mb --ignore-existing local/barkly-images'
+    depends_on:
+      silo:
+        condition: service_healthy
+
   api:
     build:
       context: ..
@@ -25,11 +50,17 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/barkly
       SPRING_DATASOURCE_USERNAME: barkly
       SPRING_DATASOURCE_PASSWORD: barkly
+      BARKLY_S3_ENDPOINT: http://silo:9000
+      BARKLY_S3_PATH_STYLE: "true"
+      AWS_ACCESS_KEY_ID: barkly-local
+      AWS_SECRET_ACCESS_KEY: barkly-local-password
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+      silo-init:
+        condition: service_completed_successfully
 
   web:
     build:
@@ -42,4 +73,5 @@ services:
       - api
 
 volumes:
+  barkly-silo-data:
   barkly-postgres-data:

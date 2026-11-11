@@ -23,7 +23,11 @@ spring:
 
 barkly:
   images:
-    storage-directory: ${BARKLY_IMAGE_STORAGE_DIRECTORY:./uploads/training-images}
+    s3:
+      endpoint: ${BARKLY_S3_ENDPOINT:}
+      region: ${BARKLY_S3_REGION:us-east-1}
+      bucket: ${BARKLY_S3_BUCKET:barkly-images}
+      path-style: ${BARKLY_S3_PATH_STYLE:false}
     max-file-size: ${BARKLY_IMAGE_MAX_FILE_SIZE:10MB}
     max-request-size: ${BARKLY_IMAGE_MAX_REQUEST_SIZE:12MB}
     min-width: 640
