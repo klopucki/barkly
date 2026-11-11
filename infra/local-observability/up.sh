@@ -9,6 +9,10 @@ if [[ "$actual_context" != "$expected_context" ]]; then
   exit 1
 fi
 cd "$repo_root"
+if ! kubectl -n barkly get service barkly-silo >/dev/null 2>&1 || ! kubectl -n barkly get secret barkly-s3-credentials >/dev/null 2>&1; then
+  printf 'Provision Silo and its application credentials first; see infra/silo/README.md.\n' >&2
+  exit 1
+fi
 helm repo add grafana-community https://grafana-community.github.io/helm-charts --force-update
 helm repo add grafana https://grafana.github.io/helm-charts --force-update
 helm repo update grafana-community grafana

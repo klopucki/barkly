@@ -1,21 +1,26 @@
 package pl.barkly.training.image;
 
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import pl.barkly.training.exceptions.InvalidImageException;
 
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.UUID;
 
 import javax.imageio.IIOImage;
@@ -25,17 +30,19 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 @Component
-class LocalTrainingImageStorage implements TrainingImageStorage {
+class S3TrainingImageStorage implements TrainingImageStorage {
 
-    private final Path storageDirectory;
+    private final S3Client client;
+    private final String bucket;
     private final long maxFileSize;
     private final int minWidth;
     private final int minHeight;
     private final int maxWidth;
     private final int maxHeight;
 
-    LocalTrainingImageStorage(ImageProperties properties) {
-        this.storageDirectory = properties.storageDirectory().toAbsolutePath().normalize();
+    S3TrainingImageStorage(ImageProperties properties, S3Client client, S3ImageProperties s3) {
+        this.client = client;
+        this.bucket = s3.bucket();
         this.maxFileSize = properties.maxFileSize().toBytes();
         this.minWidth = properties.minWidth();
         this.minHeight = properties.minHeight();
@@ -53,36 +60,44 @@ class LocalTrainingImageStorage implements TrainingImageStorage {
         String key = UUID.randomUUID() + ".jpg";
 
         try {
-            Files.createDirectories(storageDirectory);
-            writeJpeg(optimized, resolve(key));
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            writeJpeg(optimized, output);
+            client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(key)
+                            .contentType("image/jpeg")
+                            .build(),
+                    RequestBody.fromBytes(output.toByteArray()));
             return key;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not store training image", exception);
+            throw new IllegalStateException("Could not encode training image", exception);
         }
     }
 
     @Override
     public Resource load(String key) {
+        validateKey(key);
         try {
-            Resource resource = new UrlResource(resolve(key).toUri());
-            if (!resource.exists() || !resource.isReadable()) {
-                throw new InvalidImageException("Image not found");
-            }
-            return resource;
-        } catch (MalformedURLException exception) {
-            throw new InvalidImageException("Invalid image key");
+            return new ByteArrayResource(
+                    client.getObjectAsBytes(
+                                    GetObjectRequest.builder().bucket(bucket).key(key).build())
+                            .asByteArray());
+        } catch (NoSuchKeyException exception) {
+            throw new ImageNotFoundException();
         }
     }
 
     @Override
     public void delete(String key) {
-        if (key == null) {
-            return;
-        }
-        try {
-            Files.deleteIfExists(resolve(key));
-        } catch (IOException exception) {
-            throw new IllegalStateException("Could not delete training image", exception);
+        if (key == null) return;
+        validateKey(key);
+        client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(key).build());
+    }
+
+    private void validateKey(String key) {
+        if (key == null || !key.matches("[A-Za-z0-9_-]+\\.(jpg|jpeg|png|webp)")) {
+            throw new InvalidImageException("Invalid image key");
         }
     }
 
@@ -159,10 +174,9 @@ class LocalTrainingImageStorage implements TrainingImageStorage {
         return target;
     }
 
-    private void writeJpeg(BufferedImage image, Path destination) throws IOException {
+    private void writeJpeg(BufferedImage image, OutputStream output) throws IOException {
         ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-        try (OutputStream output = Files.newOutputStream(destination);
-                ImageOutputStream stream = ImageIO.createImageOutputStream(output)) {
+        try (ImageOutputStream stream = ImageIO.createImageOutputStream(output)) {
             writer.setOutput(stream);
             ImageWriteParam parameters = writer.getDefaultWriteParam();
             parameters.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -171,13 +185,5 @@ class LocalTrainingImageStorage implements TrainingImageStorage {
         } finally {
             writer.dispose();
         }
-    }
-
-    private Path resolve(String key) {
-        Path path = storageDirectory.resolve(key).normalize();
-        if (!path.getParent().equals(storageDirectory)) {
-            throw new InvalidImageException("Invalid image key");
-        }
-        return path;
     }
 }

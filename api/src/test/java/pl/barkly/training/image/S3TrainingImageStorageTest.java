@@ -2,19 +2,23 @@ package pl.barkly.training.image;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.unit.DataSize;
 
 import pl.barkly.training.exceptions.InvalidImageException;
 
-import java.nio.file.Path;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 
-class LocalTrainingImageStorageTest {
+import java.util.HashMap;
 
-    @TempDir Path directory;
+class S3TrainingImageStorageTest {
 
     @Test
     void storesLoadsAndDeletesSupportedImage() throws Exception {
@@ -28,7 +32,7 @@ class LocalTrainingImageStorageTest {
         assertThat(storage.load(key).getContentAsByteArray()).isNotEmpty();
 
         storage.delete(key);
-        assertThatThrownBy(() -> storage.load(key)).isInstanceOf(InvalidImageException.class);
+        assertThatThrownBy(() -> storage.load(key)).isInstanceOf(ImageNotFoundException.class);
     }
 
     @Test
@@ -64,9 +68,39 @@ class LocalTrainingImageStorageTest {
         assertThat(stored.getHeight()).isEqualTo(1200);
     }
 
-    private LocalTrainingImageStorage storageWithLimit(DataSize limit) {
-        return new LocalTrainingImageStorage(
-                new ImageProperties(directory, limit, limit, 640, 480, 1600, 1600));
+    private S3TrainingImageStorage storageWithLimit(DataSize limit) {
+        var objects = new HashMap<String, byte[]>();
+        S3Client client = mock(S3Client.class);
+        when(client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+                .thenAnswer(
+                        call -> {
+                            PutObjectRequest request = call.getArgument(0);
+                            RequestBody body = call.getArgument(1);
+                            objects.put(
+                                    request.key(),
+                                    body.contentStreamProvider().newStream().readAllBytes());
+                            return PutObjectResponse.builder().build();
+                        });
+        when(client.getObjectAsBytes(any(GetObjectRequest.class)))
+                .thenAnswer(
+                        call -> {
+                            GetObjectRequest request = call.getArgument(0);
+                            byte[] bytes = objects.get(request.key());
+                            if (bytes == null) throw NoSuchKeyException.builder().build();
+                            return ResponseBytes.fromByteArray(
+                                    GetObjectResponse.builder().build(), bytes);
+                        });
+        when(client.deleteObject(any(DeleteObjectRequest.class)))
+                .thenAnswer(
+                        call -> {
+                            DeleteObjectRequest request = call.getArgument(0);
+                            objects.remove(request.key());
+                            return DeleteObjectResponse.builder().build();
+                        });
+        return new S3TrainingImageStorage(
+                new ImageProperties(limit, limit, 640, 480, 1600, 1600),
+                client,
+                new S3ImageProperties("", "us-east-1", "test", true));
     }
 
     private byte[] png(int width, int height) throws Exception {
