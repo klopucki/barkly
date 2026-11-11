@@ -55,6 +55,14 @@
           accept="image/jpeg,image/png"
           (change)="upload($event, dog)"
       /></label>
+      <label class="mt-4 inline-block cursor-pointer rounded border px-3 py-2 text-sm"
+        >Zrób zdjęcie<input
+          class="sr-only"
+          type="file"
+          accept="image/jpeg,image/png"
+          capture="environment"
+          (change)="upload($event, dog)"
+      /></label>
       <p class="mt-2 text-xs text-stone-500">
         JPG lub PNG · maks. 10 MB · minimum 640 × 480 px. Zdjęcie zostanie automatycznie
         zoptymalizowane.
