@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -18,7 +18,7 @@ import { GalleryImage, ImageGallery } from '../../shared/components/image-galler
   imports: [DatePipe, FormsModule, RouterLink, ImageGallery],
   templateUrl: './community.html',
 })
-export class Community implements OnInit {
+export class Community {
   private readonly dogsApi = inject(DogService);
   protected readonly auth = inject(AuthService);
   readonly posts = signal<DogPost[]>([]);
@@ -33,11 +33,16 @@ export class Community implements OnInit {
   readonly commentDrafts = signal<Record<number, string>>({});
   readonly sendingCommentFor = signal<number | null>(null);
 
-  ngOnInit(): void {
-    this.loadPosts();
-    if (this.auth.currentUser()) {
-      this.dogsApi.mine$().subscribe({ next: (dogs) => this.dogs.set(dogs) });
-    }
+  constructor() {
+    effect(() => {
+      if (this.auth.currentUser()) {
+        this.loadPosts();
+        this.dogsApi.mine$().subscribe({ next: (dogs) => this.dogs.set(dogs) });
+      } else {
+        this.posts.set([]);
+        this.dogs.set([]);
+      }
+    });
   }
 
   loadPosts(): void {

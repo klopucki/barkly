@@ -20,6 +20,13 @@
         (click)="closeMenus()"
         >Start</a
       >
+      <a
+        routerLink="/community"
+        routerLinkActive="text-stone-950"
+        class="min-h-11 rounded-lg px-2 py-2 hover:bg-stone-200"
+        (click)="closeMenus()"
+        >Społeczność</a
+      >
       <div class="relative">
         <button
           type="button"
@@ -53,13 +60,6 @@
           </div>
         }
       </div>
-      <a
-        routerLink="/community"
-        routerLinkActive="text-stone-950"
-        class="min-h-11 rounded-lg px-2 py-2 hover:bg-stone-200"
-        (click)="closeMenus()"
-        >Społeczność</a
-      >
       @if (auth.currentUser()) {
         <app-notification-bell (click)="closeMenus()" />
         <div class="relative">
