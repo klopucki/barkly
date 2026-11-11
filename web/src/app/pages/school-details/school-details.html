@@ -207,6 +207,15 @@
                     [disabled]="historyImageLoading()"
                     (change)="uploadHistoryImage($event)"
                 /></label>
+                <label class="school-photo-action"
+                  >Zrób zdjęcie<input
+                    class="sr-only"
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    capture="environment"
+                    [disabled]="historyImageLoading()"
+                    (change)="uploadHistoryImage($event)"
+                /></label>
                 @if (s.historyImageKey) {
                   <button
                     type="button"
@@ -432,6 +441,13 @@
                 class="hidden"
                 type="file"
                 accept="image/jpeg,image/png"
+                (change)="uploadArticleImage($event)" /></label
+            ><label class="cursor-pointer rounded border px-2 py-1"
+              >Zrób zdjęcie<input
+                class="sr-only"
+                type="file"
+                accept="image/jpeg,image/png"
+                capture="environment"
                 (change)="uploadArticleImage($event)"
             /></label>
           </div>
