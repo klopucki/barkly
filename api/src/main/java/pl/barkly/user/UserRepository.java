@@ -14,6 +14,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmailIgnoreCase(String email);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from UserEntity u where lower(u.email) = lower(:email)")
+    Optional<UserEntity> findLockedByEmail(String email);
+
     @Query(
             """
             select u from UserEntity u
