@@ -60,6 +60,15 @@
         (click)="closeMenus()"
         >Społeczność</a
       >
+      @if (auth.currentUser()?.role === 'SUPER_ADMIN') {
+        <a
+          routerLink="/admin/users"
+          routerLinkActive="text-stone-950"
+          class="min-h-11 rounded-lg px-2 py-2 hover:bg-stone-200"
+          (click)="closeMenus()"
+          >Administracja</a
+        >
+      }
       @if (auth.currentUser()) {
         <app-notification-bell (click)="closeMenus()" />
         <div class="relative">
@@ -144,14 +153,6 @@
                   class="block rounded-lg px-3 py-2 hover:bg-stone-100"
                   (click)="closeMenus()"
                   >Moje szkoły</a
-                >
-              }
-              @if (auth.currentUser()?.role === 'SUPER_ADMIN') {
-                <a
-                  routerLink="/admin/users"
-                  class="block rounded-lg px-3 py-2 hover:bg-stone-100"
-                  (click)="closeMenus()"
-                  >Użytkownicy</a
                 >
               }
               <button
