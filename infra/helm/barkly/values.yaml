@@ -11,10 +11,13 @@ api:
   metrics:
     enabled: false
 
-  imagesStorage:
-    enabled: false
-    size: 2Gi
-    fsGroup: 999
+  objectStorage:
+    endpoint: ""
+    region: us-east-1
+    bucket: barkly-images
+    pathStyle: false
+    # Name of an existing secret containing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+    credentialsSecret: ""
 
   service:
     port: 8080

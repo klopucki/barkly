@@ -14,6 +14,8 @@ local development only, not an internet-facing or production installation.
 
 ## Install or update
 
+Provision the Silo service, bucket and application credentials first; see [image storage](../silo/README.md). The local values expect service `barkly-silo`, bucket `barkly-images` and secret `barkly-s3-credentials` in the `barkly` namespace.
+
 From the repository root:
 
 ```bash
@@ -22,7 +24,7 @@ From the repository root:
 
 This builds uniquely tagged local API and web images, deploys Barkly with one API
 replica, enables the internal Prometheus endpoint and provisions PVCs for PostgreSQL
-and images. It installs pinned Prometheus, Loki, Alloy, Grafana and Portainer Helm charts. On
+and uses a separately provisioned S3-compatible image store. It installs pinned Prometheus, Loki, Alloy, Grafana and Portainer Helm charts. On
 updates it restarts the API and web deployments after rebuilding the local tags.
 
 The Kubernetes PostgreSQL PVC is separate from any existing Docker Compose database.

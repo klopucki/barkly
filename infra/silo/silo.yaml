@@ -1,0 +1,78 @@
+# Apply in the application namespace after creating the silo-root-credentials secret.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: barkly-silo-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: barkly-silo
+spec:
+  type: ClusterIP
+  selector:
+    app: barkly-silo
+  ports:
+    - name: s3
+      port: 9000
+      targetPort: 9000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: barkly-silo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: barkly-silo
+  template:
+    metadata:
+      labels:
+        app: barkly-silo
+    spec:
+      containers:
+        - name: silo
+          image: docker.io/pgsty/silo:RELEASE.2026-11-09T00-00-00Z
+          args: ["server", "/data", "--console-address", ":9001"]
+          ports:
+            - containerPort: 9000
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: silo-root-credentials
+                  key: username
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: silo-root-credentials
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: barkly-silo-data

@@ -67,6 +67,18 @@ public class UserService {
                 .filter(UserEntity::isActive);
     }
 
+    @Transactional
+    public CurrentUserResponse updateDisplayName(String displayName) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user =
+                userRepository
+                        .findLockedByEmail(email)
+                        .filter(UserEntity::isActive)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        user.updateDisplayName(displayName);
+        return CurrentUserResponse.from(user);
+    }
+
     @Transactional(readOnly = true)
     public CurrentUserResponse currentUserResponse() {
         return CurrentUserResponse.from(currentUser());
