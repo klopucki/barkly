@@ -1,0 +1,9 @@
+{{- if and .Values.ingress.enabled .Values.ingress.httpsOnly .Values.ingress.tlsSecret }}
+apiVersion: traefik.io/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+spec:
+  defaultCertificate:
+    secretName: {{ .Values.ingress.tlsSecret | quote }}
+{{- end }}

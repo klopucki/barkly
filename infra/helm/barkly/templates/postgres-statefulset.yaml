@@ -26,9 +26,23 @@ spec:
             - name: POSTGRES_DB
               value: {{ .Values.postgres.database | quote }}
             - name: POSTGRES_USER
+{{- if .Values.api.datasource.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.datasource.existingSecret | quote }}
+                  key: SPRING_DATASOURCE_USERNAME
+{{- else }}
               value: {{ .Values.postgres.username | quote }}
+{{- end }}
             - name: POSTGRES_PASSWORD
+{{- if .Values.api.datasource.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.datasource.existingSecret | quote }}
+                  key: SPRING_DATASOURCE_PASSWORD
+{{- else }}
               value: {{ .Values.postgres.password | quote }}
+{{- end }}
 
           ports:
             - containerPort: 5432

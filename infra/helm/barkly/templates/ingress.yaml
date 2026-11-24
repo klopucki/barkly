@@ -4,12 +4,22 @@ kind: Ingress
 
 metadata:
   name: barkly
+{{- if .Values.ingress.httpsOnly }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+{{- end }}
 
 spec:
   ingressClassName: {{ .Values.ingress.className }}
 
+{{- if .Values.ingress.tlsSecret }}
+  tls:
+    - secretName: {{ .Values.ingress.tlsSecret | quote }}
+{{- end }}
   rules:
-    - host: {{ .Values.ingress.host }}
+    - {{- if .Values.ingress.host }}
+      host: {{ .Values.ingress.host | quote }}
+      {{- end }}
       http:
         paths:
           - path: /api

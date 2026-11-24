@@ -1,0 +1,29 @@
+{{- if .Values.certificate.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: barkly-acme
+spec:
+  acme:
+    server: {{ .Values.certificate.acmeServer | quote }}
+    profile: shortlived
+    privateKeySecretRef:
+      name: barkly-acme-account
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: {{ .Values.ingress.className | quote }}
+            serviceType: ClusterIP
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: barkly-ip
+spec:
+  secretName: {{ required "ingress.tlsSecret is required for the IP certificate" .Values.ingress.tlsSecret | quote }}
+  ipAddresses:
+    - {{ required "certificate.ipAddress is required" .Values.certificate.ipAddress | quote }}
+  issuerRef:
+    name: barkly-acme
+    kind: Issuer
+{{- end }}
