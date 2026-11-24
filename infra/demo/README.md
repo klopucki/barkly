@@ -11,8 +11,9 @@ volumes are not backups; losing the server can lose the demo data.
 After CI publishes the API and web images for a push to `main`, the deployment
 job sends this chart over SSH to the forced command installed from `deploy.sh`.
 The server accepts a full commit SHA, checks that it is still the tip of `main`,
-installs both images with that SHA, waits for Helm and checks HTTPS. Deployments
-are serialized. GitHub Actions requires the `DEMO_DEPLOY_SSH_KEY` and
+installs both images with that SHA, waits for Helm and checks HTTPS. Helm rolls
+back if the upgrade fails; checks performed after the upgrade report failure but
+do not automatically roll it back. Deployments are serialized. GitHub Actions requires the `DEMO_DEPLOY_SSH_KEY` and
 `DEMO_DEPLOY_KNOWN_HOSTS` secrets. The SSH key can deploy arbitrary chart content
 and therefore must be treated as highly privileged despite its forced command.
 Changing `deploy.sh` in Git does not automatically replace the copy installed

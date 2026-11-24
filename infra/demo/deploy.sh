@@ -24,6 +24,6 @@ helm upgrade --install barkly "$staging/barkly" -n barkly \
   -f "$staging/barkly/values-demo.yaml" \
   --set-string "api.image.tag=$commit" --set-string "web.image.tag=$commit" \
   --set-string ingress.tlsSecret=barkly-tls-production \
-  --set certificate.enabled=false --wait --timeout 5m
+  --set certificate.enabled=false --atomic --wait --timeout 5m
 curl --fail --silent --show-error --max-time 15 https://80.211.34.65/ -o /dev/null
 curl --fail --silent --show-error --max-time 15 https://80.211.34.65/api/auth/csrf -o /dev/null
