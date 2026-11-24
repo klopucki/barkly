@@ -16,6 +16,7 @@ import pl.barkly.dog.api.PostReactionSummary;
 import pl.barkly.training.image.TrainingImageStorage;
 import pl.barkly.user.UserEntity;
 import pl.barkly.user.UserService;
+import pl.barkly.user.access.SharedAccessService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ class DogPostService {
     private final TrainingImageStorage storage;
     private final DogPostReactionRepository reactions;
     private final DogPostCommentRepository comments;
+    private final SharedAccessService sharedAccess;
 
     DogPostService(
             DogRepository dogs,
@@ -35,13 +37,15 @@ class DogPostService {
             UserService users,
             TrainingImageStorage storage,
             DogPostReactionRepository reactions,
-            DogPostCommentRepository comments) {
+            DogPostCommentRepository comments,
+            SharedAccessService sharedAccess) {
         this.dogs = dogs;
         this.posts = posts;
         this.users = users;
         this.storage = storage;
         this.reactions = reactions;
         this.comments = comments;
+        this.sharedAccess = sharedAccess;
     }
 
     @Transactional(readOnly = true)
@@ -62,7 +66,7 @@ class DogPostService {
                                         new ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "Dog not found"));
         UserEntity user = users.currentUser();
-        if (!dog.getOwner().getId().equals(user.getId()))
+        if (!sharedAccess.canManageDog(dog, user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot post for this dog");
         String text = content == null ? "" : content.trim();
         if (text.isEmpty())
@@ -160,7 +164,7 @@ class DogPostService {
     }
 
     private boolean canView(DogEntity dog, UserEntity user) {
-        return (user != null && dog.getOwner().getId().equals(user.getId()))
+        return (user != null && sharedAccess.canManageDog(dog, user))
                 || dog.getVisibility() == DogVisibility.PUBLIC
                 || (dog.getVisibility() == DogVisibility.MEMBERS && user != null);
     }

@@ -16,6 +16,7 @@ import pl.barkly.school.api.SchoolResponse;
 import pl.barkly.user.UserEntity;
 import pl.barkly.user.UserRole;
 import pl.barkly.user.UserService;
+import pl.barkly.user.access.SharedAccessService;
 
 import java.text.Normalizer;
 import java.util.List;
@@ -26,16 +27,19 @@ public class SchoolService {
     private final UserService users;
     private final SchoolImageRepository images;
     private final FavoriteService favorites;
+    private final SharedAccessService sharedAccess;
 
     public SchoolService(
             SchoolRepository schools,
             UserService users,
             SchoolImageRepository images,
-            FavoriteService favorites) {
+            FavoriteService favorites,
+            SharedAccessService sharedAccess) {
         this.schools = schools;
         this.users = users;
         this.images = images;
         this.favorites = favorites;
+        this.sharedAccess = sharedAccess;
     }
 
     @Transactional(readOnly = true)
@@ -60,9 +64,8 @@ public class SchoolService {
 
     @Transactional(readOnly = true)
     public List<SchoolResponse> findMine() {
-        return schools.findAllByOwnerIdOrderByNameAsc(users.currentUser().getId()).stream()
-                .map(this::response)
-                .toList();
+        var user = users.currentUser();
+        return schools.findAccessibleByUserId(user.getId()).stream().map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
@@ -111,15 +114,14 @@ public class SchoolService {
 
     public void requireManagementAccess(SchoolEntity school) {
         UserEntity current = users.currentUser();
-        if (current.getRole() == UserRole.USER) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN, "Only school administrators can manage schools");
-        }
-        if (current.getRole() == UserRole.SUPER_ADMIN
-                || school.getOwner().getId().equals(current.getId())) {
+        if (sharedAccess.canManageSchool(school, current)) {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot manage this school");
+    }
+
+    public boolean canManage(SchoolEntity school, UserEntity user) {
+        return sharedAccess.canManageSchool(school, user);
     }
 
     @Transactional

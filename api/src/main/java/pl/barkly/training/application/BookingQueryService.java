@@ -48,7 +48,8 @@ class BookingQueryService {
     }
 
     List<MyTrainingBookingResponse> findMine() {
-        var dogs = dogRepository.findAllByOwner_IdOrderByNameAsc(userService.currentUser().getId());
+        var user = userService.currentUser();
+        var dogs = dogRepository.findAccessibleByUserId(user.getId());
         if (dogs.isEmpty()) {
             return List.of();
         }

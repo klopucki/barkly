@@ -17,6 +17,19 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     boolean existsByTrainingIdAndUserIdAndDeletedAtIsNull(Long trainingId, Long userId);
 
+    @Query(
+            """
+            select case when count(booking) > 0 then true else false end
+            from BookingEntity booking, DogEntity dog
+            where booking.trainingId = :trainingId and booking.deletedAt is null
+              and booking.dogId = dog.id
+              and (dog.owner.id = :userId or exists (
+                  select invitation.id from DogAccessInvitation invitation
+                  where invitation.dogId = dog.id and invitation.inviteeUserId = :userId
+                    and invitation.status = pl.barkly.user.access.AccessStatus.ACCEPTED))
+            """)
+    boolean existsForAccessibleDog(Long trainingId, Long userId);
+
     boolean existsByTrainingIdAndDogIdAndDeletedAtIsNull(Long trainingId, Long dogId);
 
     List<BookingEntity> findAllByDogIdInAndDeletedAtIsNull(List<Long> dogIds);

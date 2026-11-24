@@ -13,6 +13,7 @@ import pl.barkly.dog.api.DogResponse;
 import pl.barkly.training.image.TrainingImageStorage;
 import pl.barkly.user.UserEntity;
 import pl.barkly.user.UserService;
+import pl.barkly.user.access.SharedAccessService;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,22 +25,25 @@ class DogService {
     private final DogImageRepository images;
     private final UserService users;
     private final TrainingImageStorage storage;
+    private final SharedAccessService sharedAccess;
 
     DogService(
             DogRepository dogs,
             DogImageRepository images,
             UserService users,
-            TrainingImageStorage storage) {
+            TrainingImageStorage storage,
+            SharedAccessService sharedAccess) {
         this.dogs = dogs;
         this.images = images;
         this.users = users;
         this.storage = storage;
+        this.sharedAccess = sharedAccess;
     }
 
     @Transactional(readOnly = true)
     List<DogResponse> mine() {
         UserEntity user = users.currentUser();
-        return dogs.findAllByOwner_IdOrderByNameAsc(user.getId()).stream()
+        return dogs.findAccessibleByUserId(user.getId()).stream()
                 .map(dog -> response(dog, user))
                 .toList();
     }
@@ -81,7 +85,7 @@ class DogService {
     DogResponse update(Long id, DogRequest request) {
         DogEntity dog = find(id);
         UserEntity user = users.currentUser();
-        requireOwner(dog, user);
+        requireCaregiver(dog, user);
         dog.update(
                 request.name().trim(),
                 trim(request.breed()),
@@ -104,7 +108,7 @@ class DogService {
     @Transactional
     DogImageResponse addImage(Long id, MultipartFile file, DogVisibility visibility) {
         DogEntity dog = find(id);
-        requireOwner(dog, users.currentUser());
+        requireCaregiver(dog, users.currentUser());
         String key = storage.store(file);
         try {
             DogImageEntity image = images.save(new DogImageEntity(dog, key, visibility));
@@ -123,7 +127,7 @@ class DogService {
                                 () ->
                                         new ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "Dog image not found"));
-        requireOwner(image.getDog(), users.currentUser());
+        requireCaregiver(image.getDog(), users.currentUser());
         images.delete(image);
         storage.delete(image.getImageKey());
     }
@@ -165,7 +169,7 @@ class DogService {
     }
 
     private boolean canView(DogVisibility visibility, DogEntity dog, UserEntity user) {
-        return (user != null && dog.getOwner().getId().equals(user.getId()))
+        return (user != null && sharedAccess.canManageDog(dog, user))
                 || visibility == DogVisibility.PUBLIC
                 || (visibility == DogVisibility.MEMBERS && user != null);
     }
@@ -178,6 +182,12 @@ class DogService {
 
     private void requireOwner(DogEntity dog, UserEntity user) {
         if (!dog.getOwner().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot manage this dog");
+        }
+    }
+
+    private void requireCaregiver(DogEntity dog, UserEntity user) {
+        if (!sharedAccess.canManageDog(dog, user)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot manage this dog");
         }
     }

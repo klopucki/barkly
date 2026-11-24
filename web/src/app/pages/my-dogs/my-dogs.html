@@ -20,12 +20,14 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <button class="rounded border px-3 py-1.5 text-sm" (click)="edit(dog)">Edytuj</button>
-          <button
-            class="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700"
-            (click)="delete(dog)"
-          >
-            Usuń
-          </button>
+          @if (dog.owner) {
+            <button
+              class="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700"
+              (click)="delete(dog)"
+            >
+              Usuń
+            </button>
+          }
         </div>
       </div>
       @if (dog.images.length) {
@@ -120,7 +122,7 @@
             (ngModelChange)="set('visibility', $event)"
             name="visibility"
           >
-            <option value="PRIVATE">Prywatny — tylko ja</option>
+            <option value="PRIVATE">Prywatny — tylko opiekunowie</option>
             <option value="MEMBERS">Dla użytkowników Barkly</option>
             <option value="PUBLIC">Publiczny — dla każdego</option>
           </select></label

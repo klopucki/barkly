@@ -91,6 +91,17 @@ Cancellation notifications retain the training name/date and link to the persona
 cancelled training detail pages are no longer available. The scheduler interval can be configured with
 `barkly.notifications.reminder-interval-ms` (default `60000`).
 
+## Shared school and dog access
+
+Signed-in users can open **Wspólny dostęp** from their profile menu to invite an
+existing account, accept or decline a pending invitation, and revoke shared access.
+Invitations are delivered in the application; no email is sent. A school manager
+can invite another administrator for that school without changing the invitee's
+global role. A dog's primary owner can invite caregivers; caregivers can edit the
+dog profile, manage its images, post on its behalf and book trainings for it. Only
+the primary owner can delete the dog or manage its caregivers. The primary school
+owner and primary dog owner remain unchanged when shared access is revoked.
+
 ## Code formatting
 
 Java sources and tests use google-java-format 1.28.0 with four-space indentation (`--aosp`).
