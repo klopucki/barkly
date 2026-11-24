@@ -1,0 +1,77 @@
+<section class="mx-auto max-w-3xl space-y-8 px-4 py-8">
+  <header>
+    <h1 class="text-3xl font-bold">Wspólny dostęp</h1>
+    <p>Zapraszaj osoby do opieki nad psem lub zarządzania szkołą.</p>
+  </header>
+  @if (error()) {
+    <p role="alert" class="text-red-700">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p role="status" class="text-emerald-700">{{ message() }}</p>
+  }
+  <section class="space-y-3">
+    <h2 class="text-xl font-semibold">Twoje zaproszenia</h2>
+    @for (invitation of invitations(); track invitation.type + invitation.id) {
+      <div class="flex flex-wrap items-center gap-3 rounded-lg border p-3">
+        <span
+          >{{ invitation.type === 'DOG' ? 'Pies' : 'Szkoła' }}: {{ invitation.resourceName }}</span
+        >
+        <button class="barkly-button" (click)="accept(invitation)">Przyjmij</button>
+        <button class="rounded border px-3 py-2" (click)="revoke(invitation)">Odrzuć</button>
+      </div>
+    } @empty {
+      <p>Nie masz oczekujących zaproszeń.</p>
+    }
+  </section>
+  <section class="space-y-3">
+    <h2 class="text-xl font-semibold">Zarządzaj dostępem</h2>
+    <label class="block"
+      >Rodzaj profilu
+      <select
+        class="block w-full rounded border p-2"
+        [(ngModel)]="type"
+        (ngModelChange)="resourceId = null; members.set([])"
+      >
+        <option value="DOG">Pies</option>
+        <option value="SCHOOL">Szkoła</option>
+      </select>
+    </label>
+    <label class="block"
+      >Profil
+      <select
+        class="block w-full rounded border p-2"
+        [(ngModel)]="resourceId"
+        (ngModelChange)="loadMembers()"
+      >
+        <option [ngValue]="null">Wybierz</option>
+        @if (type === 'DOG') {
+          @for (dog of dogs(); track dog.id) {
+            @if (dog.owner) {
+              <option [ngValue]="dog.id">{{ dog.name }}</option>
+            }
+          }
+        } @else {
+          @for (school of schools(); track school.id) {
+            <option [ngValue]="school.id">{{ school.name }}</option>
+          }
+        }
+      </select>
+    </label>
+    <label class="block"
+      >Adres e-mail istniejącego użytkownika
+      <input class="block w-full rounded border p-2" type="email" [(ngModel)]="email" />
+    </label>
+    <button class="barkly-button" [disabled]="!resourceId || !email.trim()" (click)="invite()">
+      Zaproś
+    </button>
+    @for (member of members(); track member.type + member.id) {
+      <div class="flex flex-wrap items-center gap-3 rounded-lg border p-3">
+        <span
+          >{{ member.inviteeName }} —
+          {{ member.status === 'PENDING' ? 'oczekuje' : 'ma dostęp' }}</span
+        >
+        <button class="rounded border px-3 py-2" (click)="revoke(member)">Cofnij dostęp</button>
+      </div>
+    }
+  </section>
+</section>

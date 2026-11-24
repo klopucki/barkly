@@ -5,7 +5,7 @@
       <h1 id="my-schools-title">Moje szkoły</h1>
       <p class="catalog-intro">Zarządzaj profilami szkół, ofertą i publikacjami.</p>
     </div>
-    @if (canManageSchools()) {
+    @if (canCreateSchools()) {
       <button
         type="button"
         class="school-action school-action-primary"
@@ -82,9 +82,11 @@
           <div class="catalog-empty">
             <h2>Tu zaczyna się Twoja szkoła</h2>
             <p>Dodaj pierwszy profil, przedstaw ofertę i publikuj artykuły dla opiekunów psów.</p>
-            <button type="button" class="catalog-text-button" (click)="openCreateDialog()">
-              Dodaj pierwszą szkołę <span aria-hidden="true">↗</span>
-            </button>
+            @if (canCreateSchools()) {
+              <button type="button" class="catalog-text-button" (click)="openCreateDialog()">
+                Dodaj pierwszą szkołę <span aria-hidden="true">↗</span>
+              </button>
+            }
           </div>
         }
       }

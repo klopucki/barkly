@@ -37,6 +37,7 @@ class TrainingMessageFixtures {
         when(training.toResponse()).thenReturn(response);
         when(response.schoolId()).thenReturn(1L);
         when(f.schools.findEntityWithOwner(1L)).thenReturn(school);
+        when(f.schools.canManage(school, f.user)).thenReturn(owner || role == UserRole.SUPER_ADMIN);
         when(school.getOwner()).thenReturn(schoolOwner);
         when(schoolOwner.getId()).thenReturn(owner ? 9L : 10L);
         when(f.bookings.existsByTrainingIdAndUserIdAndDeletedAtIsNull(7L, 9L)).thenReturn(booked);

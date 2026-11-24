@@ -15,6 +15,17 @@ public interface SchoolRepository extends JpaRepository<SchoolEntity, Long> {
 
     List<SchoolEntity> findAllByOwnerIdOrderByNameAsc(Long ownerId);
 
+    @Query(
+            """
+            select school from SchoolEntity school
+            where school.owner.id = :userId or exists (
+                select invitation.id from SchoolAccessInvitation invitation
+                where invitation.schoolId = school.id and invitation.inviteeUserId = :userId
+                  and invitation.status = pl.barkly.user.access.AccessStatus.ACCEPTED)
+            order by school.name
+            """)
+    List<SchoolEntity> findAccessibleByUserId(Long userId);
+
     @EntityGraph(attributePaths = "owner")
     Optional<SchoolEntity> findBySlug(String slug);
 

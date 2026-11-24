@@ -36,6 +36,9 @@ export class MySchool {
     });
   }
   canManageSchools() {
+    return !!this.auth.currentUser();
+  }
+  canCreateSchools() {
     const role = this.auth.currentUser()?.role;
     return role === 'SCHOOL_ADMIN' || role === 'SUPER_ADMIN';
   }
@@ -54,7 +57,7 @@ export class MySchool {
     });
   }
   openCreateDialog() {
-    if (!this.canManageSchools()) return;
+    if (!this.canCreateSchools()) return;
     this.editing = null;
     this.form = this.emptyForm();
     this.error = '';
@@ -78,7 +81,7 @@ export class MySchool {
     this.showFormDialog = false;
   }
   save() {
-    if (!this.canManageSchools()) {
+    if (!this.auth.currentUser() || (!this.editing && !this.canCreateSchools())) {
       this.error = 'Tylko administrator szkoły może zarządzać szkołą.';
       return;
     }

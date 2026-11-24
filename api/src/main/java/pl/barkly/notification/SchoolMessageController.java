@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 import pl.barkly.school.SchoolService;
 import pl.barkly.training.persistence.BookingRepository;
 import pl.barkly.training.persistence.TrainingRepository;
-import pl.barkly.user.UserRole;
 import pl.barkly.user.UserService;
 
 import java.util.List;
@@ -67,13 +66,10 @@ class SchoolMessageController {
                         .findByIdAndDeletedAtIsNull(trainingId)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         var school = schools.findEntityWithOwner(training.toResponse().schoolId());
-        boolean manager =
-                user.getRole() == UserRole.SUPER_ADMIN
-                        || (user.getRole() == UserRole.SCHOOL_ADMIN
-                                && school.getOwner().getId().equals(user.getId()));
+        boolean manager = schools.canManage(school, user);
         if (!manager
-                && !bookings.existsByTrainingIdAndUserIdAndDeletedAtIsNull(
-                        trainingId, user.getId()))
+                && !bookings.existsByTrainingIdAndUserIdAndDeletedAtIsNull(trainingId, user.getId())
+                && !bookings.existsForAccessibleDog(trainingId, user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return notifications.trainingMessages(trainingId, page);
     }

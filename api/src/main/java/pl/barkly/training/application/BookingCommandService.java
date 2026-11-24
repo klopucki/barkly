@@ -14,6 +14,7 @@ import pl.barkly.training.persistence.BookingRepository;
 import pl.barkly.training.persistence.TrainingEntity;
 import pl.barkly.training.persistence.TrainingRepository;
 import pl.barkly.user.UserService;
+import pl.barkly.user.access.SharedAccessService;
 
 @Service
 class BookingCommandService {
@@ -24,6 +25,7 @@ class BookingCommandService {
     private final DogRepository dogs;
     private final UserService users;
     private final pl.barkly.notification.NotificationService notifications;
+    private final SharedAccessService sharedAccess;
 
     BookingCommandService(
             TrainingRepository trainingRepository,
@@ -31,13 +33,15 @@ class BookingCommandService {
             SchoolService schoolService,
             DogRepository dogs,
             UserService users,
-            pl.barkly.notification.NotificationService notifications) {
+            pl.barkly.notification.NotificationService notifications,
+            SharedAccessService sharedAccess) {
         this.trainingRepository = trainingRepository;
         this.bookingRepository = bookingRepository;
         this.schoolService = schoolService;
         this.dogs = dogs;
         this.users = users;
         this.notifications = notifications;
+        this.sharedAccess = sharedAccess;
     }
 
     @Transactional
@@ -69,7 +73,7 @@ class BookingCommandService {
                                 () ->
                                         new ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "Dog not found"));
-        if (!dog.getOwner().getId().equals(user.getId()))
+        if (!sharedAccess.canManageDog(dog, user))
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "You can only register your own dog");
         if (bookingRepository.existsByTrainingIdAndDogIdAndDeletedAtIsNull(trainingId, dogId))

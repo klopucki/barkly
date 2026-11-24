@@ -147,14 +147,18 @@
                 (click)="closeMenus()"
                 >Moje psy</a
               >
-              @if (canManageSchools()) {
-                <a
-                  routerLink="/my-school"
-                  class="block rounded-lg px-3 py-2 hover:bg-stone-100"
-                  (click)="closeMenus()"
-                  >Moje szkoły</a
-                >
-              }
+              <a
+                routerLink="/my-school"
+                class="block rounded-lg px-3 py-2 hover:bg-stone-100"
+                (click)="closeMenus()"
+                >Moje szkoły</a
+              >
+              <a
+                routerLink="/me/access"
+                class="block rounded-lg px-3 py-2 hover:bg-stone-100"
+                (click)="closeMenus()"
+                >Wspólny dostęp</a
+              >
               <button
                 type="button"
                 class="mt-1 w-full rounded-lg px-3 py-2 text-left text-red-700 hover:bg-red-50"
