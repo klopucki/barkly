@@ -1,0 +1,30 @@
+# Single-node demo. Image tags and secrets must be supplied for each deployment.
+api:
+  image:
+    repository: ghcr.io/klopucki/barkly-api
+    pullPolicy: IfNotPresent
+  replicas: 1
+  autoscaling:
+    enabled: false
+  metrics:
+    enabled: true
+  datasource:
+    existingSecret: barkly-db-credentials
+  objectStorage:
+    endpoint: http://barkly-silo:9000
+    pathStyle: true
+    credentialsSecret: barkly-s3-credentials
+
+web:
+  image:
+    repository: ghcr.io/klopucki/barkly-web
+    pullPolicy: IfNotPresent
+  replicas: 1
+
+ingress:
+  host: ""
+  tlsSecret: barkly-tls
+  httpsOnly: true
+
+certificate:
+  enabled: true

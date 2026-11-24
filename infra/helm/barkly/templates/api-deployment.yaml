@@ -53,7 +53,7 @@ spec:
             - configMapRef:
                 name: barkly-api-config
             - secretRef:
-                name: barkly-api-secret
+                name: {{ .Values.api.datasource.existingSecret | default "barkly-api-secret" | quote }}
 {{- if .Values.api.objectStorage.credentialsSecret }}
             - secretRef:
                 name: {{ .Values.api.objectStorage.credentialsSecret | quote }}
