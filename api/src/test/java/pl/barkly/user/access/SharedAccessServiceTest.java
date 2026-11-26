@@ -86,6 +86,38 @@ class SharedAccessServiceTest {
     }
 
     @Test
+    void unrelatedUserCannotRevokeDogCaregiver() {
+        var invitation = new DogAccessInvitation(4L, 2L, 1L);
+        var dog = mock(DogEntity.class);
+        var owner = mock(UserEntity.class);
+        var stranger = mock(UserEntity.class);
+        when(owner.getId()).thenReturn(1L);
+        when(stranger.getId()).thenReturn(3L);
+        when(users.currentUser()).thenReturn(stranger);
+        when(dog.getOwner()).thenReturn(owner);
+        when(dogRepository.findById(4L)).thenReturn(Optional.of(dog));
+        when(dogs.findById(8L)).thenReturn(Optional.of(invitation));
+        assertThatThrownBy(() -> service.revokeDog(8L))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("403");
+        verify(dogs, never()).delete(any());
+    }
+
+    @Test
+    void primaryOwnerCanRevokeDogCaregiver() {
+        var invitation = new DogAccessInvitation(4L, 2L, 1L);
+        var dog = mock(DogEntity.class);
+        var owner = mock(UserEntity.class);
+        when(owner.getId()).thenReturn(1L);
+        when(users.currentUser()).thenReturn(owner);
+        when(dog.getOwner()).thenReturn(owner);
+        when(dogRepository.findById(4L)).thenReturn(Optional.of(dog));
+        when(dogs.findById(8L)).thenReturn(Optional.of(invitation));
+        service.revokeDog(8L);
+        verify(dogs).delete(invitation);
+    }
+
+    @Test
     void schoolAccessDoesNotRequireGlobalSchoolAdminRole() {
         var owner = mock(UserEntity.class);
         var user = mock(UserEntity.class);
