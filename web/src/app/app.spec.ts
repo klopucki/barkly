@@ -44,12 +44,12 @@ describe('App', () => {
     button.click();
     fixture.detectChanges();
     expect(button.getAttribute('aria-expanded')).toBe('true');
-    expect(fixture.nativeElement.textContent).toContain('Wspólny dostęp');
+    expect(fixture.nativeElement.textContent).toContain('Moje szkoły');
 
     document.body.click();
     fixture.detectChanges();
     expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(fixture.nativeElement.textContent).not.toContain('Wspólny dostęp');
+    expect(fixture.nativeElement.textContent).not.toContain('Moje szkoły');
   });
 
   it('shows the admin navigation only to super administrators', () => {

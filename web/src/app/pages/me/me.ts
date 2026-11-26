@@ -7,6 +7,7 @@ import { SchoolService } from '../../features/schools/school.service';
 import { Training, trainingPriceLabel } from '../../features/trainings/training.model';
 import { TrainingService } from '../../features/trainings/training.service';
 import { FavoritesService } from '../../shared/favorites.service';
+import { AccessInvitation, AccessService } from '../../features/access/access.service';
 
 @Component({
   selector: 'app-me',
@@ -48,6 +49,10 @@ export class Me implements OnInit {
   protected readonly trainingPriceLabel = trainingPriceLabel;
   protected readonly auth = inject(AuthService);
   private readonly schoolsApi = inject(SchoolService);
+  private readonly access = inject(AccessService);
+  readonly invitations = signal<AccessInvitation[]>([]);
+  readonly invitationError = signal('');
+  readonly invitationBusy = signal(false);
   private readonly trainingsApi = inject(TrainingService);
   protected readonly favorites = inject(FavoritesService);
   private readonly schools = signal<School[]>([]);
@@ -64,6 +69,7 @@ export class Me implements OnInit {
   );
 
   ngOnInit(): void {
+    this.loadInvitations();
     this.schoolsApi
       .search$('', 0, 20, true)
       .subscribe({ next: (result) => this.schools.set(result.items) });
@@ -73,6 +79,31 @@ export class Me implements OnInit {
     this.schoolsApi
       .searchNews$('', 0, 20, true)
       .subscribe({ next: (result) => this.articles.set(result.items) });
+  }
+
+  private loadInvitations(): void {
+    this.access.pending().subscribe({
+      next: (invitations) => this.invitations.set(invitations),
+      error: () => this.invitationError.set('Nie udało się pobrać zaproszeń.'),
+    });
+  }
+
+  respond(invitation: AccessInvitation, accept: boolean): void {
+    if (this.invitationBusy()) return;
+    this.invitationBusy.set(true);
+    this.invitationError.set('');
+    (accept ? this.access.accept(invitation) : this.access.revoke(invitation)).subscribe({
+      next: () => {
+        this.invitationBusy.set(false);
+        this.invitations.update((items) =>
+          items.filter((item) => item.type !== invitation.type || item.id !== invitation.id),
+        );
+      },
+      error: () => {
+        this.invitationBusy.set(false);
+        this.invitationError.set('Nie udało się odpowiedzieć na zaproszenie. Spróbuj ponownie.');
+      },
+    });
   }
 
   protected canManageSchools(): boolean {

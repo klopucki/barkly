@@ -4,8 +4,8 @@ import { adminGuard, authGuard } from './features/auth/auth.guard';
 export const routes: Routes = [
   {
     path: 'me/access',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/shared-access/shared-access').then((m) => m.SharedAccess),
+    redirectTo: 'me',
+    pathMatch: 'full',
   },
   {
     path: 'admin/users',
