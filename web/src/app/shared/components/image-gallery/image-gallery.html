@@ -12,7 +12,7 @@
       />
       <span
         class="absolute bottom-3 right-3 rounded-full bg-stone-950/75 px-3 py-1.5 text-sm font-semibold text-white"
-        >{{ currentIndex() + 1 }} / {{ images().length }} · Powiększ</span
+        >{{ selectedIndex() + 1 }} / {{ images().length }} · Powiększ</span
       >
     </button>
     @if (images().length > 1) {
@@ -21,8 +21,8 @@
           <button
             type="button"
             class="h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2"
-            [class.border-emerald-700]="index === currentIndex()"
-            [class.border-transparent]="index !== currentIndex()"
+            [class.border-emerald-700]="index === selectedIndex()"
+            [class.border-transparent]="index !== selectedIndex()"
             (click)="select(index)"
           >
             <img class="h-full w-full object-cover" [src]="thumbnail.src" [alt]="thumbnail.alt" />
@@ -76,7 +76,7 @@
         </button>
       }
       <p class="absolute -bottom-8 text-sm text-white">
-        {{ currentIndex() + 1 }} z {{ images().length }}
+        {{ selectedIndex() + 1 }} z {{ images().length }}
       </p>
     </div>
   </div>

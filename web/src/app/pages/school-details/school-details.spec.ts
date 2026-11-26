@@ -29,7 +29,11 @@ describe('article editor', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => {
+    editor.remove();
+    window.getSelection()?.removeAllRanges();
+    http.verify();
+  });
 
   it('does not close the article editor when its backdrop is clicked', () => {
     const fixture = TestBed.createComponent(SchoolDetails);
@@ -52,11 +56,65 @@ describe('article editor', () => {
     expect(fixture.componentInstance.showArticleDialog).toBe(true);
   });
 
+  it('adds and removes a gallery image without deleting the asset', () => {
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'gallery.jpg')] });
+    component.uploadGalleryImage({ target: input } as unknown as Event);
+    const upload = http.expectOne('/api/schools/2/images');
+    expect((upload.request.body as FormData).get('gallery')).toBe('true');
+    upload.flush({ id: 9, imageKey: 'gallery.jpg' });
+    expect(component.school()?.images).toHaveLength(1);
+    component.hideGalleryImage(9);
+    const remove = http.expectOne('/api/school-images/9/gallery');
+    expect(remove.request.method).toBe('DELETE');
+    remove.flush({ id: 2, name: 'School', images: [] });
+    expect(component.school()?.images).toHaveLength(0);
+  });
+
+  it('inserts an article image at the saved cursor after the file picker removes focus', () => {
+    document.body.append(editor);
+    editor.innerHTML = '<p>Before after</p>';
+    const text = editor.querySelector('p')!.firstChild!;
+    const range = document.createRange();
+    range.setStart(text, 6);
+    range.collapse(true);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    component.rememberEditorSelection();
+    selection.removeAllRanges();
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'photo.jpg')] });
+    component.uploadArticleImage({ target: input } as unknown as Event);
+    const upload = http.expectOne('/api/schools/2/images');
+    expect((upload.request.body as FormData).get('gallery')).toBe('false');
+    upload.flush({ id: 9, imageKey: 'photo.jpg' });
+    const paragraph = editor.querySelector('p')!;
+    expect(paragraph.childNodes[0].textContent).toBe('Before');
+    expect(paragraph.childNodes[1].nodeName).toBe('IMG');
+    expect(paragraph.childNodes[2].textContent).toBe(' after');
+  });
+
+  it('removes the selected article image and does not save its selection marker', () => {
+    document.body.append(editor);
+    editor.innerHTML = '<p>Text<img src="/api/training-images/example.jpg">more</p>';
+    const image = editor.querySelector('img')!;
+    component.selectEditorImage({ target: image } as unknown as MouseEvent);
+    expect(component.selectedArticleImage()).toBe(image);
+    component.syncEditor();
+    expect(component.articleContent).not.toContain('data-article-selected');
+    component.removeSelectedArticleImage();
+    expect(editor.querySelector('img')).toBeNull();
+    expect(component.articleContent).toContain('Textmore');
+  });
+
   it('uploads and sets a profile image for the current school', () => {
     const input = document.createElement('input');
     Object.defineProperty(input, 'files', { value: [new File(['x'], 'photo.jpg')] });
     component.uploadProfileImage({ target: input } as unknown as Event);
-    http.expectOne('/api/schools/2/images').flush({ id: 9, imageKey: 'photo.jpg' });
+    const upload = http.expectOne('/api/schools/2/images');
+    expect((upload.request.body as FormData).get('gallery')).toBe('false');
+    upload.flush({ id: 9, imageKey: 'photo.jpg' });
     const update = http.expectOne('/api/schools/2/profile-image/9');
     expect(update.request.method).toBe('PUT');
     update.flush({ id: 2, name: 'School', profileImageKey: 'photo.jpg', images: [] });
