@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Dog, dogImageUrl, DogPayload, DogVisibility } from '../../features/dogs/dog.model';
 import { DogService } from '../../features/dogs/dog.service';
 import { Modal } from '../../shared/components/modal/modal';
+import { ManageAccess } from '../../features/access/manage-access';
 
 const empty = (): DogPayload => ({
   name: '',
@@ -15,13 +16,14 @@ const empty = (): DogPayload => ({
 
 @Component({
   selector: 'app-my-dogs',
-  imports: [FormsModule, Modal],
+  imports: [FormsModule, Modal, ManageAccess],
   templateUrl: './my-dogs.html',
 })
 export class MyDogs implements OnInit {
   private readonly dogsApi = inject(DogService);
   readonly dogs = signal<Dog[]>([]);
   readonly editing = signal<Dog | null>(null);
+  readonly accessDog = signal<Dog | null>(null);
   readonly isFormOpen = signal(false);
   readonly form = signal<DogPayload>(empty());
   readonly error = signal('');

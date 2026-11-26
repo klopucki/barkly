@@ -55,6 +55,38 @@
         </button>
       }
     </div>
+    @if (invitations().length || invitationError()) {
+      <section class="barkly-card mt-8 p-6" aria-labelledby="access-invitations">
+        <h2 id="access-invitations" class="text-xl font-semibold">Zaproszenia do współpracy</h2>
+        @if (invitationError()) {
+          <p role="alert" class="mt-2 text-red-700">{{ invitationError() }}</p>
+        }
+        @for (invitation of invitations(); track invitation.type + invitation.id) {
+          <div class="mt-3 flex flex-wrap items-center gap-3 rounded-lg border p-3">
+            <span class="flex-1"
+              >{{ invitation.type === 'DOG' ? 'Współopieka nad psem' : 'Współzarządzanie szkołą' }}:
+              {{ invitation.resourceName }}</span
+            >
+            <button
+              type="button"
+              class="barkly-button"
+              [disabled]="invitationBusy()"
+              (click)="respond(invitation, true)"
+            >
+              Przyjmij
+            </button>
+            <button
+              type="button"
+              class="rounded border px-3 py-2"
+              [disabled]="invitationBusy()"
+              (click)="respond(invitation, false)"
+            >
+              Odrzuć
+            </button>
+          </div>
+        }
+      </section>
+    }
     <div class="mt-8 grid gap-5 sm:grid-cols-2">
       <a routerLink="/me/calendar" class="barkly-card group p-6 sm:col-span-2">
         <div class="flex items-start justify-between gap-4">
@@ -82,15 +114,15 @@
           >Zarządzaj →</span
         ></a
       >
+      <a routerLink="/my-school" class="barkly-card group p-6"
+        ><p class="barkly-eyebrow">Twoja organizacja</p>
+        <h2 class="mt-3 text-2xl font-semibold">Moje szkoły</h2>
+        <p class="mt-2 text-stone-600">Uzupełniaj profil, publikuj artykuły i rozwijaj ofertę.</p>
+        <span class="mt-5 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
+          >Zarządzaj →</span
+        ></a
+      >
       @if (canManageSchools()) {
-        <a routerLink="/my-school" class="barkly-card group p-6"
-          ><p class="barkly-eyebrow">Twoja organizacja</p>
-          <h2 class="mt-3 text-2xl font-semibold">Moje szkoły</h2>
-          <p class="mt-2 text-stone-600">Uzupełniaj profil, publikuj artykuły i rozwijaj ofertę.</p>
-          <span class="mt-5 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
-            >Zarządzaj →</span
-          ></a
-        >
         <a routerLink="/trainings" class="barkly-card group p-6"
           ><p class="barkly-eyebrow">Oferta</p>
           <h2 class="mt-3 text-2xl font-semibold">Treningi</h2>

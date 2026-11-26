@@ -29,6 +29,9 @@
           <strong>Twój profil szkoły</strong>
           <p>Aktualizuj informacje widoczne dla opiekunów.</p>
         </div>
+        <button type="button" class="rounded-lg border px-4 py-2" (click)="showSchoolAccess = true">
+          Zarządzaj współwłaścicielami
+        </button>
         <button type="button" class="barkly-button" (click)="openSchoolEdit()">
           Edytuj profil szkoły
         </button>
@@ -51,6 +54,11 @@
         }
       }
     </div>
+    @if (showSchoolAccess && canManage()) {
+      <app-modal [title]="'Współwłaściciele: ' + s.name" (closed)="showSchoolAccess = false">
+        <app-manage-access type="SCHOOL" [resourceId]="s.id" />
+      </app-modal>
+    }
     @if (showSchoolEdit) {
       <app-modal title="Edytuj profil szkoły" (closed)="showSchoolEdit = false">
         <form class="space-y-4" #schoolEditForm="ngForm" (ngSubmit)="saveSchool()">

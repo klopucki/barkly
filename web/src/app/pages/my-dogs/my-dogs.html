@@ -22,6 +22,13 @@
           <button class="rounded border px-3 py-1.5 text-sm" (click)="edit(dog)">Edytuj</button>
           @if (dog.owner) {
             <button
+              type="button"
+              class="rounded border px-3 py-1.5 text-sm"
+              (click)="accessDog.set(dog)"
+            >
+              Zarządzaj współopiekunami
+            </button>
+            <button
               class="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700"
               (click)="delete(dog)"
             >
@@ -74,6 +81,11 @@
     <div class="rounded-xl border border-dashed p-8 text-center text-gray-600">
       Nie masz jeszcze żadnego profilu psa.
     </div>
+  }
+  @if (accessDog(); as dog) {
+    <app-modal [title]="'Współopiekunowie: ' + dog.name" (closed)="accessDog.set(null)">
+      <app-manage-access type="DOG" [resourceId]="dog.id" />
+    </app-modal>
   }
   @if (isFormOpen()) {
     <app-modal [title]="editing() ? 'Edytuj profil' : 'Nowy pies'" (closed)="cancel()">

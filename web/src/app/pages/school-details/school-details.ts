@@ -26,6 +26,7 @@ import { TrainingCard } from '../../features/trainings/components/training-card/
 import { FavoritesService } from '../../shared/favorites.service';
 import { GalleryImage, ImageGallery } from '../../shared/components/image-gallery/image-gallery';
 import { Modal } from '../../shared/components/modal/modal';
+import { ManageAccess } from '../../features/access/manage-access';
 import {
   TrainingForm,
   TrainingFormSubmission,
@@ -38,6 +39,7 @@ import {
     RouterLink,
     ImageGallery,
     Modal,
+    ManageAccess,
     TrainingForm,
     MessageForm,
     TrainingCard,
@@ -91,6 +93,7 @@ export class SchoolDetails implements OnInit {
   error = '';
   showArticleDialog = false;
   showSchoolEdit = false;
+  showSchoolAccess = false;
   savingSchool = false;
   schoolEditError = '';
   schoolForm = {
