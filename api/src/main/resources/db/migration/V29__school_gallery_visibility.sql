@@ -1,0 +1,1 @@
+ALTER TABLE school_image ADD COLUMN gallery_visible BOOLEAN NOT NULL DEFAULT TRUE;

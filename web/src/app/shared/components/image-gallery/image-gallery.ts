@@ -13,13 +13,16 @@ export class ImageGallery {
   images = input.required<GalleryImage[]>();
   readonly currentIndex = signal(0);
   readonly isOpen = signal(false);
-  readonly current = computed(() => this.images()[this.currentIndex()] ?? null);
+  readonly selectedIndex = computed(() =>
+    Math.min(this.currentIndex(), Math.max(0, this.images().length - 1)),
+  );
+  readonly current = computed(() => this.images()[this.selectedIndex()] ?? null);
 
   select(index: number): void {
     this.currentIndex.set(index);
   }
 
-  open(index = this.currentIndex()): void {
+  open(index = this.selectedIndex()): void {
     this.select(index);
     this.isOpen.set(true);
   }
@@ -29,10 +32,14 @@ export class ImageGallery {
   }
 
   previous(): void {
-    this.currentIndex.update((index) => (index - 1 + this.images().length) % this.images().length);
+    if (this.images().length)
+      this.currentIndex.set(
+        (this.selectedIndex() - 1 + this.images().length) % this.images().length,
+      );
   }
 
   next(): void {
-    this.currentIndex.update((index) => (index + 1) % this.images().length);
+    if (this.images().length)
+      this.currentIndex.set((this.selectedIndex() + 1) % this.images().length);
   }
 }

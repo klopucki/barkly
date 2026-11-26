@@ -128,12 +128,14 @@ public class SchoolService {
     public SchoolImageResponse addImage(
             Long schoolId,
             org.springframework.web.multipart.MultipartFile image,
+            boolean gallery,
             pl.barkly.training.image.TrainingImageStorage storage) {
         SchoolEntity school = findEntityWithOwner(schoolId);
         requireManagementAccess(school);
         String key = storage.store(image);
         try {
-            return SchoolImageResponse.from(images.save(new SchoolImageEntity(school, key)));
+            return SchoolImageResponse.from(
+                    images.save(new SchoolImageEntity(school, key, gallery)));
         } catch (RuntimeException exception) {
             storage.delete(key);
             throw exception;
@@ -157,6 +159,21 @@ public class SchoolService {
     }
 
     @Transactional
+    public SchoolResponse hideImageFromGallery(Long imageId) {
+        var image =
+                images.findById(imageId)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "School image not found"));
+        var school = findEntityWithOwner(image.getSchoolId());
+        requireManagementAccess(school);
+        preserveImplicitProfile(school, imageId);
+        image.hideFromGallery();
+        return response(school);
+    }
+
+    @Transactional
     public SchoolResponse setHistoryImage(Long schoolId, Long imageId) {
         var school = findEntityWithOwner(schoolId);
         requireManagementAccess(school);
@@ -165,6 +182,12 @@ public class SchoolService {
                         .filter(image -> image.getSchoolId().equals(schoolId))
                         .isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "School image not found");
+        preserveImplicitProfile(school, school.getHistoryImageId(), imageId);
+        if (school.getHistoryImageId() != null) {
+            images.findById(school.getHistoryImageId())
+                    .ifPresent(SchoolImageEntity::hideFromGallery);
+        }
+        if (imageId != null) images.findById(imageId).ifPresent(SchoolImageEntity::hideFromGallery);
         school.setHistoryImageId(imageId);
         return response(school);
     }
@@ -178,15 +201,44 @@ public class SchoolService {
                         .filter(image -> image.getSchoolId().equals(schoolId))
                         .isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "School image not found");
+        if (school.getProfileImageId() != null) {
+            images.findById(school.getProfileImageId())
+                    .ifPresent(SchoolImageEntity::hideFromGallery);
+        }
+        if (imageId != null) images.findById(imageId).ifPresent(SchoolImageEntity::hideFromGallery);
         school.setProfileImageId(imageId);
         return response(school);
     }
 
-    private SchoolResponse response(SchoolEntity school) {
-        var gallery =
+    private void preserveImplicitProfile(SchoolEntity school, Long... imageIds) {
+        if (school.getProfileImageId() != null) return;
+        var firstVisible =
                 images.findAllBySchool_IdOrderByIdAsc(school.getId()).stream()
+                        .filter(SchoolImageEntity::isGalleryVisible)
+                        .findFirst();
+        if (firstVisible.isEmpty()) return;
+        Long firstId = firstVisible.get().getId();
+        for (Long imageId : imageIds) {
+            if (firstId.equals(imageId)) {
+                school.setProfileImageId(firstId);
+                return;
+            }
+        }
+    }
+
+    private SchoolResponse response(SchoolEntity school) {
+        var allImages = images.findAllBySchool_IdOrderByIdAsc(school.getId());
+        var gallery =
+                allImages.stream()
+                        .filter(
+                                image ->
+                                        image.isGalleryVisible()
+                                                && !image.getId().equals(school.getProfileImageId())
+                                                && !image.getId()
+                                                        .equals(school.getHistoryImageId()))
                         .map(SchoolImageResponse::from)
                         .toList();
+        var allResponses = allImages.stream().map(SchoolImageResponse::from).toList();
         return new SchoolResponse(
                 school.getId(),
                 school.getName(),
@@ -197,16 +249,22 @@ public class SchoolService {
                 school.getActivities(),
                 school.getPricing(),
                 school.getHistory(),
-                gallery.stream()
+                allResponses.stream()
                         .filter(image -> image.id().equals(school.getHistoryImageId()))
                         .map(SchoolImageResponse::imageKey)
                         .findFirst()
                         .orElse(null),
-                gallery.stream()
+                allResponses.stream()
                         .filter(image -> image.id().equals(school.getProfileImageId()))
                         .map(SchoolImageResponse::imageKey)
                         .findFirst()
-                        .orElse(null),
+                        .orElseGet(
+                                () ->
+                                        allImages.stream()
+                                                .filter(SchoolImageEntity::isGalleryVisible)
+                                                .map(SchoolImageEntity::getImageKey)
+                                                .findFirst()
+                                                .orElse(null)),
                 gallery);
     }
 

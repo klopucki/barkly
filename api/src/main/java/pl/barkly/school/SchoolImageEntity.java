@@ -1,5 +1,6 @@
 package pl.barkly.school;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -22,11 +23,19 @@ public class SchoolImageEntity {
 
     private String imageKey;
 
+    @Column(nullable = false)
+    private boolean galleryVisible = true;
+
     protected SchoolImageEntity() {}
 
     public SchoolImageEntity(SchoolEntity school, String imageKey) {
+        this(school, imageKey, true);
+    }
+
+    public SchoolImageEntity(SchoolEntity school, String imageKey, boolean galleryVisible) {
         this.school = school;
         this.imageKey = imageKey;
+        this.galleryVisible = galleryVisible;
     }
 
     public Long getId() {
@@ -35,6 +44,14 @@ public class SchoolImageEntity {
 
     public Long getSchoolId() {
         return school.getId();
+    }
+
+    public boolean isGalleryVisible() {
+        return galleryVisible;
+    }
+
+    public void hideFromGallery() {
+        this.galleryVisible = false;
     }
 
     public String getImageKey() {

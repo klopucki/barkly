@@ -3,6 +3,7 @@ import {
   DestroyRef,
   ElementRef,
   OnInit,
+  HostListener,
   SecurityContext,
   ViewChild,
   computed,
@@ -77,6 +78,8 @@ export class SchoolDetails implements OnInit {
   readonly news = signal<SchoolNews[]>([]);
   readonly canManage = signal(false);
   readonly managementResolved = signal(false);
+  readonly galleryLoading = signal(false);
+  readonly galleryError = signal('');
   readonly profileImageLoading = signal(false);
   readonly profileImageError = signal('');
   readonly enlargedImage = signal<string | null>(null);
@@ -103,6 +106,8 @@ export class SchoolDetails implements OnInit {
   readonly articleImageLoading = signal(false);
   readonly articlePreview = signal(false);
   private articleEditorVersion = 0;
+  private savedArticleRange: Range | null = null;
+  readonly selectedArticleImage = signal<HTMLImageElement | null>(null);
   articleTitle = '';
   articleContent = '';
   articleActive = true;
@@ -238,6 +243,47 @@ export class SchoolDetails implements OnInit {
       });
   }
 
+  uploadGalleryImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const school = this.school();
+    if (!school || !file || this.galleryLoading()) return;
+    this.galleryLoading.set(true);
+    this.galleryError.set('');
+    this.service.uploadImage$(school.id, file, true).subscribe({
+      next: (image) => {
+        if (this.school()?.id === school.id)
+          this.school.update((current) =>
+            current ? { ...current, images: [...current.images, image] } : current,
+          );
+        this.galleryLoading.set(false);
+        input.value = '';
+      },
+      error: () => {
+        this.galleryError.set('Nie udało się dodać zdjęcia do galerii. Sprawdź format i rozmiar.');
+        this.galleryLoading.set(false);
+        input.value = '';
+      },
+    });
+  }
+
+  hideGalleryImage(imageId: number): void {
+    const school = this.school();
+    if (!school || this.galleryLoading()) return;
+    this.galleryLoading.set(true);
+    this.galleryError.set('');
+    this.service.hideGalleryImage$(imageId).subscribe({
+      next: (updated) => {
+        if (this.school()?.id === school.id) this.school.set(updated);
+        this.galleryLoading.set(false);
+      },
+      error: () => {
+        this.galleryError.set('Nie udało się usunąć zdjęcia z galerii.');
+        this.galleryLoading.set(false);
+      },
+    });
+  }
+
   uploadProfileImage(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -246,7 +292,7 @@ export class SchoolDetails implements OnInit {
     this.profileImageLoading.set(true);
     this.profileImageError.set('');
     this.service
-      .uploadImage$(school.id, file)
+      .uploadImage$(school.id, file, false)
       .pipe(
         switchMap((image) =>
           this.http.put<School>(`/api/schools/${school.id}/profile-image/${image.id}`, {}),
@@ -275,7 +321,7 @@ export class SchoolDetails implements OnInit {
     if (!file || !school || this.historyImageLoading()) return;
     this.historyImageLoading.set(true);
     this.historyImageError.set('');
-    this.service.uploadImage$(school.id, file).subscribe({
+    this.service.uploadImage$(school.id, file, false).subscribe({
       next: (result) => {
         const imageId = (result as { id: number }).id;
         this.http.put<School>(`/api/schools/${school.id}/history-image/${imageId}`, {}).subscribe({
@@ -287,7 +333,7 @@ export class SchoolDetails implements OnInit {
           error: () => {
             this.historyImageLoading.set(false);
             this.historyImageError.set(
-              'Zdjęcie dodano do galerii, ale nie udało się przypisać go do historii.',
+              'Zdjęcie przesłano, ale nie udało się przypisać go do historii. Spróbuj ponownie.',
             );
             input.value = '';
           },
@@ -435,6 +481,8 @@ export class SchoolDetails implements OnInit {
     this.articleContent = article?.content ?? '';
     this.articleActive = article?.active ?? true;
     this.articleEditorVersion++;
+    this.savedArticleRange = null;
+    this.selectedArticleImage.set(null);
     this.articleImageLoading.set(false);
     this.articlePreview.set(false);
     this.showArticleDialog = true;
@@ -447,11 +495,68 @@ export class SchoolDetails implements OnInit {
   }
   closeArticleDialog() {
     this.articleEditorVersion++;
+    this.savedArticleRange = null;
+    this.selectedArticleImage.set(null);
     this.articleImageLoading.set(false);
     this.showArticleDialog = false;
   }
+  @HostListener('document:selectionchange')
+  rememberEditorSelection(): void {
+    const editor = this.editor?.nativeElement;
+    const selection = window.getSelection();
+    if (
+      editor &&
+      selection?.rangeCount &&
+      editor.contains(selection.anchorNode) &&
+      editor.contains(selection.focusNode)
+    ) {
+      this.savedArticleRange = selection.getRangeAt(0).cloneRange();
+    }
+  }
+
+  selectEditorImage(event: MouseEvent): void {
+    const editor = this.editor?.nativeElement;
+    const target = event.target;
+    const previous = this.selectedArticleImage();
+    previous?.removeAttribute('data-article-selected');
+    if (target instanceof HTMLImageElement && editor?.contains(target)) {
+      target.setAttribute('data-article-selected', 'true');
+      this.selectedArticleImage.set(target);
+    } else {
+      this.selectedArticleImage.set(null);
+    }
+  }
+
+  removeSelectedArticleImage(): void {
+    const image = this.selectedArticleImage();
+    const editor = this.editor?.nativeElement;
+    if (!image || !editor?.contains(image)) return;
+    const range = document.createRange();
+    range.setStartBefore(image);
+    range.collapse(true);
+    image.remove();
+    this.selectedArticleImage.set(null);
+    this.savedArticleRange = range;
+    editor.focus();
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    this.syncEditor();
+  }
+
   syncEditor() {
-    this.articleContent = this.editor?.nativeElement.innerHTML ?? '';
+    const editor = this.editor?.nativeElement;
+    if (!editor) {
+      this.articleContent = '';
+      return;
+    }
+    const copy = editor.cloneNode(true) as HTMLElement;
+    copy
+      .querySelectorAll('[data-article-selected]')
+      .forEach((element) => element.removeAttribute('data-article-selected'));
+    this.articleContent = copy.innerHTML;
+    if (this.selectedArticleImage() && !editor.contains(this.selectedArticleImage()))
+      this.selectedArticleImage.set(null);
   }
   pasteArticle(event: ClipboardEvent): void {
     const editor = this.editor?.nativeElement;
@@ -499,15 +604,12 @@ export class SchoolDetails implements OnInit {
     const file = input.files?.[0];
     const editor = this.editor?.nativeElement;
     if (!school || !file || !editor || this.articleImageLoading()) return;
-    const selection = window.getSelection();
-    const range =
-      selection?.rangeCount && editor.contains(selection.anchorNode)
-        ? selection.getRangeAt(0).cloneRange()
-        : null;
+    this.rememberEditorSelection();
+    const range = this.savedArticleRange?.cloneRange() ?? null;
     const editorVersion = this.articleEditorVersion;
     this.error = '';
     this.articleImageLoading.set(true);
-    this.service.uploadImage$(school.id, file).subscribe({
+    this.service.uploadImage$(school.id, file, false).subscribe({
       next: (image) => {
         if (editorVersion !== this.articleEditorVersion) return;
         const img = document.createElement('img');
@@ -520,6 +622,14 @@ export class SchoolDetails implements OnInit {
         } else {
           editor.appendChild(img);
         }
+        const cursor = document.createRange();
+        cursor.setStartAfter(img);
+        cursor.collapse(true);
+        this.savedArticleRange = cursor.cloneRange();
+        editor.focus();
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(cursor);
         this.syncEditor();
         this.articleImageLoading.set(false);
         input.value = '';

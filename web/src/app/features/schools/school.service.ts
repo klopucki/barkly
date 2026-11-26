@@ -62,9 +62,13 @@ export class SchoolService {
   ): Observable<SchoolNews> {
     return this.http.put<SchoolNews>(`/api/news/${id}`, body);
   }
-  uploadImage$(id: number, image: File) {
+  uploadImage$(id: number, image: File, gallery = true) {
     const data = new FormData();
     data.append('image', image);
+    data.append('gallery', String(gallery));
     return this.http.post<SchoolImage>(`/api/schools/${id}/images`, data);
+  }
+  hideGalleryImage$(imageId: number): Observable<School> {
+    return this.http.delete<School>(`/api/school-images/${imageId}/gallery`);
   }
 }

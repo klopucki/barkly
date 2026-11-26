@@ -27,13 +27,20 @@ class SchoolImageController {
             path = "/api/schools/{schoolId}/images",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     SchoolImageResponse add(
-            @PathVariable Long schoolId, @RequestParam("image") MultipartFile image) {
-        return schools.addImage(schoolId, image, storage);
+            @PathVariable Long schoolId,
+            @RequestParam("image") MultipartFile image,
+            @RequestParam(defaultValue = "true") boolean gallery) {
+        return schools.addImage(schoolId, image, gallery, storage);
     }
 
     @DeleteMapping("/api/school-images/{imageId}")
     void delete(@PathVariable Long imageId) {
         schools.deleteImage(imageId, storage);
+    }
+
+    @DeleteMapping("/api/school-images/{imageId}/gallery")
+    SchoolResponse hideFromGallery(@PathVariable Long imageId) {
+        return schools.hideImageFromGallery(imageId);
     }
 
     @PutMapping("/api/schools/{schoolId}/profile-image/{imageId}")
