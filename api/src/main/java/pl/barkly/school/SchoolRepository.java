@@ -26,6 +26,15 @@ public interface SchoolRepository extends JpaRepository<SchoolEntity, Long> {
             """)
     List<SchoolEntity> findAccessibleByUserId(Long userId);
 
+    @Query(
+            """
+            select case when count(s) > 0 then true else false end from SchoolEntity s
+            where (s.owner.id = :userId and s.owner.role in (pl.barkly.user.UserRole.SCHOOL_ADMIN, pl.barkly.user.UserRole.SUPER_ADMIN))
+              or exists (select i.id from SchoolAccessInvitation i where i.schoolId = s.id
+                  and i.inviteeUserId = :userId and i.status = pl.barkly.user.access.AccessStatus.ACCEPTED)
+            """)
+    boolean existsManagedByUserId(Long userId);
+
     @EntityGraph(attributePaths = "owner")
     Optional<SchoolEntity> findBySlug(String slug);
 

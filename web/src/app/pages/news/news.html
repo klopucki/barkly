@@ -1,8 +1,8 @@
 <section class="journal-page" aria-labelledby="journal-title">
   <header class="journal-heading">
-    <p class="journal-kicker">Od szkół i trenerów</p>
-    <h1 id="journal-title">Wiedza i inspiracje</h1>
-    <p class="journal-intro">O treningu, codziennych wyzwaniach i dobrym życiu z psem.</p>
+    <p class="journal-kicker"><span aria-hidden="true">✳</span> BARKLY / WIEDZA I INSPIRACJE</p>
+    <h1 id="journal-title">Dobrze wiedzieć<span>.</span><br /><em>Jeszcze lepiej razem.</em></h1>
+    <p class="journal-intro">Historie, wiedza i pomysły od ludzi, którzy rozumieją życie z psem.</p>
   </header>
 
   <div class="journal-tools">
@@ -62,11 +62,28 @@
   <div class="journal-list" [attr.aria-busy]="loading()">
     @for (item of filteredItems(); track item.id) {
       <article class="journal-entry">
+        @if (articleImages()[item.id]; as image) {
+          <a
+            class="journal-image"
+            [routerLink]="['/news', item.id]"
+            [attr.aria-label]="'Czytaj artykuł: ' + item.title"
+            ><img [src]="image" alt="" loading="lazy"
+          /></a>
+        } @else {
+          <div class="journal-card-accent" aria-hidden="true">
+            <span>✳</span><small>WIEDZA OD SPOŁECZNOŚCI</small>
+          </div>
+        }
         <div class="journal-meta">
           <time [attr.datetime]="item.publishedAt">{{
             item.publishedAt | date: 'dd.MM.yyyy'
           }}</time>
-          <span>{{ item.authorDisplayName }}</span>
+          <span class="journal-author"
+            ><span class="journal-avatar" aria-hidden="true">{{
+              item.authorDisplayName.slice(0, 1).toUpperCase()
+            }}</span
+            >{{ item.authorDisplayName }}</span
+          >
         </div>
         <div class="journal-story">
           <p class="journal-school">{{ item.schoolName }}</p>

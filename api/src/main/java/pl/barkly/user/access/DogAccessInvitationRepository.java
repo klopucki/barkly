@@ -17,6 +17,8 @@ interface DogAccessInvitationRepository extends JpaRepository<DogAccessInvitatio
 
     Optional<DogAccessInvitation> findByDogIdAndInviteeUserId(Long dogId, Long userId);
 
+    long countByInviteeUserIdAndStatus(Long userId, AccessStatus status);
+
     List<DogAccessInvitation> findAllByDogId(Long dogId);
 
     List<DogAccessInvitation> findAllByInviteeUserIdAndStatus(Long userId, AccessStatus status);

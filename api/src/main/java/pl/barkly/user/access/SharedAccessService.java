@@ -132,6 +132,12 @@ public class SharedAccessService {
     }
 
     @Transactional(readOnly = true)
+    public long pendingCount(Long userId) {
+        return schools.countByInviteeUserIdAndStatus(userId, AccessStatus.PENDING)
+                + dogs.countByInviteeUserIdAndStatus(userId, AccessStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
     public List<Invitation> pending() {
         Long userId = users.currentUser().getId();
         var result = new java.util.ArrayList<Invitation>();
