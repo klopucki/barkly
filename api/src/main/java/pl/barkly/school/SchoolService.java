@@ -150,6 +150,8 @@ public class SchoolService {
                                                 HttpStatus.NOT_FOUND, "School image not found"));
         SchoolEntity school = findEntityWithOwner(image.getSchoolId());
         requireManagementAccess(school);
+        if (imageId.equals(school.getProfileImageId())) school.setProfileImageId(null);
+        if (imageId.equals(school.getHistoryImageId())) school.setHistoryImageId(null);
         images.delete(image);
         storage.delete(image.getImageKey());
     }
@@ -164,6 +166,19 @@ public class SchoolService {
                         .isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "School image not found");
         school.setHistoryImageId(imageId);
+        return response(school);
+    }
+
+    @Transactional
+    public SchoolResponse setProfileImage(Long schoolId, Long imageId) {
+        var school = findEntityWithOwner(schoolId);
+        requireManagementAccess(school);
+        if (imageId != null
+                && images.findById(imageId)
+                        .filter(image -> image.getSchoolId().equals(schoolId))
+                        .isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "School image not found");
+        school.setProfileImageId(imageId);
         return response(school);
     }
 
@@ -184,6 +199,11 @@ public class SchoolService {
                 school.getHistory(),
                 gallery.stream()
                         .filter(image -> image.id().equals(school.getHistoryImageId()))
+                        .map(SchoolImageResponse::imageKey)
+                        .findFirst()
+                        .orElse(null),
+                gallery.stream()
+                        .filter(image -> image.id().equals(school.getProfileImageId()))
                         .map(SchoolImageResponse::imageKey)
                         .findFirst()
                         .orElse(null),

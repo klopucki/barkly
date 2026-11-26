@@ -2,8 +2,15 @@
   <section class="school-profile space-y-8">
     <header class="school-profile-header barkly-card overflow-hidden">
       <div class="school-profile-cover">
-        @if (s.images.length) {
-          <img [src]="imageUrl(s.images[0].imageKey)" [alt]="s.name" />
+        @if (profileImageKey(s); as profileKey) {
+          <button
+            type="button"
+            class="h-full w-full"
+            aria-label="Powiększ zdjęcie szkoły"
+            (click)="enlargedImage.set(imageUrl(profileKey))"
+          >
+            <img [src]="imageUrl(profileKey)" [alt]="s.name" />
+          </button>
         } @else {
           <span aria-hidden="true">⌂</span>
         }
@@ -13,12 +20,6 @@
         <h1>{{ s.name }}</h1>
         <p class="school-profile-address">⌖ {{ s.address }}</p>
         @if (s.krs) {
-          @if (articlePreview()) {
-            <div
-              class="article-body min-h-48 rounded border bg-white p-3"
-              [innerHTML]="articleContent"
-            ></div>
-          }
           <p class="mt-2 text-xs text-stone-500">KRS: {{ s.krs }}</p>
         }
       </div>
@@ -29,6 +30,18 @@
           <strong>Twój profil szkoły</strong>
           <p>Aktualizuj informacje widoczne dla opiekunów.</p>
         </div>
+        <label class="cursor-pointer rounded-lg border px-4 py-2"
+          >{{ profileImageLoading() ? 'Przesyłanie…' : 'Zmień zdjęcie profilowe'
+          }}<input
+            type="file"
+            class="sr-only"
+            accept="image/jpeg,image/png"
+            [disabled]="profileImageLoading()"
+            (change)="uploadProfileImage($event)"
+        /></label>
+        @if (profileImageError()) {
+          <p role="alert" class="text-red-700">{{ profileImageError() }}</p>
+        }
         <button type="button" class="rounded-lg border px-4 py-2" (click)="showSchoolAccess = true">
           Zarządzaj współwłaścicielami
         </button>
@@ -192,11 +205,18 @@
         @if (s.history || s.historyImageKey || canManage()) {
           <section class="school-history-card">
             @if (s.historyImageKey) {
-              <img
-                class="school-history-image"
-                [src]="imageUrl(s.historyImageKey)"
-                alt="Zdjęcie przedstawiające historię szkoły"
-              />
+              <button
+                type="button"
+                class="w-full"
+                aria-label="Powiększ zdjęcie historii szkoły"
+                (click)="enlargedImage.set(imageUrl(s.historyImageKey))"
+              >
+                <img
+                  class="school-history-image"
+                  [src]="imageUrl(s.historyImageKey)"
+                  alt="Zdjęcie przedstawiające historię szkoły"
+                />
+              </button>
             }
             <div class="school-history-content">
               <p class="barkly-eyebrow">Nasza droga</p>
@@ -480,6 +500,12 @@
             (input)="syncEditor()"
             (paste)="pasteArticle($event)"
           ></div>
+          @if (articlePreview()) {
+            <div
+              class="article-body min-h-48 rounded border bg-white p-3"
+              [innerHTML]="articleContent"
+            ></div>
+          }
           <p class="mt-2 text-xs text-stone-500">
             Zdjęcia: JPG lub PNG, maks. 10 MB, minimum 640 × 480 px. Automatycznie optymalizujemy je
             przed publikacją.
@@ -517,6 +543,7 @@
         </section>
       </div>
     }
+    <app-image-lightbox [src]="enlargedImage()" [alt]="s.name" (closed)="enlargedImage.set(null)" />
   </section>
 } @else {
   <p>Ładowanie szkoły…</p>

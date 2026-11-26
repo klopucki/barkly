@@ -70,15 +70,25 @@
     </div>
 
     @if (training()!.imageKey) {
-      <div class="training-detail-image">
+      <button
+        type="button"
+        class="training-detail-image"
+        aria-label="Powiększ zdjęcie treningu"
+        (click)="enlargedImage.set(trainingImageUrl(training()!.imageKey!))"
+      >
         <img
           class="h-full w-full object-cover"
           [src]="trainingImageUrl(training()!.imageKey!)"
           [alt]="'Training: ' + training()!.title"
         />
-      </div>
+      </button>
     }
   </section>
+  <app-image-lightbox
+    [src]="enlargedImage()"
+    [alt]="training()!.title"
+    (closed)="enlargedImage.set(null)"
+  />
 
   @if (training()!.description) {
     <section class="barkly-card mt-6 p-6">

@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SchoolService } from '../../features/schools/school.service';
-import { School, schoolImageUrl } from '../../features/schools/school.model';
+import { School, schoolImageUrl, schoolProfileImageKey } from '../../features/schools/school.model';
 import { AuthService } from '../../features/auth/auth.service';
 import { FavoritesService } from '../../shared/favorites.service';
 
@@ -16,6 +16,7 @@ export class Schools implements OnInit {
   protected readonly auth = inject(AuthService);
   protected readonly favorites = inject(FavoritesService);
   protected readonly schoolImageUrl = schoolImageUrl;
+  protected readonly profileImageKey = schoolProfileImageKey;
   readonly items = signal<School[]>([]);
   readonly query = signal('');
   readonly favoritesOnly = signal(false);

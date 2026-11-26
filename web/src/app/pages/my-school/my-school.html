@@ -35,9 +35,9 @@
       @for (s of mine(); track s.id) {
         <article class="catalog-entry">
           <div class="catalog-visual">
-            @if (s.images.length) {
+            @if (profileImageKey(s); as profileKey) {
               <img
-                [src]="schoolImageUrl(s.images[0].imageKey)"
+                [src]="schoolImageUrl(profileKey)"
                 [alt]="s.name"
                 width="320"
                 height="240"

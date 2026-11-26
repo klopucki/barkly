@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { TrainingService } from '../../features/trainings/training.service';
 import { Modal } from '../../shared/components/modal/modal';
+import { ImageLightbox } from '../../shared/components/image-lightbox/image-lightbox';
 import {
   BookingForm,
   BookingFormValue,
@@ -27,11 +28,12 @@ import {
 
 @Component({
   selector: 'app-training-details',
-  imports: [BookingForm, TrainingForm, Modal, DatePipe, MessageForm, LocationMap],
+  imports: [BookingForm, TrainingForm, Modal, DatePipe, MessageForm, LocationMap, ImageLightbox],
   templateUrl: './training-details.html',
   styleUrl: './training-details.css',
 })
 export class TrainingDetails implements OnInit {
+  readonly enlargedImage = signal<string | null>(null);
   protected readonly trainingImageUrl = trainingImageUrl;
   protected readonly trainingPriceLabel = trainingPriceLabel;
 

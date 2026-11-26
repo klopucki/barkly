@@ -74,9 +74,9 @@
     @for (school of filteredItems(); track school.id) {
       <article class="catalog-entry">
         <div class="catalog-visual">
-          @if (school.images.length) {
+          @if (profileImageKey(school); as profileKey) {
             <img
-              [src]="schoolImageUrl(school.images[0].imageKey)"
+              [src]="schoolImageUrl(profileKey)"
               [alt]="school.name"
               width="320"
               height="240"

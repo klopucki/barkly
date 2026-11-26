@@ -13,10 +13,17 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer } from '@angular/platform-browser';
+import { switchMap } from 'rxjs';
+import { ImageLightbox } from '../../shared/components/image-lightbox/image-lightbox';
 import { ProfileEditor } from '../../shared/components/profile-editor/profile-editor';
 import { ProfileTextPipe } from '../../shared/components/profile-editor/profile-text.pipe';
 import { FormsModule } from '@angular/forms';
-import { School, SchoolNews, schoolImageUrl } from '../../features/schools/school.model';
+import {
+  School,
+  SchoolNews,
+  schoolImageUrl,
+  schoolProfileImageKey,
+} from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
 import { MessageForm } from '../../features/notifications/message-form/message-form';
 import { AuthService } from '../../features/auth/auth.service';
@@ -38,6 +45,7 @@ import {
     FormsModule,
     RouterLink,
     ImageGallery,
+    ImageLightbox,
     Modal,
     ManageAccess,
     TrainingForm,
@@ -64,6 +72,9 @@ export class SchoolDetails implements OnInit {
   readonly news = signal<SchoolNews[]>([]);
   readonly canManage = signal(false);
   readonly managementResolved = signal(false);
+  readonly profileImageLoading = signal(false);
+  readonly profileImageError = signal('');
+  readonly enlargedImage = signal<string | null>(null);
   readonly historyImageLoading = signal(false);
   readonly historyImageError = signal('');
   readonly sentMessages = signal<
@@ -76,6 +87,7 @@ export class SchoolDetails implements OnInit {
   readonly trainings = signal<Training[]>([]);
   readonly activeTab = signal<'about' | 'trainings' | 'news' | 'notifications'>('about');
   protected readonly imageUrl = schoolImageUrl;
+  protected readonly profileImageKey = schoolProfileImageKey;
   readonly galleryImages = computed<GalleryImage[]>(
     () =>
       this.school()?.images.map((image) => ({
@@ -186,6 +198,36 @@ export class SchoolDetails implements OnInit {
         error: () => {
           this.loadingSentMessages.set(false);
           this.sentMessagesError.set('Nie udało się pobrać historii powiadomień.');
+        },
+      });
+  }
+
+  uploadProfileImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const school = this.school();
+    if (!file || !school || this.profileImageLoading()) return;
+    this.profileImageLoading.set(true);
+    this.profileImageError.set('');
+    this.service
+      .uploadImage$(school.id, file)
+      .pipe(
+        switchMap((image) =>
+          this.http.put<School>(`/api/schools/${school.id}/profile-image/${image.id}`, {}),
+        ),
+      )
+      .subscribe({
+        next: (updated) => {
+          this.school.set(updated);
+          this.profileImageLoading.set(false);
+          input.value = '';
+        },
+        error: () => {
+          this.profileImageLoading.set(false);
+          input.value = '';
+          this.profileImageError.set(
+            'Nie udało się ustawić zdjęcia. Sprawdź format i rozmiar, a potem spróbuj ponownie.',
+          );
         },
       });
   }
