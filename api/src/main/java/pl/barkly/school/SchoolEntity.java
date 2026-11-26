@@ -45,6 +45,8 @@ public class SchoolEntity {
 
     private Long historyImageId;
 
+    private Long profileImageId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_user_id")
     private UserEntity owner;
@@ -97,6 +99,14 @@ public class SchoolEntity {
 
     public void setHistoryImageId(Long imageId) {
         this.historyImageId = imageId;
+    }
+
+    public Long getProfileImageId() {
+        return profileImageId;
+    }
+
+    public void setProfileImageId(Long imageId) {
+        this.profileImageId = imageId;
     }
 
     public String getHistory() {

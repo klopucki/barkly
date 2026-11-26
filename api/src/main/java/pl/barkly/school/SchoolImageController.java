@@ -36,6 +36,11 @@ class SchoolImageController {
         schools.deleteImage(imageId, storage);
     }
 
+    @PutMapping("/api/schools/{schoolId}/profile-image/{imageId}")
+    SchoolResponse setProfileImage(@PathVariable Long schoolId, @PathVariable Long imageId) {
+        return schools.setProfileImage(schoolId, imageId);
+    }
+
     @PutMapping("/api/schools/{schoolId}/history-image/{imageId}")
     SchoolResponse setHistoryImage(@PathVariable Long schoolId, @PathVariable Long imageId) {
         return schools.setHistoryImage(schoolId, imageId);

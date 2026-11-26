@@ -13,6 +13,7 @@ export interface School {
   pricing: string;
   history?: string;
   historyImageKey?: string | null;
+  profileImageKey?: string | null;
   images: SchoolImage[];
 }
 export interface SchoolPayload {
@@ -36,3 +37,6 @@ export interface SchoolNews {
   publishedAt: string;
 }
 export const schoolImageUrl = (key: string) => `/api/training-images/${encodeURIComponent(key)}`;
+
+export const schoolProfileImageKey = (school: School) =>
+  school.profileImageKey ?? school.images[0]?.imageKey ?? null;

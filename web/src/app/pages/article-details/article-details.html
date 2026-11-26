@@ -14,7 +14,16 @@
       </div>
     </header>
     <div class="article-rule" aria-hidden="true"></div>
-    <div class="article-content article-body prose" [innerHTML]="item.content"></div>
+    <div
+      class="article-content article-body prose"
+      [innerHTML]="item.content"
+      (click)="openImage($event)"
+    ></div>
+    <app-image-lightbox
+      [src]="enlargedImage()"
+      alt="Zdjęcie w artykule"
+      (closed)="enlargedImage.set(null)"
+    />
     <footer class="article-footer">
       <p>
         Materiał opublikowany przez <strong>{{ item.schoolName }}</strong

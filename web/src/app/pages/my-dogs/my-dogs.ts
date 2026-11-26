@@ -4,6 +4,7 @@ import { Dog, dogImageUrl, DogPayload, DogVisibility } from '../../features/dogs
 import { DogService } from '../../features/dogs/dog.service';
 import { Modal } from '../../shared/components/modal/modal';
 import { ManageAccess } from '../../features/access/manage-access';
+import { ImageLightbox } from '../../shared/components/image-lightbox/image-lightbox';
 
 const empty = (): DogPayload => ({
   name: '',
@@ -16,12 +17,13 @@ const empty = (): DogPayload => ({
 
 @Component({
   selector: 'app-my-dogs',
-  imports: [FormsModule, Modal, ManageAccess],
+  imports: [FormsModule, Modal, ManageAccess, ImageLightbox],
   templateUrl: './my-dogs.html',
 })
 export class MyDogs implements OnInit {
   private readonly dogsApi = inject(DogService);
   readonly dogs = signal<Dog[]>([]);
+  readonly enlargedImage = signal<string | null>(null);
   readonly editing = signal<Dog | null>(null);
   readonly accessDog = signal<Dog | null>(null);
   readonly isFormOpen = signal(false);

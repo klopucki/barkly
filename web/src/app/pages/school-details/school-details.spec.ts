@@ -31,6 +31,18 @@ describe('article editor', () => {
 
   afterEach(() => http.verify());
 
+  it('uploads and sets a profile image for the current school', () => {
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'photo.jpg')] });
+    component.uploadProfileImage({ target: input } as unknown as Event);
+    http.expectOne('/api/schools/2/images').flush({ id: 9, imageKey: 'photo.jpg' });
+    const update = http.expectOne('/api/schools/2/profile-image/9');
+    expect(update.request.method).toBe('PUT');
+    update.flush({ id: 2, name: 'School', profileImageKey: 'photo.jpg', images: [] });
+    expect(component.school()?.profileImageKey).toBe('photo.jpg');
+    expect(component.profileImageLoading()).toBe(false);
+  });
+
   it('uploads an image and saves it in article content even without an editor selection', () => {
     component.articleTitle = 'Article title';
     editor.innerHTML = '<p>First paragraph</p><p><br></p><p>Second paragraph</p>';

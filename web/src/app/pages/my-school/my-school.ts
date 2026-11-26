@@ -2,7 +2,12 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { ProfileEditor } from '../../shared/components/profile-editor/profile-editor';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { School, SchoolPayload, schoolImageUrl } from '../../features/schools/school.model';
+import {
+  School,
+  SchoolPayload,
+  schoolImageUrl,
+  schoolProfileImageKey,
+} from '../../features/schools/school.model';
 import { SchoolService } from '../../features/schools/school.service';
 import { AuthService } from '../../features/auth/auth.service';
 @Component({
@@ -15,6 +20,7 @@ export class MySchool {
   private readonly schools = inject(SchoolService);
   protected readonly auth = inject(AuthService);
   protected readonly schoolImageUrl = schoolImageUrl;
+  protected readonly profileImageKey = schoolProfileImageKey;
   readonly mine = signal<School[]>([]);
   readonly loading = signal(false);
   editing: School | null = null;

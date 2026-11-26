@@ -41,11 +41,17 @@
         <div class="mt-4 flex flex-wrap gap-3">
           @for (image of dog.images; track image.id) {
             <div class="relative">
-              <img
-                class="h-24 w-24 rounded-lg object-cover"
-                [src]="imageUrl(image.id)"
-                [alt]="dog.name"
-              />
+              <button
+                type="button"
+                [attr.aria-label]="'Powiększ zdjęcie psa ' + dog.name"
+                (click)="enlargedImage.set(imageUrl(image.id))"
+              >
+                <img
+                  class="h-24 w-24 rounded-lg object-cover"
+                  [src]="imageUrl(image.id)"
+                  [alt]="dog.name"
+                />
+              </button>
               <button
                 class="absolute right-1 top-1 rounded bg-white px-1 text-xs text-red-700"
                 (click)="deleteImage(image.id)"
@@ -82,6 +88,11 @@
       Nie masz jeszcze żadnego profilu psa.
     </div>
   }
+  <app-image-lightbox
+    [src]="enlargedImage()"
+    alt="Zdjęcie psa"
+    (closed)="enlargedImage.set(null)"
+  />
   @if (accessDog(); as dog) {
     <app-modal [title]="'Współopiekunowie: ' + dog.name" (closed)="accessDog.set(null)">
       <app-manage-access type="DOG" [resourceId]="dog.id" />
