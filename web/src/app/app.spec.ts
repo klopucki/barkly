@@ -33,6 +33,25 @@ describe('App', () => {
     expect(compiled.textContent).toContain('Barkly');
   });
 
+  it('closes dropdowns when clicking outside them', () => {
+    currentUser.set({ id: 1, displayName: 'Test', email: 'test@example.com', role: 'USER' });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector(
+      'button[aria-label^="Menu użytkownika"]',
+    ) as HTMLButtonElement;
+
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(fixture.nativeElement.textContent).toContain('Wspólny dostęp');
+
+    document.body.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(fixture.nativeElement.textContent).not.toContain('Wspólny dostęp');
+  });
+
   it('shows the admin navigation only to super administrators', () => {
     const fixture = TestBed.createComponent(App);
     const link = () => fixture.nativeElement.querySelector('a[href="/admin/users"]');
