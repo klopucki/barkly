@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   OnInit,
+  SecurityContext,
   ViewChild,
   computed,
   effect,
@@ -11,6 +12,7 @@ import {
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer } from '@angular/platform-browser';
 import { ProfileEditor } from '../../shared/components/profile-editor/profile-editor';
 import { ProfileTextPipe } from '../../shared/components/profile-editor/profile-text.pipe';
 import { FormsModule } from '@angular/forms';
@@ -48,6 +50,7 @@ import {
 export class SchoolDetails implements OnInit {
   protected readonly favorites = inject(FavoritesService);
   private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly subscribed = signal(false);
   readonly subscriptionLoading = signal(false);
   readonly subscriptionError = signal('');
@@ -78,6 +81,9 @@ export class SchoolDetails implements OnInit {
         alt: this.school()!.name,
       })) ?? [],
   );
+  readonly articleImageLoading = signal(false);
+  readonly articlePreview = signal(false);
+  private articleEditorVersion = 0;
   articleTitle = '';
   articleContent = '';
   articleActive = true;
@@ -347,37 +353,111 @@ export class SchoolDetails implements OnInit {
     this.articleTitle = article?.title ?? '';
     this.articleContent = article?.content ?? '';
     this.articleActive = article?.active ?? true;
+    this.articleEditorVersion++;
+    this.articleImageLoading.set(false);
+    this.articlePreview.set(false);
     this.showArticleDialog = true;
     if (article)
       setTimeout(() => {
-        if (this.editor) this.editor.nativeElement.innerHTML = this.articleContent;
+        if (this.editor)
+          this.editor.nativeElement.innerHTML =
+            this.sanitizer.sanitize(SecurityContext.HTML, this.articleContent) ?? '';
       });
   }
   closeArticleDialog() {
+    this.articleEditorVersion++;
+    this.articleImageLoading.set(false);
     this.showArticleDialog = false;
   }
   syncEditor() {
     this.articleContent = this.editor?.nativeElement.innerHTML ?? '';
   }
+  pasteArticle(event: ClipboardEvent): void {
+    const editor = this.editor?.nativeElement;
+    const clipboard = event.clipboardData;
+    if (!editor || !clipboard) return;
+    event.preventDefault();
+    const html = clipboard.getData('text/html');
+    const container = document.createElement('div');
+    if (html) {
+      container.innerHTML = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
+    } else {
+      container.textContent = clipboard.getData('text/plain').replace(/\r\n?/g, '\n');
+    }
+    const selection = window.getSelection();
+    const range =
+      selection?.rangeCount && editor.contains(selection.anchorNode)
+        ? selection.getRangeAt(0)
+        : document.createRange();
+    if (!editor.contains(range.commonAncestorContainer)) {
+      range.selectNodeContents(editor);
+      range.collapse(false);
+    }
+    range.deleteContents();
+    const fragment = document.createDocumentFragment();
+    while (container.firstChild) fragment.appendChild(container.firstChild);
+    const last = fragment.lastChild;
+    range.insertNode(fragment);
+    if (last && selection) {
+      range.setStartAfter(last);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    this.syncEditor();
+  }
+
+  toggleArticlePreview(): void {
+    this.syncEditor();
+    this.articlePreview.update((preview) => !preview);
+  }
+
   uploadArticleImage(event: Event) {
     const school = this.school();
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!school || !file) return;
+    const editor = this.editor?.nativeElement;
+    if (!school || !file || !editor || this.articleImageLoading()) return;
+    const selection = window.getSelection();
+    const range =
+      selection?.rangeCount && editor.contains(selection.anchorNode)
+        ? selection.getRangeAt(0).cloneRange()
+        : null;
+    const editorVersion = this.articleEditorVersion;
+    this.error = '';
+    this.articleImageLoading.set(true);
     this.service.uploadImage$(school.id, file).subscribe({
-      next: (image: any) => {
-        const img = `<img src="${schoolImageUrl(image.imageKey)}" alt="" class="my-4 max-w-full rounded-lg"/>`;
-        if (this.editor) {
-          this.editor.nativeElement.focus();
-          document.execCommand('insertHTML', false, img);
-          this.syncEditor();
+      next: (image) => {
+        if (editorVersion !== this.articleEditorVersion) return;
+        const img = document.createElement('img');
+        img.src = schoolImageUrl(image.imageKey);
+        img.alt = '';
+        img.className = 'my-4 max-w-full rounded-lg';
+        if (range && editor.contains(range.commonAncestorContainer)) {
+          range.deleteContents();
+          range.insertNode(img);
+        } else {
+          editor.appendChild(img);
         }
+        this.syncEditor();
+        this.articleImageLoading.set(false);
         input.value = '';
       },
-      error: () => (this.error = 'Nie udało się przesłać zdjęcia.'),
+      error: (error) => {
+        if (editorVersion !== this.articleEditorVersion) return;
+        this.articleImageLoading.set(false);
+        input.value = '';
+        this.error =
+          error.status === 413 || error.error?.image
+            ? 'Zdjęcie jest za duże. Wybierz plik do 10 MB.'
+            : error.status === 400
+              ? 'Nie udało się przesłać zdjęcia. Wybierz JPG lub PNG o wymiarach co najmniej 640 × 480 px.'
+              : 'Nie udało się przesłać zdjęcia. Spróbuj ponownie.';
+      },
     });
   }
   publish() {
+    if (this.articleImageLoading()) return;
     const school = this.school();
     this.syncEditor();
     if (!school) return;
