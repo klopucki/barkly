@@ -31,6 +31,27 @@ describe('article editor', () => {
 
   afterEach(() => http.verify());
 
+  it('does not close the article editor when its backdrop is clicked', () => {
+    const fixture = TestBed.createComponent(SchoolDetails);
+    fixture.componentInstance.school.set({
+      id: 2,
+      name: 'School',
+      images: [],
+    } as unknown as School);
+    fixture.componentInstance.openArticleDialog();
+    fixture.detectChanges();
+    http.expectOne('/api/schools/null').flush({ id: 2, name: 'School', images: [] });
+    http.expectOne('/api/schools/2/news').flush([]);
+    http.expectOne('/api/trainings').flush([]);
+    fixture.detectChanges();
+    const backdrop = fixture.nativeElement.querySelector(
+      '[aria-label="Edytor artykułu"]',
+    ) as HTMLElement;
+    backdrop.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.showArticleDialog).toBe(true);
+  });
+
   it('uploads and sets a profile image for the current school', () => {
     const input = document.createElement('input');
     Object.defineProperty(input, 'files', { value: [new File(['x'], 'photo.jpg')] });
