@@ -1,103 +1,237 @@
-<section
-  class="relative isolate min-h-[34rem] overflow-hidden rounded-[2rem] bg-[#e6ead8] px-6 py-12 sm:px-12 sm:py-16 lg:min-h-[38rem]"
->
-  <img
-    class="absolute inset-y-0 right-0 -z-10 h-full w-full object-cover object-[68%_center] opacity-45 sm:w-[72%] sm:opacity-100"
-    src="/images/barkly-hero-dog.png"
-    alt="Uśmiechnięty pies siedzący wśród zieleni"
-  />
-  <div
-    class="absolute inset-0 -z-10 bg-gradient-to-r from-[#f4f5ef] via-[#f4f5ef]/90 to-[#f4f5ef]/10 sm:via-[#f4f5ef]/64"
-  ></div>
-  <div class="relative flex min-h-[28rem] max-w-xl flex-col justify-between lg:min-h-[30rem]">
-    <div>
-      <p class="barkly-section-label">🐾 Dla Was obojga</p>
-      <h1
-        class="mt-5 text-5xl font-semibold leading-[0.94] tracking-[-0.065em] text-stone-950 sm:text-7xl"
+@if (!auth.sessionResolved()) {
+  <p class="home-loading" role="status">Przygotowujemy Twoje miejsce…</p>
+} @else if (auth.currentUser(); as user) {
+  <div class="home-dashboard">
+    <header class="home-welcome">
+      <div>
+        <p class="home-overline"><span class="home-dot"></span> TWOJE MIEJSCE W BARKLY</p>
+        <h1>Cześć, {{ firstName(user.displayName) }}<span>.</span></h1>
+        <p>Wszystko, co ważne dla Ciebie i Twojego psa, w jednym miejscu.</p>
+      </div>
+      <a class="home-welcome-link" routerLink="/community"
+        >Odkryj społeczność <span aria-hidden="true">↗</span></a
       >
-        Lepsze życie z psem. <span class="text-emerald-800">Razem.</span>
-      </h1>
-      <p class="mt-6 max-w-md text-base leading-7 text-stone-700 sm:text-lg sm:leading-8">
-        Zadawaj pytania, dziel się doświadczeniem i znajdź ludzi, którzy rozumieją życie z psem.
-      </p>
-      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        <a routerLink="/community" class="barkly-button"
-          >Odwiedź społeczność <span aria-hidden="true">→</span></a
-        >
-        <a routerLink="/trainings" class="barkly-button-secondary">Znajdź trening</a>
+    </header>
+    @if (summary()?.pendingInvitations) {
+      <a routerLink="/me" class="home-invitation"
+        ><span class="home-invitation-icon">✉</span
+        ><span
+          ><strong
+            >Masz
+            {{
+              summary()?.pendingInvitations === 1 ? 'nowe zaproszenie' : 'nowe zaproszenia'
+            }}</strong
+          ><small>Sprawdź zaproszenia do wspólnej opieki lub zarządzania szkołą.</small></span
+        ><span aria-hidden="true">→</span></a
+      >
+    }
+    <div class="home-grid">
+      <div class="home-main">
+        @if (summary()?.managesSchools) {
+          <section class="home-section" aria-labelledby="school-section">
+            <div class="home-section-heading">
+              <div>
+                <p class="home-overline">DLA TWOJEJ SZKOŁY</p>
+                <h2 id="school-section">Nadchodzące treningi</h2>
+              </div>
+              <a routerLink="/my-school">Zarządzaj szkołą <span aria-hidden="true">↗</span></a>
+            </div>
+            @if (loading()) {
+              <p class="home-state" role="status">Ładujemy treningi…</p>
+            } @else if (summaryError()) {
+              <div class="home-state" role="alert">
+                Nie udało się pobrać treningów.
+                <button type="button" (click)="retry()">Spróbuj ponownie</button>
+              </div>
+            } @else if (summary()?.schoolTrainings?.length) {
+              <div class="home-training-list">
+                @for (training of summary()!.schoolTrainings; track training.trainingId) {
+                  <a class="home-training" [routerLink]="['/trainings', training.trainingId]"
+                    ><span class="home-date"
+                      ><strong>{{ training.startAt | date: 'dd' }}</strong
+                      ><small>{{ training.startAt | date: 'MM' }}</small></span
+                    ><span class="home-training-info"
+                      ><small
+                        >{{ training.schoolName }} · {{ training.startAt | date: 'HH:mm' }}</small
+                      ><strong>{{ training.title }}</strong
+                      ><span
+                        >{{ training.bookedCount }}
+                        {{ training.bookedCount === 1 ? 'zapisany pies' : 'zapisanych psów' }}
+                        @if (training.capacity !== null) {
+                          / {{ training.capacity }} miejsc
+                        }
+                      </span></span
+                    ><span class="home-arrow" aria-hidden="true">↗</span></a
+                  >
+                }
+              </div>
+            } @else {
+              <div class="home-state">
+                <strong>Tu pojawią się treningi Twojej szkoły.</strong>
+                <p>Kiedy zaplanujesz kolejne zajęcia, zobaczysz je razem z liczbą zapisów.</p>
+                <a routerLink="/my-school">Przejdź do szkoły →</a>
+              </div>
+            }
+          </section>
+          @if (summary()?.recentRegistrations?.length) {
+            <section class="home-section" aria-labelledby="recent-section">
+              <div class="home-section-heading">
+                <div>
+                  <p class="home-overline">OSTATNIA AKTYWNOŚĆ</p>
+                  <h2 id="recent-section">Nowe zapisy</h2>
+                </div>
+              </div>
+              <div class="home-activity">
+                @for (registration of summary()!.recentRegistrations; track $index) {
+                  <a [routerLink]="['/trainings', registration.trainingId]"
+                    ><span class="home-activity-avatar">✳</span
+                    ><span
+                      ><strong>{{ registration.ownerName }} i {{ registration.dogName }}</strong
+                      ><small
+                        >{{ registration.trainingTitle }} · {{ registration.schoolName }}</small
+                      ></span
+                    ><time>{{ registration.createdAt | date: 'dd.MM' }}</time></a
+                  >
+                }
+              </div>
+            </section>
+          }
+        }
+        <section class="home-section" aria-labelledby="my-training-section">
+          <div class="home-section-heading">
+            <div>
+              <p class="home-overline">WASZ WSPÓLNY CZAS</p>
+              <h2 id="my-training-section">Twoje najbliższe treningi</h2>
+            </div>
+            <a routerLink="/me/calendar">Kalendarz <span aria-hidden="true">↗</span></a>
+          </div>
+          @if (loading()) {
+            <p class="home-state" role="status">Ładujemy Twoje treningi…</p>
+          } @else if (summaryError()) {
+            <div class="home-state" role="alert">
+              Nie udało się pobrać Twoich treningów.
+              <button type="button" (click)="retry()">Spróbuj ponownie</button>
+            </div>
+          } @else if (summary()?.personalBookings?.length) {
+            <div class="home-training-list">
+              @for (booking of summary()!.personalBookings; track booking.bookingId) {
+                <a class="home-training" [routerLink]="['/trainings', booking.trainingId]"
+                  ><span class="home-date home-date-peach"
+                    ><strong>{{ booking.startAt | date: 'dd' }}</strong
+                    ><small>{{ booking.startAt | date: 'MM' }}</small></span
+                  ><span class="home-training-info"
+                    ><small>{{ booking.startAt | date: 'dd.MM.yyyy, HH:mm' }}</small
+                    ><strong>{{ booking.trainingTitle }}</strong
+                    ><span>Razem z {{ booking.dogName }}</span></span
+                  ><span class="home-arrow" aria-hidden="true">↗</span></a
+                >
+              }
+            </div>
+          } @else {
+            <div class="home-empty">
+              <div class="home-empty-mark">✳</div>
+              <div>
+                <strong>Przygoda zaczyna się od pierwszego kroku.</strong>
+                <p>Nie macie jeszcze zaplanowanych treningów. Znajdźcie coś dla siebie.</p>
+                <a routerLink="/trainings">Odkryj treningi <span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          }
+        </section>
+        <section class="home-section home-inspiration" aria-labelledby="inspiration-section">
+          <div class="home-section-heading">
+            <div>
+              <p class="home-overline">DOBRZE WIEDZIEĆ</p>
+              <h2 id="inspiration-section">Chwila inspiracji</h2>
+            </div>
+            <a routerLink="/news">Wszystkie artykuły <span aria-hidden="true">↗</span></a>
+          </div>
+          @if (articlesLoading()) {
+            <p class="home-state" role="status">Ładujemy artykuły…</p>
+          } @else if (articlesError()) {
+            <p class="home-state" role="alert">
+              Nie udało się pobrać artykułów.
+              <button type="button" (click)="retry()">Spróbuj ponownie</button>
+            </p>
+          } @else if (articles().length) {
+            <div class="home-articles">
+              @for (article of articles(); track article.id) {
+                <a [routerLink]="['/news', article.id]"
+                  ><small>{{ article.schoolName }}</small
+                  ><strong>{{ article.title }}</strong
+                  ><span
+                    >{{ article.authorDisplayName }} ·
+                    {{ article.publishedAt | date: 'dd.MM.yyyy' }}</span
+                  ></a
+                >
+              }
+            </div>
+          } @else {
+            <p class="home-state">Nowe artykuły pojawią się tutaj.</p>
+          }
+        </section>
       </div>
-    </div>
-    <div
-      class="barkly-glass-panel mt-10 grid max-w-md grid-cols-2 rounded-2xl p-4 text-sm text-stone-700"
-    >
-      <div class="border-r border-stone-300/70 pr-4">
-        <p class="font-semibold text-stone-950">Jedno miejsce</p>
-        <p class="mt-1 leading-5">dla treningów, szkół i psich historii</p>
-      </div>
-      <div class="pl-4">
-        <p class="font-semibold text-stone-950">Bez presji</p>
-        <p class="mt-1 leading-5">w swoim rytmie i z troską o psa</p>
-      </div>
+      <aside class="home-side">
+        <section class="home-side-card" aria-labelledby="dogs-section">
+          <div class="home-side-heading">
+            <div>
+              <p class="home-overline">NAJLEPSZA EKIPA</p>
+              <h2 id="dogs-section">Twoje psy <span>✳</span></h2>
+            </div>
+            <a routerLink="/my-dogs" aria-label="Zarządzaj psami">↗</a>
+          </div>
+          @if (dogsLoading()) {
+            <p class="home-side-empty" role="status">Ładujemy profile…</p>
+          } @else if (dogsError()) {
+            <p class="home-side-empty" role="alert">
+              Nie udało się pobrać psów. <button type="button" (click)="retry()">Ponów</button>
+            </p>
+          } @else if (dogs().length) {
+            <div class="home-dogs">
+              @for (dog of dogs(); track dog.id) {
+                <a routerLink="/my-dogs"
+                  ><span class="home-dog-avatar">
+                    @if (dog.images.length) {
+                      <img [src]="dogImageUrl(dog.images[0].id)" [alt]="dog.name" loading="lazy" />
+                    } @else {
+                      <svg
+                        aria-hidden="true"
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <circle cx="6" cy="8" r="2" />
+                        <circle cx="11" cy="5" r="2" />
+                        <circle cx="16" cy="6" r="2" />
+                        <circle cx="20" cy="10" r="2" />
+                        <path
+                          d="M7 15c1-2 2.5-4 5-4s4 2 5 4c1 2 .5 4-1.5 4-1.2 0-2.2-.7-3.5-.7s-2.3.7-3.5.7C6.5 19 6 17 7 15Z"
+                        />
+                      </svg>
+                    }</span
+                  ><span
+                    ><strong>{{ dog.name }}</strong
+                    ><small>{{ dog.breed || 'Twój psi przyjaciel' }}</small></span
+                  ><span aria-hidden="true">→</span></a
+                >
+              }
+            </div>
+          } @else {
+            <p class="home-side-empty">Dodaj profil psa, by mieć wszystko pod łapą.</p>
+            <a class="home-side-action" routerLink="/my-dogs">+ Dodaj psa</a>
+          }
+        </section>
+        <section class="home-community-card">
+          <p class="home-overline">LEPIEJ RAZEM</p>
+          <div class="home-community-art" aria-hidden="true">✳ <span>♥</span> ✳</div>
+          <h2>Psie sprawy?<br />Pogadajmy.</h2>
+          <p>Historie, pytania i małe sukcesy. Tu znajdziesz ludzi, którzy rozumieją.</p>
+          <a routerLink="/community">Dołącz do rozmowy <span aria-hidden="true">↗</span></a>
+        </section>
+      </aside>
     </div>
   </div>
-</section>
-
-<section class="mt-14">
-  <div class="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
-    <div>
-      <p class="barkly-eyebrow">W Barkly</p>
-      <h2 class="mt-2 text-3xl font-semibold tracking-[-0.045em] text-stone-950 sm:text-4xl">
-        Zacznij od tego, co ważne.
-      </h2>
-    </div>
-    <p class="max-w-xs text-sm leading-6 text-stone-600">
-      Wybierz kierunek, który dziś najlepiej pasuje do Waszej codzienności.
-    </p>
-  </div>
-  <div class="grid gap-5 md:grid-cols-3">
-    <a routerLink="/schools" class="barkly-card group relative overflow-hidden p-6"
-      ><span class="absolute right-5 top-4 text-5xl text-lime-200/80">01</span>
-      <p class="barkly-eyebrow">Szkoły</p>
-      <div
-        class="mt-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-2xl"
-      >
-        ⌂
-      </div>
-      <h3 class="mt-5 text-2xl font-semibold tracking-tight">Wybierz dobre miejsce</h3>
-      <p class="mt-3 leading-6 text-stone-600">Poznaj szkoły, ich podejście i ofertę.</p>
-      <span class="mt-6 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
-        >Odkrywaj →</span
-      ></a
-    >
-    <a routerLink="/trainings" class="barkly-card group relative overflow-hidden p-6"
-      ><span class="absolute right-5 top-4 text-5xl text-amber-100">02</span>
-      <p class="barkly-eyebrow">Treningi</p>
-      <div
-        class="mt-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-2xl"
-      >
-        ✦
-      </div>
-      <h3 class="mt-5 text-2xl font-semibold tracking-tight">Znajdź właściwy rytm</h3>
-      <p class="mt-3 leading-6 text-stone-600">Wybierz zajęcia dla Was i zapisz swojego psa.</p>
-      <span class="mt-6 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
-        >Zobacz treningi →</span
-      ></a
-    >
-    <a routerLink="/community" class="barkly-card group relative overflow-hidden p-6"
-      ><span class="absolute right-5 top-4 text-5xl text-rose-100">03</span>
-      <p class="barkly-eyebrow">Społeczność</p>
-      <div
-        class="mt-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-2xl"
-      >
-        ♡
-      </div>
-      <h3 class="mt-5 text-2xl font-semibold tracking-tight">Pytaj i dziel się wiedzą</h3>
-      <p class="mt-3 leading-6 text-stone-600">
-        Porozmawiaj z innymi przewodnikami o pytaniach, postępach i życiu z psem.
-      </p>
-      <span class="mt-6 inline-block font-semibold text-emerald-800 group-hover:translate-x-1"
-        >Poznaj społeczność →</span
-      ></a
-    >
-  </div>
-</section>
+} @else {
+  <app-guest-home />
+}

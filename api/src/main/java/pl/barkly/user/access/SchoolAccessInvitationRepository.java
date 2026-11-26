@@ -18,6 +18,8 @@ interface SchoolAccessInvitationRepository extends JpaRepository<SchoolAccessInv
 
     Optional<SchoolAccessInvitation> findBySchoolIdAndInviteeUserId(Long schoolId, Long userId);
 
+    long countByInviteeUserIdAndStatus(Long userId, AccessStatus status);
+
     List<SchoolAccessInvitation> findAllBySchoolId(Long schoolId);
 
     List<SchoolAccessInvitation> findAllByInviteeUserIdAndStatus(Long userId, AccessStatus status);
