@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { School, SchoolNews, SchoolPayload } from './school.model';
+import { School, SchoolImage, SchoolNews, SchoolPayload } from './school.model';
 import { PageResult } from '../../shared/page-result';
 @Injectable({ providedIn: 'root' })
 export class SchoolService {
@@ -65,6 +65,6 @@ export class SchoolService {
   uploadImage$(id: number, image: File) {
     const data = new FormData();
     data.append('image', image);
-    return this.http.post(`/api/schools/${id}/images`, data);
+    return this.http.post<SchoolImage>(`/api/schools/${id}/images`, data);
   }
 }

@@ -1,7 +1,4 @@
-<header
-  class="sticky top-0 z-40 border-b border-stone-200/80 bg-[#f7f7f3]/90 backdrop-blur"
-  (click)="closeMenus()"
->
+<header class="sticky top-0 z-40 border-b border-stone-200/80 bg-[#f7f7f3]/90 backdrop-blur">
   <div
     class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:gap-4 sm:px-6 sm:py-4"
   >
@@ -10,12 +7,12 @@
     >
 
     <nav
-      class="flex w-full flex-wrap items-center justify-start gap-1 text-sm font-medium text-stone-600 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-3"
-      (click)="$event.stopPropagation()"
+      class="relative flex w-full flex-wrap items-center justify-start gap-1 text-sm font-medium text-stone-600 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-3"
     >
       <a
         routerLink="/"
         routerLinkActive="text-stone-950"
+        class="flex min-h-11 items-center rounded-lg px-2 py-2 hover:bg-stone-200"
         [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMenus()"
         >Start</a
@@ -23,14 +20,15 @@
       <a
         routerLink="/community"
         routerLinkActive="text-stone-950"
-        class="min-h-11 rounded-lg px-2 py-2 hover:bg-stone-200"
+        class="flex min-h-11 items-center rounded-lg px-2 py-2 hover:bg-stone-200"
         (click)="closeMenus()"
         >Społeczność</a
       >
-      <div class="relative">
+      <div class="relative" (click)="$event.stopPropagation()">
         <button
           type="button"
-          class="rounded-lg px-2 py-2 hover:bg-stone-200 hover:text-stone-950"
+          class="flex min-h-11 items-center gap-1 rounded-lg px-2 py-2 hover:bg-stone-200 hover:text-stone-950"
+          [attr.aria-expanded]="isDiscoverOpen()"
           (click)="
             isDiscoverOpen.set(!isDiscoverOpen()); isAddOpen.set(false); isProfileOpen.set(false)
           "
@@ -39,7 +37,7 @@
         </button>
         @if (isDiscoverOpen()) {
           <div
-            class="absolute right-0 top-11 w-44 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl"
+            class="absolute left-0 top-full z-50 w-44 sm:left-auto sm:right-0 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl"
           >
             <a
               routerLink="/schools"
@@ -64,17 +62,18 @@
         <a
           routerLink="/admin/users"
           routerLinkActive="text-stone-950"
-          class="min-h-11 rounded-lg px-2 py-2 hover:bg-stone-200"
+          class="flex min-h-11 items-center rounded-lg px-2 py-2 hover:bg-stone-200"
           (click)="closeMenus()"
           >Administracja</a
         >
       }
       @if (auth.currentUser()) {
         <app-notification-bell (click)="closeMenus()" />
-        <div class="relative">
+        <div class="sm:relative" (click)="$event.stopPropagation()">
           <button
             type="button"
             class="barkly-button !px-3 !py-2"
+            [attr.aria-expanded]="isAddOpen()"
             (click)="
               isAddOpen.set(!isAddOpen()); isDiscoverOpen.set(false); isProfileOpen.set(false)
             "
@@ -83,7 +82,7 @@
           </button>
           @if (isAddOpen()) {
             <div
-              class="absolute right-0 top-11 w-52 rounded-xl border border-stone-200 bg-white p-1.5 text-stone-700 shadow-xl"
+              class="absolute right-0 top-full z-50 w-52 sm:top-11 rounded-xl border border-stone-200 bg-white p-1.5 text-stone-700 shadow-xl"
             >
               <a
                 routerLink="/my-dogs"
@@ -112,11 +111,12 @@
             </div>
           }
         </div>
-        <div class="relative">
+        <div class="sm:relative" (click)="$event.stopPropagation()">
           <button
             type="button"
             class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-800 text-sm font-bold text-white"
             [attr.aria-label]="'Menu użytkownika: ' + auth.currentUser()?.displayName"
+            [attr.aria-expanded]="isProfileOpen()"
             (click)="
               isProfileOpen.set(!isProfileOpen()); isDiscoverOpen.set(false); isAddOpen.set(false)
             "
@@ -125,7 +125,7 @@
           </button>
           @if (isProfileOpen()) {
             <div
-              class="absolute right-0 top-11 w-56 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl"
+              class="absolute right-0 top-full z-50 w-56 max-w-full sm:top-11 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl"
             >
               <div class="border-b border-stone-100 px-3 py-2">
                 <p class="font-semibold text-stone-950">{{ auth.currentUser()?.displayName }}</p>

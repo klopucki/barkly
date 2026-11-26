@@ -1,5 +1,5 @@
 import { NotificationBell } from './features/notifications/notification-bell';
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './features/auth/auth.service';
 
@@ -17,6 +17,7 @@ export class App {
   protected readonly isAddOpen = signal(false);
   protected readonly isProfileOpen = signal(false);
 
+  @HostListener('document:click')
   protected closeMenus(): void {
     this.isDiscoverOpen.set(false);
     this.isAddOpen.set(false);
