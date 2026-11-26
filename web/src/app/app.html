@@ -74,9 +74,7 @@
             type="button"
             class="barkly-button !px-3 !py-2"
             [attr.aria-expanded]="isAddOpen()"
-            (click)="
-              isAddOpen.set(!isAddOpen()); isDiscoverOpen.set(false); isProfileOpen.set(false)
-            "
+            (click)="toggleAddMenu()"
           >
             + Dodaj
           </button>
@@ -101,12 +99,22 @@
                   class="block rounded-lg px-3 py-2 hover:bg-stone-100"
                   (click)="closeMenus()"
                   >Zarządzaj treningami</a
-                ><a
-                  routerLink="/my-school"
-                  class="block rounded-lg px-3 py-2 hover:bg-stone-100"
-                  (click)="closeMenus()"
-                  >Napisz artykuł</a
                 >
+              }
+              @if (articleSchools().length) {
+                <button
+                  type="button"
+                  class="block w-full rounded-lg px-3 py-2 text-left hover:bg-stone-100"
+                  (click)="writeArticle()"
+                >
+                  Napisz artykuł
+                </button>
+              } @else if (schoolsLoading()) {
+                <p class="px-3 py-2 text-xs text-stone-500">Ładowanie szkół…</p>
+              } @else if (schoolsError()) {
+                <p role="alert" class="px-3 py-2 text-xs text-red-700">
+                  Nie udało się pobrać szkół. Otwórz menu ponownie.
+                </p>
               }
             </div>
           }
@@ -171,6 +179,23 @@
     </nav>
   </div>
 </header>
+
+@if (choosingArticleSchool()) {
+  <app-modal title="Wybierz szkołę" (closed)="choosingArticleSchool.set(false)">
+    <p class="mb-4 text-sm text-stone-600">
+      Wybierz, jako która szkoła chcesz opublikować artykuł.
+    </p>
+    @for (school of articleSchools(); track school.id) {
+      <button
+        type="button"
+        class="mb-2 block w-full rounded-lg border px-4 py-3 text-left hover:bg-stone-100"
+        (click)="openArticleFor(school)"
+      >
+        {{ school.name }}
+      </button>
+    }
+  </app-modal>
+}
 
 <main class="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-12">
   <router-outlet />

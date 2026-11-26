@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
   OnInit,
   SecurityContext,
@@ -9,7 +10,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -65,6 +67,9 @@ export class SchoolDetails implements OnInit {
   readonly subscriptionLoading = signal(false);
   readonly subscriptionError = signal('');
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly queryParams = toSignal(this.route.queryParamMap);
   private readonly service = inject(SchoolService);
   protected readonly auth = inject(AuthService);
   private readonly trainingsService = inject(TrainingService);
@@ -123,16 +128,36 @@ export class SchoolDetails implements OnInit {
   @ViewChild('editor') private editor?: ElementRef<HTMLElement>;
   constructor() {
     effect(() => {
+      if (
+        this.queryParams()?.get('newArticle') !== '1' ||
+        !this.school() ||
+        this.school()?.slug !== this.route.snapshot.paramMap.get('slug') ||
+        !this.managementResolved()
+      )
+        return;
+      if (this.canManage()) {
+        this.activeTab.set('news');
+        this.openArticleDialog();
+      }
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { newArticle: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+    effect(() => {
       const user = this.auth.currentUser();
       const school = this.school();
       if (!user || !school) {
         this.canManage.set(false);
-        this.managementResolved.set(true);
+        this.managementResolved.set(!!school);
         return;
       }
       this.managementResolved.set(false);
       this.service.mine$().subscribe({
         next: (mine) => {
+          if (this.school()?.id !== school.id || this.auth.currentUser()?.id !== user.id) return;
           const manages = mine.some((item) => item.id === school.id);
           this.canManage.set(manages);
           this.managementResolved.set(true);
@@ -142,6 +167,7 @@ export class SchoolDetails implements OnInit {
           }
         },
         error: () => {
+          if (this.school()?.id !== school.id || this.auth.currentUser()?.id !== user.id) return;
           this.canManage.set(false);
           this.managementResolved.set(true);
         },
@@ -149,20 +175,30 @@ export class SchoolDetails implements OnInit {
     });
   }
   ngOnInit() {
-    const slug = this.route.snapshot.paramMap.get('slug')!;
-    this.service.bySlug$(slug).subscribe({
-      next: (s) => {
-        this.school.set(s);
-        this.loadNews();
-        this.loadTrainings(s.id);
-        if (this.auth.currentUser())
-          this.http.get<boolean>(`/api/my/school-subscriptions/${s.id}`).subscribe({
-            next: (value) => this.subscribed.set(value),
-            error: () => this.subscriptionError.set('Nie udało się pobrać subskrypcji.'),
-          });
-      },
-    });
+    this.route.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.school.set(null);
+          this.canManage.set(false);
+          this.managementResolved.set(false);
+          return this.service.bySlug$(params.get('slug')!);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (s) => {
+          this.school.set(s);
+          this.loadNews();
+          this.loadTrainings(s.id);
+          if (this.auth.currentUser())
+            this.http.get<boolean>(`/api/my/school-subscriptions/${s.id}`).subscribe({
+              next: (value) => this.subscribed.set(value),
+              error: () => this.subscriptionError.set('Nie udało się pobrać subskrypcji.'),
+            });
+        },
+      });
   }
+
   private loadNews(managed = false) {
     const school = this.school();
     if (!school) return;
