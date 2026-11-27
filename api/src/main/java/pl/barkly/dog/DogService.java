@@ -136,6 +136,10 @@ class DogService {
     org.springframework.core.io.Resource loadImage(Long id) {
         DogImageEntity image = findImage(id);
         requireVisible(
+                image.getDog().getVisibility(),
+                image.getDog(),
+                users.optionalCurrentUser().orElse(null));
+        requireVisible(
                 image.getVisibility(), image.getDog(), users.optionalCurrentUser().orElse(null));
         return storage.load(image.getImageKey());
     }
@@ -143,6 +147,10 @@ class DogService {
     @Transactional(readOnly = true)
     MediaType imageContentType(Long id) {
         DogImageEntity image = findImage(id);
+        requireVisible(
+                image.getDog().getVisibility(),
+                image.getDog(),
+                users.optionalCurrentUser().orElse(null));
         requireVisible(
                 image.getVisibility(), image.getDog(), users.optionalCurrentUser().orElse(null));
         if (image.getImageKey().endsWith(".png")) {

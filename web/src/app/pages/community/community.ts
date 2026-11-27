@@ -84,6 +84,14 @@ export class Community {
     });
   }
 
+  deletePost(post: DogPost): void {
+    if (!confirm('Usunąć tę aktualność?')) return;
+    this.dogsApi.deletePost$(post.id).subscribe({
+      next: () => this.posts.update((posts) => posts.filter((item) => item.id !== post.id)),
+      error: () => (this.error = 'Nie udało się usunąć aktualności.'),
+    });
+  }
+
   reactionCount(post: DogPost, type: PostReactionType): number {
     return post.reactions.find((reaction) => reaction.reactionType === type)?.count ?? 0;
   }

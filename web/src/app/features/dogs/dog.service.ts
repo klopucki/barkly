@@ -62,6 +62,10 @@ export class DogService {
     return this.http.post<DogPost>('/api/dog-posts', form);
   }
 
+  deletePost$(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/dog-posts/${id}`);
+  }
+
   reactToPost$(id: number, reactionType: PostReactionType): Observable<DogPost> {
     return this.http.put<DogPost>(`/api/dog-posts/${id}/reaction`, { reactionType });
   }

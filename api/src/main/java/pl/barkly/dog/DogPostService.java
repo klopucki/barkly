@@ -50,7 +50,7 @@ class DogPostService {
 
     @Transactional(readOnly = true)
     List<DogPostResponse> feed() {
-        UserEntity user = users.optionalCurrentUser().orElse(null);
+        UserEntity user = users.currentUser();
         return posts.findFeed().stream()
                 .filter(post -> canView(post.getDog(), user))
                 .map(this::response)
@@ -73,10 +73,35 @@ class DogPostService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Post content is required");
         String imageKey = image == null || image.isEmpty() ? null : storage.store(image);
         try {
-            return response(posts.save(new DogPostEntity(dog, text, imageKey)));
+            return response(posts.save(new DogPostEntity(dog, user, text, imageKey)));
         } catch (RuntimeException exception) {
             if (imageKey != null) storage.delete(imageKey);
             throw exception;
+        }
+    }
+
+    @Transactional
+    void delete(Long id) {
+        DogPostEntity post =
+                posts.findWithDogById(id)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Post not found"));
+        if (!post.getAuthor().getId().equals(users.currentUser().getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot delete this post");
+        String key = post.getImageKey();
+        posts.delete(post);
+        if (key != null) {
+            org.springframework.transaction.support.TransactionSynchronizationManager
+                    .registerSynchronization(
+                            new org.springframework.transaction.support
+                                    .TransactionSynchronization() {
+                                @Override
+                                public void afterCommit() {
+                                    storage.delete(key);
+                                }
+                            });
         }
     }
 
@@ -151,7 +176,7 @@ class DogPostService {
                                 () ->
                                         new ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "Post not found"));
-        if (!canView(post.getDog(), users.optionalCurrentUser().orElse(null)))
+        if (!canView(post.getDog(), users.currentUser()))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
         return post;
     }
@@ -198,13 +223,14 @@ class DogPostService {
                 post.getId(),
                 post.getDog().getId(),
                 post.getDog().getName(),
-                post.getDog().getOwner().getDisplayName(),
+                post.getAuthor().getDisplayName(),
                 post.getContent(),
                 post.getImageKey() != null,
                 post.getPublishedAt(),
                 summaries,
                 myReaction,
-                comments.countByPost_Id(post.getId()));
+                comments.countByPost_Id(post.getId()),
+                post.getAuthor().getId().equals(user.getId()));
     }
 
     private DogPostCommentResponse commentResponse(DogPostCommentEntity comment, UserEntity user) {

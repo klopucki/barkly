@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import pl.barkly.school.SchoolImageRepository;
 import pl.barkly.school.SchoolService;
 import pl.barkly.training.api.TrainingResponse;
 import pl.barkly.training.exceptions.ResourceNotFoundException;
@@ -19,16 +20,19 @@ public class TrainingImageService {
     private final BookingRepository bookingRepository;
     private final TrainingImageStorage imageStorage;
     private final SchoolService schoolService;
+    private final SchoolImageRepository schoolImages;
 
     TrainingImageService(
             TrainingRepository trainingRepository,
             BookingRepository bookingRepository,
             TrainingImageStorage imageStorage,
-            SchoolService schoolService) {
+            SchoolService schoolService,
+            SchoolImageRepository schoolImages) {
         this.trainingRepository = trainingRepository;
         this.bookingRepository = bookingRepository;
         this.imageStorage = imageStorage;
         this.schoolService = schoolService;
+        this.schoolImages = schoolImages;
     }
 
     @Transactional
@@ -58,7 +62,12 @@ public class TrainingImageService {
         return training.toResponse(bookedCount);
     }
 
+    @Transactional(readOnly = true)
     public Resource load(String key) {
+        if (!trainingRepository.existsByImageKeyAndDeletedAtIsNull(key)
+                && !schoolImages.existsByImageKey(key)) {
+            throw new ResourceNotFoundException("Image not found");
+        }
         return imageStorage.load(key);
     }
 }
