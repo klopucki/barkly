@@ -38,6 +38,8 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
     List<SchoolTraining> findUpcomingForManagedSchools(
             Long userId, LocalDateTime now, Pageable pageable);
 
+    boolean existsByImageKeyAndDeletedAtIsNull(String imageKey);
+
     Optional<TrainingEntity> findByIdAndDeletedAtIsNull(Long id);
 
     List<TrainingEntity> findAllByIdInAndDeletedAtIsNull(List<Long> ids);

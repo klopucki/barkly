@@ -47,6 +47,12 @@ class DogPostController {
         return posts.create(dogId, content, image);
     }
 
+    @DeleteMapping("/api/dog-posts/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable Long id) {
+        posts.delete(id);
+    }
+
     @GetMapping("/api/dog-post-images/{id}")
     ResponseEntity<Resource> image(@org.springframework.web.bind.annotation.PathVariable Long id) {
         return ResponseEntity.ok()

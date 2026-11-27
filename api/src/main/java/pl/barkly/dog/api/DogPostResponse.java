@@ -15,4 +15,5 @@ public record DogPostResponse(
         LocalDateTime publishedAt,
         List<PostReactionSummary> reactions,
         PostReactionType myReaction,
-        long commentCount) {}
+        long commentCount,
+        boolean mine) {}

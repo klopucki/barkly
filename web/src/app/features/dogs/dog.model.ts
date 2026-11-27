@@ -37,6 +37,7 @@ export interface DogPost {
   reactions: PostReactionSummary[];
   myReaction: PostReactionType | null;
   commentCount: number;
+  mine: boolean;
 }
 
 export type PostReactionType = 'HEART' | 'THUMBS_UP' | 'PAW';

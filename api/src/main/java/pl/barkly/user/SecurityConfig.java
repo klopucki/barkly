@@ -89,7 +89,13 @@ class SecurityConfig {
                                         .permitAll()
                                         .requestMatchers("/api/admin/**")
                                         .hasRole(SUPER_ADMIN)
-                                        .requestMatchers("/api/auth/me", "/api/my/**")
+                                        .requestMatchers(
+                                                "/api/auth/me",
+                                                "/api/my/**",
+                                                "/api/dog-posts",
+                                                "/api/dog-posts/**",
+                                                "/api/dog-post-images/**",
+                                                "/api/dog-post-comments/**")
                                         .authenticated()
                                         .requestMatchers(
                                                 org.springframework.http.HttpMethod.GET, "/api/**")

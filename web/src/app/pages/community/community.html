@@ -31,6 +31,12 @@
             placeholder="Np. Jak pomagacie psu skupić się podczas treningu?"
           ></textarea>
         </div>
+        <p class="mt-3 text-sm text-stone-600">
+          Zdjęcie jest opcjonalne. Aktualność i zdjęcie zobaczą zalogowani użytkownicy Barkly, jeśli
+          profil psa jest widoczny dla społeczności. Przy profilu prywatnym zobaczysz je tylko Ty i
+          osoby ze współdzielonym dostępem do psa. Zmiana widoczności profilu zmienia też widoczność
+          wcześniejszych aktualności.
+        </p>
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
           <label class="barkly-button-secondary cursor-pointer"
             >Dodaj zdjęcie<input
@@ -96,11 +102,20 @@
                   >{{ post.dogName }}</a
                 >
                 <p class="text-sm text-stone-500">
-                  opiekun: {{ post.ownerDisplayName }} ·
+                  autor: {{ post.ownerDisplayName }} ·
                   {{ post.publishedAt | date: 'dd.MM, HH:mm' }}
                 </p>
               </div>
             </div>
+            @if (post.mine) {
+              <button
+                type="button"
+                class="mt-2 text-sm text-stone-500 hover:text-red-700"
+                (click)="deletePost(post)"
+              >
+                Usuń aktualność
+              </button>
+            }
             <p class="mt-4 whitespace-pre-wrap leading-7 text-stone-700">{{ post.content }}</p>
           </div>
           @if (post.hasImage) {

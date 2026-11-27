@@ -2,6 +2,8 @@ package pl.barkly.dog;
 
 import jakarta.persistence.*;
 
+import pl.barkly.user.UserEntity;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,6 +17,10 @@ class DogPostEntity {
     @JoinColumn(name = "dog_id")
     private DogEntity dog;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author_user_id")
+    private UserEntity author;
+
     @Column(nullable = false, length = 1000)
     private String content;
 
@@ -25,8 +31,9 @@ class DogPostEntity {
 
     protected DogPostEntity() {}
 
-    DogPostEntity(DogEntity dog, String content, String imageKey) {
+    DogPostEntity(DogEntity dog, UserEntity author, String content, String imageKey) {
         this.dog = dog;
+        this.author = author;
         this.content = content;
         this.imageKey = imageKey;
         this.publishedAt = LocalDateTime.now();
@@ -38,6 +45,10 @@ class DogPostEntity {
 
     DogEntity getDog() {
         return dog;
+    }
+
+    UserEntity getAuthor() {
+        return author;
     }
 
     String getContent() {
